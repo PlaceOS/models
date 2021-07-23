@@ -22,9 +22,9 @@ module PlaceOS::Model
     belongs_to User
     belongs_to Authority
 
-    def user=(user : User)
-      self.authority_id = user.authority_id
+    def user=(user)
       super(user)
+      self.authority_id = user.authority_id
     end
 
     secondary_index :authority_id
@@ -48,8 +48,7 @@ module PlaceOS::Model
     # Reject '+' and '~'
     protected def safe_id
       self._new_flag = true
-      @id ||= RethinkORM::IdGenerator.next(self).gsub({"+": '-', "~": '-'}).split('-', 2)[1]
-      @id
+      @id ||= Random.new.hex(16)
     end
 
     protected def set_authority
@@ -58,7 +57,7 @@ module PlaceOS::Model
 
     # obscure the API key
     protected def hash!
-      self.secret = Crypto::Bcrypt.new(self.secret, self.id.not_nil!).digest.hexstring
+      self.secret = OpenSSL::HMAC.hexdigest(:sha512, self.secret.not_nil!, self.id.not_nil!)
       self
     end
 
@@ -76,7 +75,7 @@ module PlaceOS::Model
       model = Model::ApiKey.find!(id)
 
       # Same error as being unable to find the model
-      if model.secret != Crypto::Bcrypt.new(secret, id).digest.hexstring
+      if model.secret != OpenSSL::HMAC.hexdigest(:sha512, secret, id)
         raise RethinkORM::Error::DocumentNotFound.new("Key not present: #{id}")
       end
 

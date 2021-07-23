@@ -241,8 +241,10 @@ module PlaceOS::Model
 
     def self.api_key(authority : Authority? = nil, support : Bool = false, admin : Bool = false)
       user = self.user(authority, support, admin)
+      user.save!
       key = ApiKey.new
       key.name = Faker::Name.name
+      key.user = user
       key
     end
 

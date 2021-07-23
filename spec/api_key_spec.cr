@@ -2,7 +2,7 @@ require "./helper"
 
 module PlaceOS::Model
   describe Edge do
-    it "saves an API Token", focus: true do
+    it "saves an API Token" do
       key = Generator.api_key.save!
 
       key.should_not be_nil
@@ -33,11 +33,15 @@ module PlaceOS::Model
       found = ApiKey.find_key! api_key
       found.id.should eq(key.id)
 
-      fake_id = "#{key.id}.notamatch"
+      expect_raises(RethinkORM::Error::DocumentNotFound) do
+        fake_id = "#{key.id}.notamatch"
+        ApiKey.find_key! fake_id
+      end
     end
 
     it "generates a jwt object" do
       key = Generator.api_key
+      key.save!
       jwt = key.build_jwt
 
       jwt.iss.should eq("POS")
