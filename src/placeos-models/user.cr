@@ -6,6 +6,7 @@ require "rethinkdb-orm/lock"
 
 require "./authority"
 require "./base/model"
+require "./api_key"
 
 module PlaceOS::Model
   class User < ModelBase
@@ -54,9 +55,9 @@ module PlaceOS::Model
 
     has_many(
       child_class: UserAuthLookup,
-      dependent: :destroy,
+      collection_name: "auth_lookups",
       foreign_key: "user_id",
-      collection_name: :auth_lookups
+      dependent: :destroy,
     )
 
     # Metadata belonging to this user
@@ -64,6 +65,13 @@ module PlaceOS::Model
       child_class: Metadata,
       collection_name: "metadata",
       foreign_key: "parent_id",
+      dependent: :destroy
+    )
+
+    has_many(
+      child_class: ApiKey,
+      collection_name: "api_tokens",
+      foreign_key: "user_id",
       dependent: :destroy
     )
 
@@ -196,6 +204,10 @@ module PlaceOS::Model
       support
     end
 
+    def to_jwt_permission : UserJWT::Permissions
+      is_admin? ? UserJWT::Permissions::Admin : (is_support? ? UserJWT::Permissions::Support : UserJWT::Permissions::User)
+    end
+
     # NOTE: required due to use of `JSON.mapping` macro by `active-model`
     macro finished
       # Ensure the `PlaceOS::Model::User`'s `PlaceOS::Model::Authority` doesn't change
@@ -250,7 +262,7 @@ module PlaceOS::Model
 
     PUBLIC_DATA = [
       :email_digest, :nickname, :name, :first_name, :last_name, :groups,
-      :country, :building, :image, :created_at,
+      :country, :building, :image, :created_at, :authority_id,
     ]
 
     {% begin %}

@@ -95,7 +95,7 @@ module PlaceOS::Model
     # Decrypt all encrypted attributes
     def decrypt_for!(user)
       self.secret = decrypt_secret_for(user)
-      sself
+      self
     end
 
     def check_secret?(test : String) : Bool
