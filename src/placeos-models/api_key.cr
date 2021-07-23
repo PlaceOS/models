@@ -60,7 +60,6 @@ module PlaceOS::Model
     before_create :x_api_key
     before_create :hash!
 
-    # Reject '+' and '~'
     protected def safe_id
       self._new_flag = true
       @id ||= Random.new.hex(16)
