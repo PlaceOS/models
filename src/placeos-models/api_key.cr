@@ -29,6 +29,20 @@ module PlaceOS::Model
 
     secondary_index :authority_id
 
+    macro finished
+      def permissions
+        @permissions || self.user.try &.to_jwt_permission
+      end
+    end
+
+    # Serialisation
+    ###############################################################################################
+
+    define_to_json :public, only: [
+      :name, :description, :scopes, :user_id, :authority_id, :created_at,
+      :updated_at, :id,
+    ], methods: [:user, :authority, :x_api_key, :permissions]
+
     # Validation
     ###############################################################################################
 
@@ -43,6 +57,7 @@ module PlaceOS::Model
 
     before_create :safe_id
     before_create :set_authority
+    before_create :x_api_key
     before_create :hash!
 
     # Reject '+' and '~'
@@ -65,8 +80,10 @@ module PlaceOS::Model
     ###############################################################################################
 
     def x_api_key
-      raise "API key has already been hashed" if self.persisted?
-      "#{self.safe_id}.#{self.secret}"
+      xkey = @x_api_key
+      return xkey if xkey
+      return nil if self.persisted?
+      @x_api_key = "#{self.safe_id}.#{self.secret}"
     end
 
     def self.find_key!(token : String)

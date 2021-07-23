@@ -27,7 +27,7 @@ module PlaceOS::Model
 
     it "validates secrets" do
       key = Generator.api_key
-      api_key = key.x_api_key
+      api_key = key.x_api_key.not_nil!
       key.save!
 
       found = ApiKey.find_key! api_key
@@ -37,6 +37,22 @@ module PlaceOS::Model
         fake_id = "#{key.id}.notamatch"
         ApiKey.find_key! fake_id
       end
+    end
+
+    it "returns expected JSON" do
+      create = Generator.api_key
+      create.save!
+      created = JSON.parse(create.to_public_json).as_h
+      (created["x_api_key"].as_s.size > 0).should be_true
+      created.has_key?("secret").should be_false
+      created["permissions"].as_s.should eq("user")
+
+      show = ApiKey.find!(create.id.as(String))
+      shown = JSON.parse(show.to_public_json).as_h
+      shown.has_key?("secret").should be_false
+      shown["x_api_key"].raw.nil?.should be_true
+
+      shown["permissions"].raw.should eq("user")
     end
 
     it "generates a jwt object" do
