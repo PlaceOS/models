@@ -1,7 +1,7 @@
 require "./helper"
 
 module PlaceOS::Model
-  describe Edge do
+  describe ApiKey do
     it "saves an API Token" do
       key = Generator.api_key.save!
 
