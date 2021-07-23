@@ -239,6 +239,13 @@ module PlaceOS::Model
       user
     end
 
+    def self.api_key(authority : Authority? = nil, support : Bool = false, admin : Bool = false)
+      user = self.user(authority, support, admin)
+      key = ApiKey.new
+      key.name = Faker::Name.name
+      key
+    end
+
     def self.adfs_strat(authority : Authority? = nil)
       unless authority
         # look up an existing authority
