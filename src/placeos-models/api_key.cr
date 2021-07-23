@@ -40,8 +40,8 @@ module PlaceOS::Model
 
     define_to_json :public, only: [
       :name, :description, :scopes, :user_id, :authority_id, :created_at,
-      :updated_at, :id,
-    ], methods: [:user, :authority, :x_api_key, :permissions]
+      :updated_at,
+    ], methods: [:user, :authority, :x_api_key, :permissions, :id]
 
     # Validation
     ###############################################################################################
