@@ -22,14 +22,14 @@ module PlaceOS::Model
     belongs_to User
     belongs_to Authority
 
-    def user=(user)
-      super(user)
-      self.authority_id = user.authority_id
-    end
-
     secondary_index :authority_id
 
     macro finished
+      def user=(user)
+        super(user)
+        self.authority_id = user.authority_id
+      end
+
       def permissions
         @permissions || self.user.try &.to_jwt_permission
       end
