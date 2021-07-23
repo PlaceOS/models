@@ -269,7 +269,7 @@ module PlaceOS::Model
     ADMIN_DATA = {{
                    PUBLIC_DATA + [
                      :sys_admin, :support, :email, :phone, :ui_theme, :misc, :login_name,
-                     :staff_id, :card_number, :authority_id,
+                     :staff_id, :card_number,
                    ]
                  }}
     {% end %}
