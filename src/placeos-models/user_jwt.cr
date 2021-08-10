@@ -22,7 +22,7 @@ module PlaceOS::Model
     getter id : String
 
     # OAuth2 Scopes
-    getter scope : Array(String)
+    getter scope : Array(Scope)
 
     @[JSON::Field(key: "u")]
     getter user : Metadata
@@ -60,6 +60,48 @@ module PlaceOS::Model
     @[Deprecated("Use #id instead.")]
     def sub
       @id
+    end
+
+    struct Scope
+      enum Access
+        None
+        Read
+        Write
+        Full
+      end
+
+      getter resource : String
+
+      getter access : Access
+
+      def initialize(@resource, access : Access? = nil)
+        access = Access::Full if access.nil?
+        @access = access
+      end
+
+      def to_s(io : IO) : Nil
+        io << resource
+
+        # Full assumed without an access field
+        unless access.full?
+          io << '.'
+          access.to_s(io)
+        end
+      end
+
+      def self.from_json(json : JSON::PullParser)
+        scope = json.read_string
+        tokens = scope.split('.')
+        raise "Invalid scope structure: #{scope}" if tokens.empty? || tokens.size > 2
+
+        resource = tokens.first
+        access = tokens[1]?.try { |str| Access.parse(str) }
+        new(resource, access)
+      end
+
+      def self.to_json(scope : Scope, builder : JSON::Builder)
+        builder.string scope.to_s
+      end
     end
 
     struct Metadata
