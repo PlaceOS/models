@@ -3,6 +3,8 @@ require "./base/jwt"
 module PlaceOS::Model
   # TODO: Migrate to human-readable attributes
   struct UserJWT < JWTBase
+    PUBLIC = Scope.new("public")
+
     getter iss : String
 
     @[JSON::Field(converter: Time::EpochConverter)]
@@ -45,11 +47,11 @@ module PlaceOS::Model
     end
 
     @[Deprecated("Use `domain` instead of `aud`, and `id` instead of `sub`.")]
-    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = [Scope.new("public")])
+    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = [PUBLIC])
       new(@iss, @iat, @exp, aud, sub, @user, @scope)
     end
 
-    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = [Scope.new("public")])
+    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = [PUBLIC])
     end
 
     @[Deprecated("Use #domain instead.")]
@@ -63,7 +65,7 @@ module PlaceOS::Model
     end
 
     def scope_public?
-      scope.includes?(Scope.new("public"))
+      scope.includes?(PUBLIC)
     end
 
     def get_scope(scope_name : String)
@@ -72,7 +74,7 @@ module PlaceOS::Model
           return entry.access
         end
       end
-      raise Error::NoScope.new "no scope found"
+      puts "no scope found"
     end
 
     struct Scope
