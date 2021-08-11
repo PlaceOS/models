@@ -62,6 +62,19 @@ module PlaceOS::Model
       @id
     end
 
+    def scope_public?
+      scope.includes?(Scope.new("public"))
+    end
+
+    def get_scope(scope_name : String)
+      scope.each do |entry|
+        if entry.resource == scope_name
+          return entry.access
+        end
+      end
+      raise Error::NoScope.new "no scope found"
+    end
+
     struct Scope
       enum Access
         None
