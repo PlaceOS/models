@@ -12,7 +12,8 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
-    attribute scopes : Array(String) = ["public"]
+
+    attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope.new("public")]
 
     # when nil it defaults to the users permissions
     attribute permissions : UserJWT::Permissions? = nil

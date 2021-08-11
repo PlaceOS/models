@@ -45,11 +45,11 @@ module PlaceOS::Model
     end
 
     @[Deprecated("Use `domain` instead of `aud`, and `id` instead of `sub`.")]
-    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = [Scope.new("Full")])
+    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = [Scope.new("public")])
       new(@iss, @iat, @exp, aud, sub, @user, @scope)
     end
 
-    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = [Scope.new("Full")])
+    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = [Scope.new("public")])
     end
 
     @[Deprecated("Use #domain instead.")]
@@ -67,7 +67,7 @@ module PlaceOS::Model
         None
         Read
         Write
-        Full # public
+        Full
       end
 
       getter resource : String
@@ -77,6 +77,12 @@ module PlaceOS::Model
       def initialize(@resource, access : Access? = nil)
         access = Access::Full if access.nil?
         @access = access
+      end
+
+      def initialize(resource : JSON::PullParser, access : Access? = nil)
+        access = Access::Full if access.nil?
+        @access = access
+        @resource = resource.read_string
       end
 
       def to_s(io : IO) : Nil
@@ -99,8 +105,8 @@ module PlaceOS::Model
         new(resource, access)
       end
 
-      def self.to_json(scope : Scope, builder : JSON::Builder)
-        builder.string scope.to_s
+      def to_json(builder : JSON::Builder)
+        builder.string to_s
       end
     end
 

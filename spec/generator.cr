@@ -307,7 +307,7 @@ module PlaceOS::Model
       [true, false].sample(1).first
     end
 
-    def self.jwt(user : User? = nil, scope : Array(String) = ["public"])
+    def self.jwt(user : User? = nil, scope : Array(UserJWT::Scope) = [UserJWT::Scope.new("public")])
       user = self.user.save! if user.nil?
 
       permissions = case ({user.support, user.sys_admin})
