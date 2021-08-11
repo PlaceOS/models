@@ -45,11 +45,11 @@ module PlaceOS::Model
     end
 
     @[Deprecated("Use `domain` instead of `aud`, and `id` instead of `sub`.")]
-    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = ["public"])
+    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = [Scope.new("Full")])
       new(@iss, @iat, @exp, aud, sub, @user, @scope)
     end
 
-    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = ["public"])
+    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = [Scope.new("Full")])
     end
 
     @[Deprecated("Use #domain instead.")]
@@ -67,7 +67,7 @@ module PlaceOS::Model
         None
         Read
         Write
-        Full
+        Full # public
       end
 
       getter resource : String
