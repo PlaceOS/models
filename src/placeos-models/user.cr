@@ -87,8 +87,8 @@ module PlaceOS::Model
 
     # Ensure email is unique under the authority scope
     #
-    ensure_unique :email, scope: [:authority_id, :email] do |authority_id, email|
-      {authority_id, email.strip.downcase}
+    ensure_unique :email_digest, scope: [:authority_id, :email_digest] do |authority_id, email_digest|
+      {authority_id, email_digest}
     end
 
     # Callbacks
@@ -151,7 +151,11 @@ module PlaceOS::Model
     # Sets email_digest to allow user look up without leaking emails
     #
     protected def create_email_digest
-      self.email_digest = Digest::MD5.hexdigest(self.email)
+      self.email_digest = self.class.weak_digest(self.email)
+    end
+
+    def self.weak_digest(string)
+      Digest::MD5.hexdigest(string.strip.downcase)
     end
 
     # Queries
@@ -161,16 +165,19 @@ module PlaceOS::Model
       User.find_all([auth_id], index: :authority_id)
     end
 
-    secondary_index :email
+    secondary_index :email_digest
 
     def self.find_by_email(authority_id : String, email : String)
-      User.where(email: email, authority_id: authority_id).first?
+      find_by_emails(authority_id, [email]).first?
     end
 
-    def self.find_by_emails(authority_id : String, emails : Array(String))
-      User.raw_query do |r|
-        r.table(User.table_name)
-          .get_all(emails, index: :email)
+    def self.find_by_emails(authority_id : String, emails : Enumerable(String))
+      return [] of self if emails.empty?
+
+      digests = emails.map &->weak_digest(String)
+      User.collection_query do |table|
+        table
+          .get_all(digests, index: :email_digest)
           .filter({authority_id: authority_id})
       end
     end
