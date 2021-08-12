@@ -74,7 +74,8 @@ module PlaceOS::Model
           return entry.access
         end
       end
-      puts "no scope found"
+      Log.warn { {message: "unknown scope #{scope_name}"} }
+      raise Error::NoScope.new
     end
 
     struct Scope
@@ -95,9 +96,14 @@ module PlaceOS::Model
       end
 
       def initialize(resource : JSON::PullParser, access : Access? = nil)
-        access = Access::Full if access.nil?
-        @access = access
-        @resource = resource.read_string
+        scope = resource.read_string.split(".")
+        @resource = scope.first
+        if scope.size == 2
+          access_enum = Access.parse?(scope.last)
+          @access = access_enum.nil? ? Access::Full : access_enum
+        else
+          @access = Access::Full
+        end
       end
 
       def to_s(io : IO) : Nil
