@@ -185,10 +185,29 @@ module PlaceOS::Model
         not_expected.email = expected_users.first.email
         not_expected.save!
 
-        found = User.find_by_emails(authority.id.as(String), expected_users.map(&.email))
+        # The query is case insensitive
+        emails = expected_users.map_with_index do |user, index|
+          email = user.email
+          index.even? ? email.upcase : email
+        end
+
+        found = User.find_by_emails(authority.id.as(String), emails)
         found_ids = found.compact_map(&.id).to_a.sort!
         found_ids.should eq expected_users.compact_map(&.id).sort!
         found_ids.should_not contain(not_expected.id)
+      end
+
+      it "#find_by_email" do
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || Generator.authority.save!
+        expected_user = Generator.user(authority).save!
+
+        found = User.find_by_email(authority.id.as(String), expected_user.email)
+        found.try(&.id).should eq expected_user.id
+
+        # Query should be case-insensitve
+        found = User.find_by_email(authority.id.as(String), expected_user.email.upcase)
+        found.try(&.id).should eq expected_user.id
       end
     end
   end
