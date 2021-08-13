@@ -95,17 +95,6 @@ module PlaceOS::Model
         @access = access
       end
 
-      def initialize(resource : JSON::PullParser, access : Access? = nil)
-        scope = resource.read_string.split(".")
-        @resource = scope.first
-        if scope.size == 2
-          access_enum = Access.parse?(scope.last)
-          @access = access_enum.nil? ? Access::Full : access_enum
-        else
-          @access = Access::Full
-        end
-      end
-
       def to_s(io : IO) : Nil
         io << resource
 
