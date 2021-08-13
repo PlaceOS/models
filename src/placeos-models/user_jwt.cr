@@ -86,7 +86,7 @@ module PlaceOS::Model
         Write
       end
 
-      getter resource : (String)
+      getter resource : String
 
       getter access : Access
 
@@ -94,6 +94,12 @@ module PlaceOS::Model
         access = Access::All if access.nil?
         access = Access::None if @resource == "guest"
         @access = access
+      end
+
+      def initialize(json : JSON::PullParser)
+        scope = self.class.from_json(json)
+        @resource = scope.resource
+        @access = scope.access
       end
 
       def to_s(io : IO) : Nil
