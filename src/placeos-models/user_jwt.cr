@@ -91,7 +91,7 @@ module PlaceOS::Model
       getter access : Access
 
       def initialize(@resource, access : Access? = nil)
-        access = Access::Full if access.nil?
+        access = Access::All if access.nil?
         access = Access::None if @resource == "guest"
         @access = access
       end
@@ -100,7 +100,7 @@ module PlaceOS::Model
         io << resource
 
         # Full assumed without an access field
-        unless access.full?
+        unless access.all?
           io << '.'
           access.to_s(io)
         end
