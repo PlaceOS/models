@@ -79,8 +79,8 @@ module PlaceOS::Model
     end
 
     struct Scope
+      @[Flags]
       enum Access
-        None
         Read
         Write
         Full
