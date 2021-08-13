@@ -68,14 +68,15 @@ module PlaceOS::Model
       scope.includes?(PUBLIC)
     end
 
-    def get_scope(scope_name : String)
-      scope.each do |entry|
-        if entry.resource == scope_name
-          return entry.access
-        end
+    def get_access(scope_name : String) : Scope::Access
+      existing = scope.find &.resource.==(scope_name)
+
+      if existing.nil?
+        Log.warn { "scope #{scope_name} not present in JWT" }
+        Access::None
+      else
+        existing.access
       end
-      Log.warn { {message: "unknown scope #{scope_name}"} }
-      raise Error::NoScope.new
     end
 
     struct Scope
@@ -83,15 +84,15 @@ module PlaceOS::Model
       enum Access
         Read
         Write
-        Full
       end
 
-      getter resource : String
+      getter resource : (String)
 
       getter access : Access
 
       def initialize(@resource, access : Access? = nil)
         access = Access::Full if access.nil?
+        access = Access::None if @resource == "guest"
         @access = access
       end
 
