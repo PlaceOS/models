@@ -1,6 +1,6 @@
 require "CrystalEmail"
 require "crypto/bcrypt/password"
-require "digest/md5"
+require "digest/sha256"
 require "rethinkdb-orm"
 require "rethinkdb-orm/lock"
 
@@ -151,7 +151,11 @@ module PlaceOS::Model
     # Sets email_digest to allow user look up without leaking emails
     #
     protected def create_email_digest
-      self.email_digest = Digest::MD5.hexdigest(self.email)
+      self.email_digest = self.class.digest(self.email)
+    end
+
+    def self.digest(string : String)
+      Digest::SHA256.hexdigest(string)
     end
 
     # Queries

@@ -1,5 +1,3 @@
-require "digest/md5"
-
 require "./helper"
 
 module PlaceOS::Model
@@ -12,7 +10,7 @@ module PlaceOS::Model
 
       it "sets email digest on save" do
         user = Generator.user
-        expected_digest = Digest::MD5.hexdigest(user.email)
+        expected_digest = User.digest(user.email)
 
         user.email_digest.should be_nil
         user.save!
