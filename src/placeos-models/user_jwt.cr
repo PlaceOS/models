@@ -78,7 +78,7 @@ module PlaceOS::Model
 
       if existing.nil?
         Log.warn { "scope #{scope_name} not present in JWT" }
-        Access::None
+        Scope::Access::None
       else
         existing.access
       end
