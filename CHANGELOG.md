@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/).
 
 ## [5.9.1](https://github.com/PlaceOS/models/compare/v5.9.0...v5.9.1)
 
-### Changed
+### Fixed
 
 - **user_jwt**
   - Rename undefined constant ([dcd5a51befd9d64f6ed1bd94f558c675f2a47b1b](https://github.com/PlaceOS/models/commit/dcd5a51befd9d64f6ed1bd94f558c675f2a47b1b))
