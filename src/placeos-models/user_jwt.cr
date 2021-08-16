@@ -4,6 +4,7 @@ module PlaceOS::Model
   # TODO: Migrate to human-readable attributes
   struct UserJWT < JWTBase
     PUBLIC = Scope.new("public")
+    GUEST  = Scope.new("guest")
 
     getter iss : String
 
@@ -66,6 +67,10 @@ module PlaceOS::Model
 
     def scope_public?
       scope.includes?(PUBLIC)
+    end
+
+    def scope_guest?
+      scope.includes?(GUEST)
     end
 
     def get_access(scope_name : String) : Scope::Access
