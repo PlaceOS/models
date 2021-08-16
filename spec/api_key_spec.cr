@@ -63,7 +63,8 @@ module PlaceOS::Model
       jwt.iss.should eq("POS")
       jwt.id.should eq(key.user_id)
       jwt.domain.should eq(key.authority.not_nil!.domain)
-      jwt.scope.should eq(["public"])
+      jwt.scope.should eq([UserJWT::Scope.new("public")])
+      jwt.public_scope?.should be_true
       user = key.user.not_nil!
       jwt.user.name.should eq(user.name)
       jwt.user.email.should eq(user.email)

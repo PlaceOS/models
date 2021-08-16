@@ -3,6 +3,9 @@ require "./base/jwt"
 module PlaceOS::Model
   # TODO: Migrate to human-readable attributes
   struct UserJWT < JWTBase
+    PUBLIC = Scope.new("public")
+    GUEST  = Scope.new("guest")
+
     getter iss : String
 
     @[JSON::Field(converter: Time::EpochConverter)]
@@ -22,7 +25,7 @@ module PlaceOS::Model
     getter id : String
 
     # OAuth2 Scopes
-    getter scope : Array(String)
+    getter scope : Array(Scope)
 
     @[JSON::Field(key: "u")]
     getter user : Metadata
@@ -45,11 +48,11 @@ module PlaceOS::Model
     end
 
     @[Deprecated("Use `domain` instead of `aud`, and `id` instead of `sub`.")]
-    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = ["public"])
+    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = [PUBLIC])
       new(@iss, @iat, @exp, aud, sub, @user, @scope)
     end
 
-    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = ["public"])
+    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = [PUBLIC])
     end
 
     @[Deprecated("Use #domain instead.")]
@@ -60,6 +63,72 @@ module PlaceOS::Model
     @[Deprecated("Use #id instead.")]
     def sub
       @id
+    end
+
+    def public_scope?
+      scope.includes?(PUBLIC)
+    end
+
+    def guest_scope?
+      scope.includes?(GUEST)
+    end
+
+    def get_access(scope_name : String) : Scope::Access
+      existing = scope.find &.resource.==(scope_name)
+
+      if existing.nil?
+        Log.warn { "scope #{scope_name} not present in JWT" }
+        Access::None
+      else
+        existing.access
+      end
+    end
+
+    struct Scope
+      @[Flags]
+      enum Access
+        Read
+        Write
+      end
+
+      getter resource : String
+
+      getter access : Access
+
+      def initialize(@resource, access : Access? = nil)
+        access = Access::All if access.nil?
+        @access = access
+      end
+
+      def initialize(json : JSON::PullParser)
+        scope = self.class.from_json(json)
+        @resource = scope.resource
+        @access = scope.access
+      end
+
+      def to_s(io : IO) : Nil
+        io << resource
+
+        # Full assumed without an access field
+        unless access == Access::All
+          io << '.'
+          access.to_s(io)
+        end
+      end
+
+      def self.from_json(json : JSON::PullParser)
+        scope = json.read_string
+        tokens = scope.split('.')
+        raise "Invalid scope structure: #{scope}" if tokens.empty? || tokens.size > 2
+
+        resource = tokens.first
+        access = tokens[1]?.try { |str| Access.parse(str) }
+        new(resource, access)
+      end
+
+      def to_json(builder : JSON::Builder)
+        builder.string to_s
+      end
     end
 
     struct Metadata
