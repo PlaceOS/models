@@ -65,11 +65,11 @@ module PlaceOS::Model
       @id
     end
 
-    def scope_public?
+    def public_scope?
       scope.includes?(PUBLIC)
     end
 
-    def scope_guest?
+    def guest_scope?
       scope.includes?(GUEST)
     end
 
