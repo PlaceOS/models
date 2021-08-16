@@ -92,7 +92,6 @@ module PlaceOS::Model
 
       def initialize(@resource, access : Access? = nil)
         access = Access::All if access.nil?
-        access = Access::None if @resource == "guest"
         @access = access
       end
 
