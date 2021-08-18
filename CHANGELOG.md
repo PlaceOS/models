@@ -5,6 +5,13 @@ All changes are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/).
 
+## [5.10.0](https://github.com/PlaceOS/models/compare/v5.9.1...v5.10.0)
+
+### Added
+
+- **settings_helper**
+  - Add `SettingsHelper#settings_hierarchy` ([7a7b6c12e3defd2ce9f8ce35d39785e85d0e5f2a](https://github.com/PlaceOS/models/commit/7a7b6c12e3defd2ce9f8ce35d39785e85d0e5f2a))
+
 ## [5.9.1](https://github.com/PlaceOS/models/compare/v5.9.0...v5.9.1)
 
 ### Fixed
