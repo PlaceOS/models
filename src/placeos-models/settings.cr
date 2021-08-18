@@ -91,12 +91,15 @@ module PlaceOS::Model
     # Retrieve the parent relation
     #
     def parent
-      [
-        self.control_system,
-        self.driver,
-        self.mod,
-        self.zone,
-      ].compact.first?
+      return nil unless p_id = parent_id
+
+      case ParentType.from_id?(p_id)
+      in Zone          then Zone.find(p_id)
+      in ControlSystem then ControlSystem.find(p_id)
+      in Driver        then Driver.find(p_id)
+      in Module        then Module.find(p_id)
+      in Nil           then nil
+      end
     end
 
     def parent=(parent : Union(Zone, ControlSystem, Driver, Module))
