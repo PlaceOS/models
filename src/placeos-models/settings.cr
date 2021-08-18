@@ -219,7 +219,7 @@ module PlaceOS::Model
         .reverse!
     end
 
-    # Query all settings under parent_id
+    # Query all settings under `parent_id`
     #
     def self.query(ids : String | Array(String))
       ids = ids.is_a?(Array) ? ids : [ids]

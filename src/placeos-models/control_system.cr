@@ -158,7 +158,7 @@ module PlaceOS::Model
     # Collect Settings ordered by hierarchy
     #
     # Control System < Zone/n < Zone/(n-1) < ... < Zone/0
-    def settings_hierarchy
+    def settings_hierarchy : Array(Settings)
       # Start with Control System Settings
       settings = master_settings
 
