@@ -147,12 +147,12 @@ module PlaceOS::Model
     # Queries
     ###########################################################################
 
+    def settings_hierarchy : Array(Settings)
+      master_settings
+    end
+
     def self.with_tag(tag : String)
-      Zone.raw_query do |q|
-        q
-          .table(PlaceOS::Model::Zone.table_name)
-          .filter &.["tags"].contains(tag)
-      end
+      Zone.collection_query &.filter(&.["tags"].contains(tag))
     end
 
     # TODO: Implement multiple element `contains` in crystal-rethinkdb

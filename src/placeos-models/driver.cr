@@ -70,6 +70,10 @@ module PlaceOS::Model
       Module.by_driver_id(self.id)
     end
 
+    def settings_hierarchy : Array(Settings)
+      master_settings
+    end
+
     # Callbacks
     ###############################################################################################
 

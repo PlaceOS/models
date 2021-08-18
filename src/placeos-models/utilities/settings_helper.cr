@@ -4,6 +4,8 @@ require "../settings"
 
 module PlaceOS::Model
   module SettingsHelper
+    abstract def settings_hierarchy : Array(Settings)
+
     # Attain the settings associated with the model
     #
     def settings_collection
@@ -43,7 +45,7 @@ module PlaceOS::Model
     # Query the master settings attached to a model
     #
     def master_settings : Array(Settings)
-      Settings.master_settings_query(self.id.as(String)) { |q| q }
+      Settings.master_settings_query(self.id.as(String), &.itself)
     end
   end
 end
