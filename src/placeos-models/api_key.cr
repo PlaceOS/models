@@ -13,10 +13,10 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
 
-    attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope.new("public")]
+    attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope.new("public")], es_type: "keyword"
 
     # when nil it defaults to the users permissions
-    attribute permissions : UserJWT::Permissions? = nil
+    attribute permissions : UserJWT::Permissions? = nil, es_type: "keyword"
 
     attribute secret : String = ->{ Random::Secure.urlsafe_base64(32) }, mass_assignment: false
 
