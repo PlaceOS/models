@@ -20,14 +20,14 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    name: "Test - crystal: ${{ matrix.crystal }}, stable: ${{ matrix.stable }}"
+    name: "crystal: ${{ matrix.crystal }}, stable: ${{ matrix.stable }}"
     continue-on-error: ${{ !matrix.stable }}
     strategy:
       matrix:
         stable: [true]
         crystal:
           - 1.1.0
-          - 1.0.0
+          - 1.1.1
         include:
           - crystal: nightly
             stable: false
