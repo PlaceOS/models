@@ -77,10 +77,14 @@ module PlaceOS::Model
     validate ->(this : Settings) do
       if this.settings_string_changed?
         unencrypted = Encryption.is_encrypted?(this.settings_string) ? this.decrypt : this.settings_string
-        begin
-          YAML.parse(unencrypted) rescue JSON.parse(unencrypted)
-        rescue
-          this.validation_error(:settings_string, "is invalid JSON/YAML")
+        if unencrypted.strip.empty?
+          settings_string = "{}"
+        else
+          begin
+            YAML.parse(unencrypted).as_h rescue JSON.parse(unencrypted)
+          rescue
+            this.validation_error(:settings_string, "is invalid JSON/YAML")
+          end
         end
       end
     end
@@ -324,6 +328,7 @@ module PlaceOS::Model
     end
 
     protected def self.parse_settings_string(settings_string : String)
+      settings_string = settings_string.chomp
       if settings_string.empty?
         {} of YAML::Any => YAML::Any
       else
