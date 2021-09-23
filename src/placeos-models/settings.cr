@@ -79,7 +79,7 @@ module PlaceOS::Model
         unencrypted = Encryption.is_encrypted?(this.settings_string) ? this.decrypt : this.settings_string
         unless unencrypted.strip.empty?
           begin
-            YAML.parse(unencrypted).as_h rescue JSON.parse(unencrypted)
+            Hash(String, YAML::Any).from_yaml(unencrypted)
           rescue
             this.validation_error(:settings_string, "is invalid JSON/YAML")
           end
@@ -326,7 +326,7 @@ module PlaceOS::Model
     end
 
     protected def self.parse_settings_string(settings_string : String)
-      settings_string = settings_string.chomp
+      settings_string = settings_string.strip
       if settings_string.empty?
         {} of YAML::Any => YAML::Any
       else
