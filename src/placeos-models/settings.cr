@@ -81,7 +81,7 @@ module PlaceOS::Model
           begin
             Hash(String, YAML::Any).from_yaml(unencrypted)
           rescue
-            this.validation_error(:settings_string, "is invalid JSON/YAML")
+            this.validation_error(:settings_string, "is not a valid JSON or YAML object")
           end
         end
       end
