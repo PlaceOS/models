@@ -28,7 +28,7 @@ module PlaceOS::Model
       settings = Generator.settings(settings_string: "['apple','orange']")
       settings.save
       settings.valid?.should be_false
-      settings.errors.first.to_s.should eq "settings_string is invalid JSON/YAML"
+      settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object"
     end
 
     it "accepts a valid settings_string" do
@@ -52,7 +52,7 @@ module PlaceOS::Model
         settings.parent_type = :zone
         settings.settings_string = "{"
         settings.valid?.should be_false
-        settings.errors.first.to_s.should eq "settings_string is invalid JSON/YAML"
+        settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object"
       end
 
       it "rejects ill-formed YAML" do
@@ -60,7 +60,7 @@ module PlaceOS::Model
         settings.parent_type = :zone
         settings.settings_string = "hello:\n1"
         settings.valid?.should be_false
-        settings.errors.first.to_s.should eq "settings_string is invalid JSON/YAML"
+        settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object"
       end
     end
 
