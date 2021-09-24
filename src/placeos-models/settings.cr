@@ -126,7 +126,7 @@ module PlaceOS::Model
 
     # Parse `parent_id` and set the `parent_type` of the `Settings`
     #
-    def parse_parent_type
+    protected def parse_parent_type
       if (type = ParentType.from_id?(parent_id))
         self.parent_type = type
       else
@@ -138,14 +138,14 @@ module PlaceOS::Model
 
     # Generate keys for settings object
     #
-    def build_keys : Array(String)
+    protected def build_keys : Array(String)
       unencrypted = Encryption.is_encrypted?(settings_string) ? decrypt : settings_string
       self.keys = YAML.parse(unencrypted).as_h?.try(&.keys.map(&.to_s)) || [] of String
     end
 
     # Generate a version upon save of a master Settings
     #
-    def create_version
+    protected def create_version
       return if is_version?
 
       old_settings = encrypt(settings_string)
