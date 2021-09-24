@@ -27,7 +27,6 @@ module PlaceOS::Model
 
     attribute username : String?
     attribute password : String?
-    attribute key : String?
 
     enum Type
       Driver
@@ -83,7 +82,6 @@ module PlaceOS::Model
     def encrypt!
       self.username = username.presence
 
-      self.key = encrypt_key
       self.password = encrypt_password
       self
     end
@@ -91,7 +89,7 @@ module PlaceOS::Model
     # Encryption
     ###############################################################################################
 
-    {% for field in {:key, :password} %}
+    {% for field in {:password} %}
       {% for action in {:encrypt, :decrypt} %}
         # {{ action }} the `{{ field }}` attribute, using `PlaceOS::Encryption`
         def {{ action.id }}_{{ field.id }}
