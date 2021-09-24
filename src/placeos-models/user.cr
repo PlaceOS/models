@@ -120,7 +120,6 @@ module PlaceOS::Model
     before_destroy :ensure_admin_remains
     before_destroy :cleanup_auth_tokens
     before_save :build_name
-    # before_save :create_email_digest
     before_save :write_email_fields
 
     private getter admin_destroy_lock : RethinkORM::Lock do
