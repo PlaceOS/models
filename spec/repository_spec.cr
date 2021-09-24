@@ -46,15 +46,13 @@ module PlaceOS::Model
         repository = Generator.repository
         repository.password = ""
         repository.username = ""
-        repository.key = ""
         repository.id = mock_id
         repository.run_save_callbacks { true }
         repository.password.nil?.should be_true
         repository.username.nil?.should be_true
-        repository.key.nil?.should be_true
       end
 
-      {% for field in {:key, :password} %}
+      {% for field in {:password} %}
         it "#encrypt_{{ field.id }}" do
           repository = Generator.repository
           repository.{{ field.id }} = expected_unencrypted
