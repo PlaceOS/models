@@ -17,7 +17,6 @@ module PlaceOS::Model
       delegate to_json, to: address
 
       def initialize(address : String)
-        raise InvalidEmail.new("#{address} is an invalid email") unless address.is_email?
         @address = address
       end
 
@@ -107,6 +106,10 @@ module PlaceOS::Model
 
     validates :authority_id, presence: true
     validates :email, presence: true
+
+    validate ->(this : User) {
+      this.validation_error(:email, "is an invalid email") unless this.email.to_s.is_email?
+    }
 
     # Ensure email is unique under the authority scope
     #
