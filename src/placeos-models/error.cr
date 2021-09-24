@@ -12,6 +12,9 @@ module PlaceOS::Model
   class NoScope < Error
   end
 
+  class InvalidEmail < Error
+  end
+
   class MalformedFilter < Error
     def initialize(filters : Array(String)?)
       super("One or more invalid regexes: #{filters}")

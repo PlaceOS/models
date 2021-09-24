@@ -225,7 +225,7 @@ module PlaceOS::Model
 
       User.new(
         name: Faker::Name.name,
-        email: Random.rand(9999).to_s + Faker::Internet.email,
+        email: User::Email.new(Random.rand(9999).to_s + Faker::Internet.email),
         authority_id: authority.id,
         sys_admin: admin,
         support: support,

@@ -12,11 +12,38 @@ module PlaceOS::Model
   class User < ModelBase
     include RethinkORM::Timestamps
 
+    struct Email
+      getter address : String
+      delegate to_json, to: address
+
+      def initialize(address : String)
+        raise InvalidEmail.new("#{address} is an invalid email") unless address.is_email?
+        @address = address
+      end
+
+      def initialize(json : JSON::PullParser)
+        email = self.class.from_json(json)
+        @address = email.address
+      end
+
+      def self.from_json(pull)
+        new pull.read_string
+      end
+
+      def to_s
+        @address
+      end
+
+      def digest
+        Digest::MD5.hexdigest(@address.strip.downcase)
+      end
+    end
+
     table :user
 
     attribute name : String, es_subfield: "keyword"
     attribute nickname : String = ""
-    attribute email : String = ""
+    attribute email : Email
     attribute phone : String = ""
     attribute country : String = ""
     attribute image : String = ""
@@ -81,10 +108,6 @@ module PlaceOS::Model
     validates :authority_id, presence: true
     validates :email, presence: true
 
-    validate ->(this : User) {
-      this.validation_error(:email, "is an invalid email") unless this.email.is_email?
-    }
-
     # Ensure email is unique under the authority scope
     #
     ensure_unique :email_digest, scope: [:authority_id, :email_digest] do |authority_id, email_digest|
@@ -97,7 +120,8 @@ module PlaceOS::Model
     before_destroy :ensure_admin_remains
     before_destroy :cleanup_auth_tokens
     before_save :build_name
-    before_save :create_email_digest
+    # before_save :create_email_digest
+    before_save :write_email_fields
 
     private getter admin_destroy_lock : RethinkORM::Lock do
       RethinkORM::Lock.new("admin_destroy_lock")
@@ -149,9 +173,8 @@ module PlaceOS::Model
     end
 
     # Sets email_digest to allow user look up without leaking emails
-    #
-    protected def create_email_digest
-      self.email_digest = self.class.weak_digest(self.email)
+    protected def write_email_fields
+      self.email_digest = email.digest
     end
 
     def self.weak_digest(string)

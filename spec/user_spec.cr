@@ -12,8 +12,7 @@ module PlaceOS::Model
 
       it "sets email digest on save" do
         user = Generator.user
-        expected_digest = Digest::MD5.hexdigest(user.email)
-
+        expected_digest = Digest::MD5.hexdigest(user.email.to_s.strip.downcase)
         user.email_digest.should be_nil
         user.save!
 
@@ -81,10 +80,10 @@ module PlaceOS::Model
       end
 
       it "ensure presence of user's email" do
-        user = Generator.user
-        user.email = ""
-        user.valid?.should be_false
-        user.errors.first.field.should eq :email
+        expect_raises(InvalidEmail) do
+          user = Generator.user
+          user.email = User::Email.new("")
+        end
       end
     end
 
@@ -187,8 +186,8 @@ module PlaceOS::Model
 
         # The query is case insensitive
         emails = expected_users.map_with_index do |user, index|
-          email = user.email
-          index.even? ? email.upcase : email
+          email = user.email.to_s
+          index.even? ? email.to_s.upcase : email
         end
 
         found = User.find_by_emails(authority.id.as(String), emails)
@@ -202,11 +201,11 @@ module PlaceOS::Model
         authority = existing || Generator.authority.save!
         expected_user = Generator.user(authority).save!
 
-        found = User.find_by_email(authority.id.as(String), expected_user.email)
+        found = User.find_by_email(authority.id.as(String), expected_user.email.to_s)
         found.try(&.id).should eq expected_user.id
 
         # Query should be case-insensitve
-        found = User.find_by_email(authority.id.as(String), expected_user.email.upcase)
+        found = User.find_by_email(authority.id.as(String), expected_user.email.to_s.upcase)
         found.try(&.id).should eq expected_user.id
       end
     end

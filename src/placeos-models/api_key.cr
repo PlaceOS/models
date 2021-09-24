@@ -113,7 +113,7 @@ module PlaceOS::Model
         id: ident.id.not_nil!,
         user: UserJWT::Metadata.new(
           name: ident.name.not_nil!,
-          email: ident.email.not_nil!,
+          email: ident.email.to_json.not_nil!,
           permissions: self.permissions || ident.to_jwt_permission,
           roles: ident.groups.not_nil!
         ),
