@@ -5,8 +5,7 @@ module PlaceOS::Model
     getter address : String
     forward_missing_to address
 
-    def initialize(address : String)
-      @address = address
+    def initialize(@address : String)
     end
 
     def initialize(json : JSON::PullParser)
@@ -19,6 +18,10 @@ module PlaceOS::Model
     end
 
     def to_s
+      @address
+    end
+
+    def to_s(io)
       @address
     end
 
