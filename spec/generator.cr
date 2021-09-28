@@ -319,7 +319,7 @@ module PlaceOS::Model
 
       meta = UserJWT::Metadata.new(
         name: user.name,
-        email: user.email,
+        email: user.email.to_s,
         permissions: permissions
       )
 

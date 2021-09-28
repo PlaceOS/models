@@ -167,14 +167,15 @@ module PlaceOS::Model
 
     secondary_index :email_digest
 
-    def self.find_by_email(authority_id : String, email : String)
+    def self.find_by_email(authority_id : String, email : PlaceOS::Model::Email)
       find_by_emails(authority_id, [email]).first?
     end
 
-    def self.find_by_emails(authority_id : String, emails : Enumerable(String))
+    def self.find_by_emails(authority_id : String, emails : Array(PlaceOS::Model::Email))
       return [] of self if emails.empty?
 
-      digests = emails.map &->weak_digest(String)
+      digests = emails.map { |email| weak_digest(email.to_s) }
+
       User.collection_query do |table|
         table
           .get_all(digests, index: :email_digest)

@@ -186,8 +186,7 @@ module PlaceOS::Model
 
         # The query is case insensitive
         emails = expected_users.map_with_index do |user, index|
-          email = user.email.to_s
-          index.even? ? email.to_s.upcase : email
+          email = user.email
         end
 
         found = User.find_by_emails(authority.id.as(String), emails)
@@ -201,11 +200,7 @@ module PlaceOS::Model
         authority = existing || Generator.authority.save!
         expected_user = Generator.user(authority).save!
 
-        found = User.find_by_email(authority.id.as(String), expected_user.email.to_s)
-        found.try(&.id).should eq expected_user.id
-
-        # Query should be case-insensitve
-        found = User.find_by_email(authority.id.as(String), expected_user.email.to_s.upcase)
+        found = User.find_by_email(authority.id.as(String), expected_user.email)
         found.try(&.id).should eq expected_user.id
       end
     end
