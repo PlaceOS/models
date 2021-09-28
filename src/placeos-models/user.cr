@@ -168,14 +168,9 @@ module PlaceOS::Model
       find_by_emails(authority_id, [email]).first?
     end
 
-    def self.find_by_emails(authority_id : String, emails : Enumerable(String))
+    def self.find_by_emails(authority_id : String, emails : Enumerable(String) | Enumerable(Email))
       return [] of self if emails.empty?
-      parsed_emails = emails.map &->PlaceOS::Model::Email.new(String)
-      self.find_by_emails(parsed_emails)
-    end
-
-    def self.find_by_emails(authority_id : String, emails : Array(PlaceOS::Model::Email))
-      return [] of self if emails.empty?
+      emails = emails.map &->PlaceOS::Model::Email.new(String) if emails.is_a? Enumerable(String)
       digests = emails.map &.digest
 
       User.collection_query do |table|

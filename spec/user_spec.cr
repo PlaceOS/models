@@ -184,9 +184,7 @@ module PlaceOS::Model
         not_expected.email = expected_users.first.email
         not_expected.save!
 
-        emails = expected_users.map_with_index do |user, _|
-          email = user.email
-        end
+        emails = expected_users.map &.email
 
         found = User.find_by_emails(authority.id.as(String), emails)
         found_ids = found.compact_map(&.id).to_a.sort!
