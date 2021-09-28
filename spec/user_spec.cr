@@ -81,7 +81,7 @@ module PlaceOS::Model
 
       it "ensure presence of user's email" do
         user = Generator.user
-        user.email = User::Email.new("")
+        user.email = Email.new("")
         user.valid?.should be_false
         user.errors.first.field.should eq :email
       end

@@ -7,36 +7,11 @@ require "rethinkdb-orm/lock"
 require "./authority"
 require "./base/model"
 require "./api_key"
+require "./email"
 
 module PlaceOS::Model
   class User < ModelBase
     include RethinkORM::Timestamps
-
-    struct Email
-      getter address : String
-      delegate to_json, to: address
-
-      def initialize(address : String)
-        @address = address
-      end
-
-      def initialize(json : JSON::PullParser)
-        email = self.class.from_json(json)
-        @address = email.address
-      end
-
-      def self.from_json(pull)
-        new pull.read_string
-      end
-
-      def to_s
-        @address
-      end
-
-      def digest
-        Digest::MD5.hexdigest(@address.strip.downcase)
-      end
-    end
 
     table :user
 
