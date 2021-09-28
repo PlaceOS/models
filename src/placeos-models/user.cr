@@ -154,10 +154,6 @@ module PlaceOS::Model
       self.email_digest = email.digest
     end
 
-    def self.weak_digest(string)
-      Digest::MD5.hexdigest(string.strip.downcase)
-    end
-
     # Queries
     ###############################################################################################
 
@@ -174,7 +170,7 @@ module PlaceOS::Model
     def self.find_by_emails(authority_id : String, emails : Array(PlaceOS::Model::Email))
       return [] of self if emails.empty?
 
-      digests = emails.map { |email| weak_digest(email.to_s) }
+      digests = emails.map &.digest
 
       User.collection_query do |table|
         table
