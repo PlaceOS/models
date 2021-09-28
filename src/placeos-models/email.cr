@@ -22,7 +22,7 @@ module PlaceOS::Model
     end
 
     def to_s(io)
-      @address
+      io = @address
     end
 
     def digest
