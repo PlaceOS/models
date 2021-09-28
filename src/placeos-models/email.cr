@@ -5,20 +5,16 @@ module PlaceOS::Model
     getter address : String
     forward_missing_to address
 
-    def initialize(@address : String)
+    def initialize(address : String)
+      @address = address.strip
     end
 
     def initialize(json : JSON::PullParser)
-      email = self.class.from_json(json)
-      @address = email.address
+      @address = json.read_string.strip
     end
 
     def self.from_json(pull)
-      new pull.read_string
-    end
-
-    def to_s
-      @address
+      new pull
     end
 
     def to_s(io)

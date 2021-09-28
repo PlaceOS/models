@@ -163,13 +163,19 @@ module PlaceOS::Model
 
     secondary_index :email_digest
 
-    def self.find_by_email(authority_id : String, email : PlaceOS::Model::Email)
+    def self.find_by_email(authority_id : String, email : PlaceOS::Model::Email | String)
+      email = Email.new(email) if email.is_a?(String)
       find_by_emails(authority_id, [email]).first?
+    end
+
+    def self.find_by_emails(authority_id : String, emails : Enumerable(String))
+      return [] of self if emails.empty?
+      parsed_emails = emails.map &->PlaceOS::Model::Email.new(String)
+      self.find_by_emails(parsed_emails)
     end
 
     def self.find_by_emails(authority_id : String, emails : Array(PlaceOS::Model::Email))
       return [] of self if emails.empty?
-
       digests = emails.map &.digest
 
       User.collection_query do |table|

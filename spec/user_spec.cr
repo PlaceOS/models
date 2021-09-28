@@ -184,8 +184,7 @@ module PlaceOS::Model
         not_expected.email = expected_users.first.email
         not_expected.save!
 
-        # The query is case insensitive
-        emails = expected_users.map_with_index do |user, index|
+        emails = expected_users.map_with_index do |user, _|
           email = user.email
         end
 
