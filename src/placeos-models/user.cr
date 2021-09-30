@@ -17,7 +17,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute nickname : String = ""
-    attribute email : Email
+    attribute email : Email = Email.new("")
     attribute phone : String = ""
     attribute country : String = ""
     attribute image : String = ""
@@ -83,7 +83,7 @@ module PlaceOS::Model
     validates :email, presence: true
 
     validate ->(this : User) {
-      this.validation_error(:email, "is an invalid email") unless this.email.to_s.is_email?
+      this.validation_error(:email, "is an invalid email") unless this.email.valid?
     }
 
     # Ensure email is unique under the authority scope
@@ -170,8 +170,10 @@ module PlaceOS::Model
 
     def self.find_by_emails(authority_id : String, emails : Enumerable(String) | Enumerable(Email))
       return [] of self if emails.empty?
-      emails = emails.map &->PlaceOS::Model::Email.new(String) if emails.is_a? Enumerable(String)
-      digests = emails.map &.digest
+      digests = emails.map do |email|
+        email = PlaceOS::Model::Email.new(email) if email.is_a?(String)
+        email.digest
+      end
 
       User.collection_query do |table|
         table

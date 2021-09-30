@@ -21,6 +21,10 @@ module PlaceOS::Model
       io << @address
     end
 
+    def valid?
+      address.is_email?
+    end
+
     def digest
       Digest::MD5.hexdigest(@address.strip.downcase)
     end
