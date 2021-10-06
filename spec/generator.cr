@@ -200,6 +200,8 @@ module PlaceOS::Model
         }.sample.call
       end
 
+      settings.parse_parent_type
+
       settings
     end
 

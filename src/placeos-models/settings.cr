@@ -77,10 +77,12 @@ module PlaceOS::Model
     validate ->(this : Settings) do
       if this.settings_string_changed?
         unencrypted = Encryption.is_encrypted?(this.settings_string) ? this.decrypt : this.settings_string
-        begin
-          YAML.parse(unencrypted) rescue JSON.parse(unencrypted)
-        rescue
-          this.validation_error(:settings_string, "is invalid JSON/YAML")
+        unless unencrypted.strip.empty?
+          begin
+            Hash(String, YAML::Any).from_yaml(unencrypted)
+          rescue
+            this.validation_error(:settings_string, "is not a valid JSON or YAML object")
+          end
         end
       end
     end
@@ -124,7 +126,7 @@ module PlaceOS::Model
 
     # Parse `parent_id` and set the `parent_type` of the `Settings`
     #
-    def parse_parent_type
+    protected def parse_parent_type
       if (type = ParentType.from_id?(parent_id))
         self.parent_type = type
       else
@@ -136,14 +138,14 @@ module PlaceOS::Model
 
     # Generate keys for settings object
     #
-    def build_keys : Array(String)
+    protected def build_keys : Array(String)
       unencrypted = Encryption.is_encrypted?(settings_string) ? decrypt : settings_string
       self.keys = YAML.parse(unencrypted).as_h?.try(&.keys.map(&.to_s)) || [] of String
     end
 
     # Generate a version upon save of a master Settings
     #
-    def create_version
+    protected def create_version
       return if is_version?
 
       old_settings = encrypt(settings_string)
@@ -324,6 +326,7 @@ module PlaceOS::Model
     end
 
     protected def self.parse_settings_string(settings_string : String)
+      settings_string = settings_string.strip
       if settings_string.empty?
         {} of YAML::Any => YAML::Any
       else
