@@ -7,6 +7,7 @@ require "rethinkdb-orm/lock"
 require "./authority"
 require "./base/model"
 require "./api_key"
+require "./email"
 
 module PlaceOS::Model
   class User < ModelBase
@@ -16,7 +17,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute nickname : String = ""
-    attribute email : String = ""
+    attribute email : Email = Email.new("")
     attribute phone : String = ""
     attribute country : String = ""
     attribute image : String = ""
@@ -82,7 +83,7 @@ module PlaceOS::Model
     validates :email, presence: true
 
     validate ->(this : User) {
-      this.validation_error(:email, "is an invalid email") unless this.email.is_email?
+      this.validation_error(:email, "is an invalid email") unless this.email.valid?
     }
 
     # Ensure email is unique under the authority scope
@@ -97,7 +98,7 @@ module PlaceOS::Model
     before_destroy :ensure_admin_remains
     before_destroy :cleanup_auth_tokens
     before_save :build_name
-    before_save :create_email_digest
+    before_save :write_email_fields
 
     private getter admin_destroy_lock : RethinkORM::Lock do
       RethinkORM::Lock.new("admin_destroy_lock")
@@ -149,13 +150,8 @@ module PlaceOS::Model
     end
 
     # Sets email_digest to allow user look up without leaking emails
-    #
-    protected def create_email_digest
-      self.email_digest = self.class.weak_digest(self.email)
-    end
-
-    def self.weak_digest(string)
-      Digest::MD5.hexdigest(string.strip.downcase)
+    protected def write_email_fields
+      self.email_digest = email.digest
     end
 
     # Queries
@@ -167,14 +163,18 @@ module PlaceOS::Model
 
     secondary_index :email_digest
 
-    def self.find_by_email(authority_id : String, email : String)
+    def self.find_by_email(authority_id : String, email : PlaceOS::Model::Email | String)
+      email = Email.new(email) if email.is_a?(String)
       find_by_emails(authority_id, [email]).first?
     end
 
-    def self.find_by_emails(authority_id : String, emails : Enumerable(String))
+    def self.find_by_emails(authority_id : String, emails : Enumerable(String) | Enumerable(Email))
       return [] of self if emails.empty?
+      digests = emails.map do |email|
+        email = PlaceOS::Model::Email.new(email) if email.is_a?(String)
+        email.digest
+      end
 
-      digests = emails.map &->weak_digest(String)
       User.collection_query do |table|
         table
           .get_all(digests, index: :email_digest)

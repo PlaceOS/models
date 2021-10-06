@@ -67,7 +67,7 @@ module PlaceOS::Model
       jwt.public_scope?.should be_true
       user = key.user.not_nil!
       jwt.user.name.should eq(user.name)
-      jwt.user.email.should eq(user.email)
+      jwt.user.email.should contain(user.email.to_s)
       jwt.user.roles.should eq(user.groups)
       jwt.user.permissions.should eq(UserJWT::Permissions::User)
 

@@ -227,7 +227,7 @@ module PlaceOS::Model
 
       User.new(
         name: Faker::Name.name,
-        email: Random.rand(9999).to_s + Faker::Internet.email,
+        email: Email.new(Random.rand(9999).to_s + Faker::Internet.email),
         authority_id: authority.id,
         sys_admin: admin,
         support: support,
@@ -321,7 +321,7 @@ module PlaceOS::Model
 
       meta = UserJWT::Metadata.new(
         name: user.name,
-        email: user.email,
+        email: user.email.to_s,
         permissions: permissions
       )
 

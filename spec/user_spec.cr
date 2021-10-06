@@ -12,8 +12,7 @@ module PlaceOS::Model
 
       it "sets email digest on save" do
         user = Generator.user
-        expected_digest = Digest::MD5.hexdigest(user.email)
-
+        expected_digest = Digest::MD5.hexdigest(user.email.to_s.strip.downcase)
         user.email_digest.should be_nil
         user.save!
 
@@ -82,7 +81,7 @@ module PlaceOS::Model
 
       it "ensure presence of user's email" do
         user = Generator.user
-        user.email = ""
+        user.email = Email.new("")
         user.valid?.should be_false
         user.errors.first.field.should eq :email
       end
@@ -185,11 +184,7 @@ module PlaceOS::Model
         not_expected.email = expected_users.first.email
         not_expected.save!
 
-        # The query is case insensitive
-        emails = expected_users.map_with_index do |user, index|
-          email = user.email
-          index.even? ? email.upcase : email
-        end
+        emails = expected_users.map &.email
 
         found = User.find_by_emails(authority.id.as(String), emails)
         found_ids = found.compact_map(&.id).to_a.sort!
@@ -203,10 +198,6 @@ module PlaceOS::Model
         expected_user = Generator.user(authority).save!
 
         found = User.find_by_email(authority.id.as(String), expected_user.email)
-        found.try(&.id).should eq expected_user.id
-
-        # Query should be case-insensitve
-        found = User.find_by_email(authority.id.as(String), expected_user.email.upcase)
         found.try(&.id).should eq expected_user.id
       end
     end
