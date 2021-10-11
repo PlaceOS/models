@@ -154,11 +154,11 @@ module PlaceOS::Model
 
       case parent
       in ControlSystem
-        meta.control_system = control_system
+        meta.control_system = parent
       in String
         meta.parent_id = parent
       in Zone
-        meta.zone = zone
+        meta.zone = parent
       in Nil
         # Generate a single parent for the metadata model
         {
