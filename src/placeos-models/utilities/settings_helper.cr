@@ -37,6 +37,7 @@ module PlaceOS::Model
         rescue error
           Log.warn(exception: error) { "failed to merge all settings: #{settings.inspect}" }
         end
+        acc
       end
     end
 

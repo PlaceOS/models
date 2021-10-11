@@ -224,6 +224,7 @@ module PlaceOS::Model
         rescue error
           Log.warn(exception: error) { "failed to merge settings: #{setting.inspect}" }
         end
+        merged
       end.to_json
     end
 
