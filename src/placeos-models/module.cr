@@ -219,7 +219,12 @@ module PlaceOS::Model
     def merge_settings
       # Merge all settings, serialise to JSON
       settings_hierarchy.reverse!.reduce({} of YAML::Any => YAML::Any) do |merged, setting|
-        merged.merge!(setting.any)
+        begin
+          merged.merge!(setting.any)
+        rescue error
+          Log.warn(exception: error) { "failed to merge settings: #{setting.inspect}" }
+        end
+        merged
       end.to_json
     end
 

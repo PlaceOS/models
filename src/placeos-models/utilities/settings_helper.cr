@@ -32,7 +32,12 @@ module PlaceOS::Model
     def all_settings : Hash(YAML::Any, YAML::Any)
       master_settings.reduce({} of YAML::Any => YAML::Any) do |acc, settings|
         # Parse and merge into accumulated settings hash
-        acc.merge!(settings.any)
+        begin
+          acc.merge!(settings.any)
+        rescue error
+          Log.warn(exception: error) { "failed to merge all settings: #{settings.inspect}" }
+        end
+        acc
       end
     end
 

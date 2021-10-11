@@ -167,7 +167,12 @@ module PlaceOS::Model
       # Merge by highest associated zone
       self.zones.reverse_each do |zone_id|
         next if (zone = zone_models.find &.id.==(zone_id)).nil?
-        settings.concat(zone.master_settings)
+
+        begin
+          settings.concat(zone.master_settings)
+        rescue error
+          Log.warn(exception: error) { "failed to merge zone #{zone_id} settings" }
+        end
       end
 
       settings.compact
