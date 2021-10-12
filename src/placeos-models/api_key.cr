@@ -135,12 +135,13 @@ module PlaceOS::Model
       end
 
       user_id = user.id.as(String)
+      saas_scope = UserJWT::Scope::SAAS.to_s
 
-      unless key = Model::ApiKey.where(authority_id: authority_id, user_id: user_id, scopes: ["portal"])
+      unless key = Model::ApiKey.where(authority_id: authority_id, user_id: user_id, scopes: [saas_scope])
         key = Model::ApiKey.new(
           name: "Portal SaaS Key",
           description: "Key for PortalAPI to manage SaaS instances",
-          scopes: [UserJWT::Scope::SAAS.to_s],
+          scopes: [saas_scope],
         )
 
         key.user = user
