@@ -119,5 +119,36 @@ module PlaceOS::Model
         ),
       )
     end
+
+    def self.saas_api_key(instance_domain, instance_email)
+      unless authority = Model::Authority.find_by_domain(instance_domain)
+        Log.info { "authority does not exist for #{instance_domain}" }
+        return
+      end
+
+      authority_id = authority.id.as(String)
+
+      # Fetch token for instance user
+      unless user = Model::User.find_by_email(authority_id, instance_email)
+        Log.info { "instance user does not exist for #{instance_email}" }
+        return
+      end
+
+      user_id = user.id.as(String)
+
+      unless key = Model::ApiKey.where(authority_id: authority_id, user_id: user_id, scopes: ["portal"])
+        key = Model::ApiKey.new(
+          name: "Portal SaaS Key",
+          description: "Key for PortalAPI to manage SaaS instances",
+          scopes: [UserJWT::Scope::SAAS.to_s],
+        )
+
+        key.user = user
+        key.authority = authority
+        key.save!
+      end
+
+      key
+    end
   end
 end

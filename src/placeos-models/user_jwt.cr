@@ -5,6 +5,7 @@ module PlaceOS::Model
   struct UserJWT < JWTBase
     PUBLIC = Scope.new("public")
     GUEST  = Scope.new("guest")
+    SAAS   = Scope.new("portal-saas")
 
     getter iss : String
 
