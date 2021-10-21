@@ -192,12 +192,11 @@ module PlaceOS::Model
     end
 
     def self.find_by_login_name(authority_id : String, login_name : String)
-      collect = User.collection_query do |table|
+      User.collection_query do |table|
         table
           .get_all(login_name, index: :login_name)
           .filter({authority_id: authority_id})
-      end
-      collect.first?
+      end.first?
     end
 
     secondary_index :staff_id
@@ -207,12 +206,11 @@ module PlaceOS::Model
     end
 
     def self.find_by_staff_id(authority_id : String, staff_id : String)
-      collect = User.collection_query do |table|
+      User.collection_query do |table|
         table
           .get_all(staff_id, index: :staff_id)
           .filter({authority_id: authority_id})
-      end
-      collect.first?
+      end.first?
     end
 
     secondary_index :sys_admin
