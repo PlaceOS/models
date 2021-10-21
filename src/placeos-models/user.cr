@@ -92,6 +92,9 @@ module PlaceOS::Model
       {authority_id, email_digest}
     end
 
+    ensure_unique :login_name
+    ensure_unique :staff_id
+
     # Callbacks
     ###############################################################################################
 
@@ -188,10 +191,20 @@ module PlaceOS::Model
       User.find_all([login_name], index: :login_name).first?
     end
 
+    def self.find_by_login_name(authority_id : String, login_name : String)
+      users = User.find_all([login_name], index: :login_name)
+      users.each { |user| return user if user.authority_id == authority_id }
+    end
+
     secondary_index :staff_id
 
     def self.find_by_staff_id(staff_id : String)
       User.find_all([staff_id], index: :staff_id).first?
+    end
+
+    def self.find_by_staff_id(authority_id : String, staff_id : String)
+      users = User.find_all([staff_id], index: :staff_id)
+      users.each { |user| return user if user.authority_id == authority_id }
     end
 
     secondary_index :sys_admin
