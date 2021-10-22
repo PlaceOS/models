@@ -200,6 +200,28 @@ module PlaceOS::Model
         found = User.find_by_email(authority.id.as(String), expected_user.email)
         found.try(&.id).should eq expected_user.id
       end
+
+      it "#find_by_login_name" do
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || Generator.authority.save!
+        expected_user = Generator.user(authority).save!
+        expected_user.login_name = Faker::Hacker.noun
+        expected_user.save!
+
+        found = User.find_by_login_name(authority.id.as(String), expected_user.login_name.not_nil!)
+        found.try(&.id).should eq expected_user.id
+      end
+
+      it "#find_by_staff_id" do
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || Generator.authority.save!
+        expected_user = Generator.user(authority).save!
+        expected_user.staff_id = Faker::Hacker.noun
+        expected_user.save!
+
+        found = User.find_by_staff_id(authority.id.as(String), expected_user.staff_id.not_nil!)
+        found.try(&.id).should eq expected_user.id
+      end
     end
   end
 end
