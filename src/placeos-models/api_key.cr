@@ -13,7 +13,7 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
 
-    attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope.new("public")], es_type: "keyword"
+    attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope::PUBLIC], es_type: "keyword"
 
     # when nil it defaults to the users permissions
     attribute permissions : UserJWT::Permissions? = nil, es_type: "keyword"
@@ -79,11 +79,10 @@ module PlaceOS::Model
     # Token Methods
     ###############################################################################################
 
-    def x_api_key
-      xkey = @x_api_key
-      return xkey if xkey
+    @[JSON::Field(ignore: true)]
+    getter x_api_key : String? do
       return nil if self.persisted?
-      @x_api_key = "#{self.safe_id}.#{self.secret}"
+      "#{self.safe_id}.#{self.secret}"
     end
 
     def self.find_key!(token : String)
@@ -99,13 +98,11 @@ module PlaceOS::Model
       model
     end
 
-    ISSUER = "POS"
-
     def build_jwt
       ident = self.user.not_nil!
 
       UserJWT.new(
-        iss: ISSUER,
+        iss: UserJWT::ISSUER,
         iat: 5.minutes.ago,
         exp: 1.hour.from_now,
         domain: self.authority.not_nil!.domain,
@@ -120,36 +117,39 @@ module PlaceOS::Model
       )
     end
 
-    def self.saas_api_key(instance_domain, instance_email)
+    # Builds an API token for a SaaS instance.
+    # Used to delegate control of the instance by the PortalAPI.
+    def self.saas_api_key(instance_domain, instance_email) : String
       unless authority = Model::Authority.find_by_domain(instance_domain)
-        Log.info { "authority does not exist for #{instance_domain}" }
-        return
+        raise SaasKeyError.new("authority does not exist for #{instance_domain}")
       end
 
       authority_id = authority.id.as(String)
 
       # Fetch token for instance user
       unless user = Model::User.find_by_email(authority_id, instance_email)
-        Log.info { "instance user does not exist for #{instance_email}" }
-        return
+        raise SaasKeyError.new("instance user does not exist for #{instance_email}")
       end
 
       user_id = user.id.as(String)
       saas_scope = UserJWT::Scope::SAAS.to_s
 
-      unless key = Model::ApiKey.where(authority_id: authority_id, user_id: user_id, scopes: [saas_scope])
+      if Model::ApiKey.where(authority_id: authority_id, user_id: user_id, scopes: [saas_scope]).empty?
         key = Model::ApiKey.new(
           name: "Portal SaaS Key",
           description: "Key for PortalAPI to manage SaaS instances",
-          scopes: [saas_scope],
+          scopes: [UserJWT::Scope::SAAS],
         )
 
         key.user = user
         key.authority = authority
+        token = key.x_api_key.as(String)
         key.save!
+        Log.info { "created API key" }
+        token
+      else
+        raise SaasKeyError.new("key already exists for #{instance_email} on #{instance_domain}")
       end
-
-      key
     end
   end
 end

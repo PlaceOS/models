@@ -3,9 +3,7 @@ require "./base/jwt"
 module PlaceOS::Model
   # TODO: Migrate to human-readable attributes
   struct UserJWT < JWTBase
-    PUBLIC = Scope.new("public")
-    GUEST  = Scope.new("guest")
-    SAAS   = Scope.new("portal-saas")
+    ISSUER = "POS"
 
     getter iss : String
 
@@ -14,8 +12,6 @@ module PlaceOS::Model
 
     @[JSON::Field(converter: Time::EpochConverter)]
     getter exp : Time
-
-    # getter jti : String
 
     @[JSON::Field(key: "aud")]
     # The authority's domain
@@ -49,11 +45,11 @@ module PlaceOS::Model
     end
 
     @[Deprecated("Use `domain` instead of `aud`, and `id` instead of `sub`.")]
-    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = [PUBLIC])
+    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = [Scope::PUBLIC])
       new(@iss, @iat, @exp, aud, sub, @user, @scope)
     end
 
-    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = [PUBLIC])
+    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = [Scope::PUBLIC])
     end
 
     @[Deprecated("Use #domain instead.")]
@@ -67,11 +63,11 @@ module PlaceOS::Model
     end
 
     def public_scope?
-      scope.includes?(PUBLIC)
+      scope.includes?(Scope::PUBLIC)
     end
 
     def guest_scope?
-      scope.includes?(GUEST)
+      scope.includes?(Scope::GUEST)
     end
 
     def get_access(scope_name : String) : Scope::Access
@@ -86,6 +82,10 @@ module PlaceOS::Model
     end
 
     struct Scope
+      PUBLIC = new("public")
+      GUEST  = new("guest")
+      SAAS   = new("portal-saas")
+
       @[Flags]
       enum Access
         Read
