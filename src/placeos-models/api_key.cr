@@ -145,7 +145,11 @@ module PlaceOS::Model
         key.authority = authority
         token = key.x_api_key.as(String)
         key.save!
-        Log.info { "created API key" }
+        Log.info { {
+          message:         "created SaaS API key",
+          instance_domain: instance_domain,
+          instance_email:  instance_email,
+        } }
         token
       else
         raise SaasKeyError.new("key already exists for #{instance_email} on #{instance_domain}")
