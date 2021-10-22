@@ -50,7 +50,7 @@ jobs:
         run: crystal spec --error-trace -v --order=random --no-color -Dpreview_mt
 
   publish:
-    if: contains('refs/tags', github.ref)
+    if: contains(github.ref, 'refs/tags')
     needs: test
     runs-on: ubuntu-latest
     container: crystallang/crystal
