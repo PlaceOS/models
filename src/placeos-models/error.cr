@@ -9,6 +9,9 @@ module PlaceOS::Model
   class NoParentError < Error
   end
 
+  class SaasKeyError < Error
+  end
+
   class NoScope < Error
   end
 

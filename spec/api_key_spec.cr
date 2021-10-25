@@ -2,6 +2,44 @@ require "./helper"
 
 module PlaceOS::Model
   describe ApiKey do
+    describe ".saas_api_key" do
+      it "checks for existing domain" do
+        expect_raises(SaasKeyError) do
+          ApiKey.saas_api_key(instance_domain: "does-not-exist", instance_email: "definitely-does-not-exist")
+        end
+      end
+
+      it "checks for existing email" do
+        authority = Generator.authority.save!
+        expect_raises(SaasKeyError) do
+          ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: "does-not-exist")
+        end
+      end
+
+      it "checks for an existing key for instance email on domain" do
+        authority = Generator.authority.save!
+        user = Generator.user(authority).save!
+        key = ApiKey.new(
+          name: "test",
+          scopes: [UserJWT::Scope::SAAS]
+        )
+        key.authority = authority
+        key.user = user
+        key.save!
+
+        expect_raises(SaasKeyError) do
+          ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: user.email)
+        end
+      end
+
+      it "creates a key by domain and email" do
+        authority = Generator.authority.save!
+        user = Generator.user(authority).save!
+        token = ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: user.email)
+        ApiKey.find_key!(token).should be_a(ApiKey)
+      end
+    end
+
     it "saves an API Token" do
       key = Generator.api_key.save!
 
