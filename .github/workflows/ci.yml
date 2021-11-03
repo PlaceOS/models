@@ -26,8 +26,8 @@ jobs:
       matrix:
         stable: [true]
         crystal:
-          - 1.1.0
           - 1.1.1
+          - 1.2.1
         include:
           - crystal: nightly
             stable: false

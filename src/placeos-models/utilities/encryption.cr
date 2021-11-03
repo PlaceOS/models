@@ -48,11 +48,11 @@ module PlaceOS::Encryption
   # Does not encrypt
   # - previously encrypted
   # - values with `Level::NoEncryption` encryption
-  def self.encrypt(string : String, id : String, level : Level) : String
+  def self.encrypt(string : String, id : String, level : Level, secret : String = SECRET) : String
     return string if level == Level::None || is_encrypted?(string)
 
     # Create unique key, salt
-    salt, key = generate_key(id: id, level: level)
+    salt, key = generate_key(id: id, level: level, secret: secret)
 
     encrypted_data = encrypt_data(data: string, key: key, salt: salt)
 
@@ -65,12 +65,12 @@ module PlaceOS::Encryption
   # - previously decrypted
   # - values with `Level::None` encryption
   #
-  def self.decrypt(string : String, id : String, level : Level) : String
+  def self.decrypt(string : String, id : String, level : Level, secret : String = SECRET) : String
     return string if level == Level::None || !is_encrypted?(string)
 
     salt, iv, cipher_text = extract_context(string)
 
-    _, key = generate_key(id: id, level: level, salt: salt)
+    _, key = generate_key(id: id, level: level, salt: salt, secret: secret)
 
     cipher = OpenSSL::Cipher.new(CIPHER)
     cipher.decrypt
@@ -99,10 +99,10 @@ module PlaceOS::Encryption
 
   # Create a key from user privilege, id and existing/random salt
   #
-  protected def self.generate_key(level : Level, id : String, salt : String = UUID.random.to_s)
+  protected def self.generate_key(level : Level, id : String, salt : String = UUID.random.to_s, secret : String = SECRET)
     digest = OpenSSL::Digest.new("SHA256")
     digest << salt
-    digest << SECRET
+    digest << secret
     digest << id
     digest << level.to_s
     {salt, digest.final}
