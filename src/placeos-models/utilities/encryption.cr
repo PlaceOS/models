@@ -25,7 +25,7 @@ module PlaceOS::Encryption
     end
   end
 
-  private SECRET = ENV["PLACE_SERVER_SECRET"]?.tap { |k| Log.warn { "using insecure default secret" } if k.nil? } || "super secret, do not leak"
+  private SECRET = ENV["PLACE_SERVER_SECRET"]?.tap { |k| Log.warn { "using insecure default PLACE_SERVER_SECRET" } if k.nil? } || "super secret, do not leak"
   private CIPHER = "aes-256-gcm"
 
   # Encrypt a test string with the encryption context in the cipher context
