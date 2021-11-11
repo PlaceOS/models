@@ -133,7 +133,7 @@ module PlaceOS::Model
         raise Model::Error.new("Failed to parse Settings' parent type from #{parent_id}")
       end
     rescue e : NilAssertionError
-      raise NoParentError.new
+      raise NoParentError.new("Missing required parent for Settings<#{id}>")
     end
 
     # Generate keys for settings object
@@ -187,24 +187,19 @@ module PlaceOS::Model
     #
     # Versions are in descending order of creation
     def history(offset : Int32 = 0, limit : Int32 = 10)
-      slice_start = offset
-      slice_end = offset + limit
-
-      versions = Settings.raw_query do |r|
+      Settings.raw_query do |r|
         r
           .table(Settings.table_name)
           .get_all([parent_id.as(String)], index: :parent_id)
           .filter({settings_id: id.as(String)})
-          .order_by(r.desc(:created_at)).slice(slice_start, slice_end)
-      end
-
-      versions.to_a
+          .order_by(r.desc(:created_at)).slice(offset, offset + limit)
+      end.to_a
     end
 
     # Get settings for given parent id/s
     #
     def self.for_parent(parent_ids : String | Array(String)) : Array(Settings)
-      master_settings_query(parent_ids) { |q| q }
+      master_settings_query(parent_ids, &.itself)
     end
 
     # Query on master settings associated with ids
@@ -212,7 +207,7 @@ module PlaceOS::Model
     def self.master_settings_query(ids : String | Array(String))
       # Get documents where the settings_id does not exist, i.e. is the master
       cursor = query(ids) do |q|
-        yield q.filter &.has_fields(:settings_id).not
+        yield q.filter(&.has_fields(:settings_id).not)
       end
 
       cursor

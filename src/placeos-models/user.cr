@@ -17,7 +17,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute nickname : String = ""
-    attribute email : Email = Email.new("")
+    attribute email : Email = Email.new(""), es_type: "text"
     attribute phone : String = ""
     attribute country : String = ""
     attribute image : String = ""
@@ -133,8 +133,8 @@ module PlaceOS::Model
             grant["resource_owner_id"].eq(user_id)
           }.delete
         end
-      rescue
-        Log.warn { "failed to remove User<#{user_id}> auth grants" }
+      rescue error
+        Log.warn(exception: error) { "failed to remove User<#{user_id}> auth grants" }
       end
 
       begin
@@ -143,8 +143,8 @@ module PlaceOS::Model
             token["resource_owner_id"].eq(user_id)
           }.delete
         end
-      rescue
-        Log.warn { "failed to remove User<#{user_id}> auth tokens" }
+      rescue error
+        Log.warn(exception: error) { "failed to remove User<#{user_id}> auth tokens" }
       end
     end
 
