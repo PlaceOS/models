@@ -69,14 +69,14 @@ module PlaceOS::Model
       end
     end
 
-    def self.decode(token : String, key : String? = nil, algorithm : JWT::Algorithm = JWT::Algorithm::RS256)
+    def self.decode(token : String, key : String? = nil, algorithm : JWT::Algorithm = JWT::Algorithm::RS256, validate : Bool = true)
       key = public_key || private_key if key.nil?
       decoded_payload, _ = JWT.decode(
         token: token,
         key: key,
         algorithm: algorithm,
         verify: true,
-        validate: true,
+        validate: validate,
       )
       self.from_json(decoded_payload.to_json)
     end
