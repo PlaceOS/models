@@ -11,13 +11,13 @@ module PlaceOS::Model
     attribute description : String = ""
     attribute size : String = ""
 
-    attribute purchase_date : Int64
-    attribute good_until_date : Int64?
+    attribute purchase_date : Int32
+    attribute good_until_date : Int32?
 
-    attribute barcode : Int64
+    attribute barcode : Int32
     attribute brand : String = ""
 
-    attribute purchase_price : Int64
+    attribute purchase_price : Int32
 
     # Array of URLs to images for an asset
     attribute images : Array(String) = ->{ [] of String }

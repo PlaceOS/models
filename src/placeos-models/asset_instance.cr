@@ -18,5 +18,10 @@ module PlaceOS::Model
 
     belongs_to Asset, foreign_key: "asset_id"
     belongs_to Zone, foreign_key: "zone_id"
+
+    # Validate `duration_end`
+    validate ->(this : AssetInstance) do
+      this.validation_error(:duration_end, "duration end must be after duration start") if this.duration_end <= this.duration_start
+    end
   end
 end
