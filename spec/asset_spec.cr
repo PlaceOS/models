@@ -27,5 +27,11 @@ module PlaceOS::Model
         asset.save!
       end
     end
+
+    it "saves other data" do
+      asset = Generator.asset
+      asset.other_data = JSON.parse(%({"fizz": 1, "bizz": 2}))
+      asset.other_data["fizz"].should eq(1)
+    end
   end
 end

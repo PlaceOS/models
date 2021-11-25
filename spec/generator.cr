@@ -224,8 +224,8 @@ module PlaceOS::Model
       asset = self.asset.save! unless asset
       start = RANDOM.rand(Int32)
       instance = AssetInstance.new(
-        duration_start: start,
-        duration_end: start + 100
+        duration_start: Time.local,
+        duration_end: Time.local + 1.hour
       )
       instance.asset = asset
 

@@ -10,6 +10,14 @@ module PlaceOS::Model
       id.should eq inst.id
     end
 
+    it "prevents an AssetInstance from ending before it starts" do
+      expect_raises(RethinkORM::Error::DocumentInvalid) do
+        inst = Generator.asset_instance.save!
+        inst.duration_end = Time.local - 1.hour
+        inst.save!
+      end
+    end
+
     describe "index view" do
       it "#of finds AssetInstance by parent Asset" do
         inst = Generator.asset_instance.save!

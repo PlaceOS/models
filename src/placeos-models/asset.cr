@@ -17,10 +17,11 @@ module PlaceOS::Model
     attribute barcode : Int32
     attribute brand : String = ""
 
+    # Saved as cents
     attribute purchase_price : Int32
 
     # Array of URLs to images for an asset
-    attribute images : Array(String) = ->{ [] of String }
+    attribute images : Array(String) = [] of String
 
     # URL of downloadable receipt
     attribute invoice : String?
@@ -28,9 +29,9 @@ module PlaceOS::Model
     attribute quantity : Int32 = 0
     attribute in_use : Int32 = 0
 
-    attribute other_data : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "text"
+    attribute other_data : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "object"
 
-    attribute consumable_assets : Array(Asset)? = ->{ [] of Asset }
+    attribute consumable_assets : Array(Asset)? = [] of Asset
 
     # Association
     ###############################################################################################

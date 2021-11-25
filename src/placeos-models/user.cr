@@ -4,7 +4,6 @@ require "digest/md5"
 require "rethinkdb-orm"
 require "rethinkdb-orm/lock"
 
-require "./authority"
 require "./base/model"
 require "./api_key"
 require "./email"
@@ -350,3 +349,5 @@ module PlaceOS::Model
     end
   end
 end
+
+require "./authority"
