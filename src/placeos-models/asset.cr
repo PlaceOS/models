@@ -9,10 +9,12 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute category : String = ""
     attribute description : String = ""
+
+    # # TO:DO field needs further defition
     attribute size : String = ""
 
-    attribute purchase_date : Int32
-    attribute good_until_date : Int32?
+    attribute purchase_date : Time
+    attribute good_until_date : Time?
 
     attribute barcode : Int32
     attribute brand : String = ""
@@ -43,8 +45,16 @@ module PlaceOS::Model
       collection_name: :asset_instances
     )
 
+    has_many(
+      child_class: Asset,
+      foreign_key: "asset_id",
+      collection_name: :assets
+    )
+
     # Validation
     ###############################################################################################
+
+    validates :quantity, numericality: {minimum: 0}
 
     # Validate `in_use`
     validate ->(this : Asset) do

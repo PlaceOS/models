@@ -214,7 +214,7 @@ module PlaceOS::Model
     def self.asset
       Asset.new(
         name: Faker::Hacker.noun,
-        purchase_date: RANDOM.rand(Int32),
+        purchase_date: Time.local,
         barcode: RANDOM.rand(Int32),
         purchase_price: RANDOM.rand(Int32),
       )
