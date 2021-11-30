@@ -31,6 +31,8 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
+    validates :asset, presence: true
+
     # Validate `duration_end`
     validate ->(this : AssetInstance) do
       this.validation_error(:duration_end, "duration end must be after duration start") if this.duration_end <= this.duration_start
