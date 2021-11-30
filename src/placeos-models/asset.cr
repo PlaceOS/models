@@ -10,13 +10,10 @@ module PlaceOS::Model
     attribute category : String = ""
     attribute description : String = ""
 
-    # TODO: `size` needs further definition
-    attribute size : String = ""
-
     attribute purchase_date : Time
     attribute good_until_date : Time?
 
-    attribute barcode : Int32
+    attribute barcode : String?
     attribute brand : String = ""
 
     # Saved as cents
