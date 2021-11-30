@@ -10,7 +10,7 @@ module PlaceOS::Model
     attribute category : String = ""
     attribute description : String = ""
 
-    # # TO:DO field needs further defition
+    # TODO: `size` needs further definition
     attribute size : String = ""
 
     attribute purchase_date : Time
@@ -31,7 +31,7 @@ module PlaceOS::Model
     attribute quantity : Int32 = 0
     attribute in_use : Int32 = 0
 
-    attribute other_data : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "object"
+    attribute other_data : JSON::Any = JSON::Any.new({} of String => JSON::Any), es_type: "object"
 
     attribute consumable_assets : Array(Asset)? = [] of Asset
 
@@ -55,6 +55,7 @@ module PlaceOS::Model
     ###############################################################################################
 
     validates :quantity, numericality: {minimum: 0}
+    validates :in_use, numericality: {minimum: 0}
 
     # Validate `in_use`
     validate ->(this : Asset) do

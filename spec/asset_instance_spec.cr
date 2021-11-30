@@ -13,7 +13,7 @@ module PlaceOS::Model
     it "prevents an AssetInstance from ending before it starts" do
       expect_raises(RethinkORM::Error::DocumentInvalid) do
         inst = Generator.asset_instance.save!
-        inst.duration_end = Time.local - 1.hour
+        inst.usage_end = Time.local - 1.hour
         inst.save!
       end
     end

@@ -221,16 +221,13 @@ module PlaceOS::Model
     end
 
     def self.asset_instance(asset = nil, zone = nil)
-      asset = self.asset.save! unless asset
-      instance = AssetInstance.new(
-        duration_start: Time.local,
-        duration_end: Time.local + 1.hour
-      )
-      instance.asset = asset
-
-      instance.zone = zone if zone
-
-      instance
+      AssetInstance.new(
+        usage_start: Time.local,
+        usage_end: Time.local + 1.hour
+      ).tap do |instance|
+        instance.asset = asset || self.asset.save!
+        instance.zone = zone if zone
+      end
     end
 
     def self.authority(domain : String = "http://localhost")
