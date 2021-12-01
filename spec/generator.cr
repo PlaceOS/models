@@ -211,6 +211,25 @@ module PlaceOS::Model
       )
     end
 
+    def self.asset
+      Asset.new(
+        name: Faker::Hacker.noun,
+        purchase_date: Time.local,
+        identifier: RANDOM.rand(Int32).to_s,
+        purchase_price: RANDOM.rand(Int32),
+      )
+    end
+
+    def self.asset_instance(asset = nil, zone = nil)
+      AssetInstance.new(
+        usage_start: Time.local,
+        usage_end: Time.local + 1.hour
+      ).tap do |instance|
+        instance.asset = asset || self.asset.save!
+        instance.zone = zone if zone
+      end
+    end
+
     def self.authority(domain : String = "http://localhost")
       Authority.new(
         name: Faker::Hacker.noun,

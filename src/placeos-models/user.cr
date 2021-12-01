@@ -4,7 +4,6 @@ require "digest/md5"
 require "rethinkdb-orm"
 require "rethinkdb-orm/lock"
 
-require "./authority"
 require "./base/model"
 require "./api_key"
 require "./email"
@@ -73,6 +72,13 @@ module PlaceOS::Model
       child_class: ApiKey,
       collection_name: "api_tokens",
       foreign_key: "user_id",
+      dependent: :destroy
+    )
+
+    has_many(
+      child_class: AssetInstance,
+      collection_name: "asset_instances",
+      foreign_key: "requester_id",
       dependent: :destroy
     )
 
@@ -350,3 +356,5 @@ module PlaceOS::Model
     end
   end
 end
+
+require "./authority"
