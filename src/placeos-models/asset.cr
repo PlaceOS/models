@@ -13,7 +13,7 @@ module PlaceOS::Model
     attribute purchase_date : Time
     attribute good_until_date : Time?
 
-    attribute barcode : String?
+    attribute identifier : String?
     attribute brand : String = ""
 
     # Saved as cents
