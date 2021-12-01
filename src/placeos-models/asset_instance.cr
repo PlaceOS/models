@@ -34,8 +34,6 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
-    validates :asset, presence: true
-
     # Validate `usage_end`
     validate ->(this : AssetInstance) do
       this.validation_error(:usage_end, "usage end must be after usage start") if this.usage_end <= this.usage_start

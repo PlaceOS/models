@@ -30,6 +30,8 @@ module PlaceOS::Model
 
     attribute other_data : JSON::Any = JSON::Any.new({} of String => JSON::Any), es_type: "object"
 
+    attribute parent_id : String?
+
     # Association
     ###############################################################################################
 
