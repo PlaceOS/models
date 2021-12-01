@@ -215,7 +215,7 @@ module PlaceOS::Model
       Asset.new(
         name: Faker::Hacker.noun,
         purchase_date: Time.local,
-        barcode: RANDOM.rand(Int32).to_s,
+        identifier: RANDOM.rand(Int32).to_s,
         purchase_price: RANDOM.rand(Int32),
       )
     end
