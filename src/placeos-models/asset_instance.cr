@@ -16,7 +16,10 @@ module PlaceOS::Model
 
     attribute tracking : Tracking = Tracking::InStorage
     attribute approval : Bool = false
+
+    attribute asset_id : String
     attribute requester_id : String?
+    attribute zone_id : String?
 
     attribute usage_start : Time
     attribute usage_end : Time
@@ -26,7 +29,7 @@ module PlaceOS::Model
 
     belongs_to Asset, foreign_key: "asset_id"
     belongs_to Zone, foreign_key: "zone_id"
-    belongs_to User, foreign_key: "user_id"
+    belongs_to User, foreign_key: "requester_id"
 
     # Validation
     ###############################################################################################

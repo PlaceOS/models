@@ -30,22 +30,22 @@ module PlaceOS::Model
 
     attribute other_data : JSON::Any = JSON::Any.new({} of String => JSON::Any), es_type: "object"
 
-    attribute consumable_assets : Array(Asset)? = [] of Asset
-
     # Association
     ###############################################################################################
+
+    belongs_to Asset, foreign_key: "parent_id", association_name: "parent"
+
+    has_many(
+      child_class: Asset,
+      foreign_key: "parent_id",
+      collection_name: :consumable_assets
+    )
 
     has_many(
       child_class: AssetInstance,
       dependent: :destroy,
       foreign_key: "asset_id",
       collection_name: :asset_instances
-    )
-
-    has_many(
-      child_class: Asset,
-      foreign_key: "asset_id",
-      collection_name: :assets
     )
 
     # Validation

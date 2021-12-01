@@ -78,7 +78,7 @@ module PlaceOS::Model
     has_many(
       child_class: AssetInstance,
       collection_name: "asset_instances",
-      foreign_key: "user_id",
+      foreign_key: "requester_id",
       dependent: :destroy
     )
 
