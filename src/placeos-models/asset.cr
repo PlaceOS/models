@@ -16,7 +16,7 @@ module PlaceOS::Model
     attribute identifier : String?
     attribute brand : String = ""
 
-    # Saved as cents
+    # TODO: define currency for `purchase_price`
     attribute purchase_price : Int32
 
     # Array of URLs to images for an asset
