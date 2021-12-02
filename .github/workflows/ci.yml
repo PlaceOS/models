@@ -5,39 +5,13 @@ on:
     - cron: "0 0 * * 0" # Every Sunday at midnight
 
 jobs:
+  test:
+    uses: PlaceOS/.github/.github/workflows/containerised-test.yml@main
+    with:
+      cache_shards: false
+
   style:
     uses: PlaceOS/.github/.github/workflows/crystal-style.yml@main
-
-  test:
-    runs-on: ubuntu-latest
-    name: "crystal: ${{ matrix.crystal }}, stable: ${{ matrix.stable }}"
-    continue-on-error: ${{ !matrix.stable }}
-    strategy:
-      matrix:
-        stable: [true]
-        crystal:
-          - 1.1.1
-          - 1.2.1
-        include:
-          - crystal: nightly
-            stable: false
-    services:
-      rethink:
-        image: rethinkdb:2.4
-        ports:
-        - 29015:29015
-        - 28015:28015
-    steps:
-      - uses: oprypin/install-crystal@v1
-        with:
-          crystal: ${{ matrix.crystal }}
-      - uses: actions/checkout@v2
-      - run: shards install --ignore-crystal-version
-        if: steps.cache.outputs.cache-hit != 'true'
-      - name: Tests
-        run: crystal spec --error-trace -v --order=random --no-color
-      - name: Tests Multithreaded
-        run: crystal spec --error-trace -v --order=random --no-color -Dpreview_mt
 
   publish:
     if: contains(github.ref, 'refs/tags')
