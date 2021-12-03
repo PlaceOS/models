@@ -222,6 +222,7 @@ module PlaceOS::Model
 
     def self.asset_instance(asset = nil, zone = nil)
       AssetInstance.new(
+        name: Faker::Hacker.noun,
         usage_start: Time.local,
         usage_end: Time.local + 1.hour
       ).tap do |instance|

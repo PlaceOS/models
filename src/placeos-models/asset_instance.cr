@@ -14,6 +14,7 @@ module PlaceOS::Model
 
     table :ass
 
+    attribute name : String, es_subfield: "keyword"
     attribute tracking : Tracking = Tracking::InStorage
     attribute approval : Bool = false
 
