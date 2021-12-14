@@ -23,6 +23,9 @@ module PlaceOS::Model
     attribute commit_hash : String = "HEAD"
     attribute branch : String = "master"
 
+    # Whether the repository is pinned to a release asset
+    attribute release : Bool = false
+
     # Authentication
 
     attribute username : String?
