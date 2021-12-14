@@ -23,6 +23,8 @@ module PlaceOS::Model
     attribute commit_hash : String = "HEAD"
     attribute branch : String = "master"
 
+    attribute release : Bool = false
+
     # Authentication
 
     attribute username : String?
