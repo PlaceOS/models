@@ -110,7 +110,7 @@ module PlaceOS::Model
 
         cs = ControlSystem.find!(control_system_id)
         cs.modules.should contain module_id
-        cs.version.should eq (version + 1)
+        cs.version.should eq(version + 1)
 
         {control_system, driver, mod}.each &.destroy
       end
@@ -143,7 +143,7 @@ module PlaceOS::Model
         cs = ControlSystem.find!(control_system_id)
         cs.modules.should_not contain module_id
         cs.features.should_not contain mod.resolved_name
-        cs.version.should eq (version + 1)
+        cs.version.should eq(version + 1)
 
         {control_system, driver, mod}.each &.destroy
       end
@@ -171,7 +171,7 @@ module PlaceOS::Model
 
         cs = ControlSystem.find!(control_system_id)
         cs.modules.should_not contain module_id
-        cs.version.should eq (version + 1)
+        cs.version.should eq(version + 1)
 
         Module.exists?(module_id).should be_false
 

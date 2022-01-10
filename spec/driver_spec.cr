@@ -31,7 +31,7 @@ module PlaceOS::Model
       driver.recompile
       driver.reload!
 
-      driver.commit.should eq (Driver::RECOMPILE_PREFIX + commit)
+      driver.commit.should eq(Driver::RECOMPILE_PREFIX + commit)
       driver.recompile_commit?.should eq commit
     end
 
