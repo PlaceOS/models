@@ -29,16 +29,18 @@ module PlaceOS::Model
 
     # Decrypts and merges all settings for the model
     #
+    # Lower privilged settings are favoured during the merge process.
     def all_settings : Hash(YAML::Any, YAML::Any)
-      master_settings.reduce({} of YAML::Any => YAML::Any) do |acc, settings|
-        # Parse and merge into accumulated settings hash
-        begin
-          acc.merge!(settings.any)
-        rescue error
-          Log.warn(exception: error) { "failed to merge all settings: #{settings.inspect}" }
+      master_settings
+        .reverse!
+        .each_with_object({} of YAML::Any => YAML::Any) do |settings, acc|
+          # Parse and merge into accumulated settings hash
+          begin
+            acc.merge!(settings.any)
+          rescue error
+            Log.warn(exception: error) { "failed to merge all settings: #{settings.inspect}" }
+          end
         end
-        acc
-      end
     end
 
     # Decrypted JSON object for configuring drivers
