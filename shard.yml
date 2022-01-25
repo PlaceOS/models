@@ -1,6 +1,6 @@
 name: placeos-models
-version: 5.15.3
-crystal: ~> 1
+version: 6.0.0
+crystal: ~> 1.0
 
 dependencies:
   # Data validation library
