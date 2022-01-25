@@ -213,7 +213,6 @@ module PlaceOS::Model
       cursor
         .to_a
         .sort_by!(&.encryption_level)
-        .reverse!
     end
 
     # Query all settings under `parent_id`
@@ -297,8 +296,8 @@ module PlaceOS::Model
           .sort_by(&.encryption_level)
           # Attain (if exists) setting for given key
           .compact_map(&.any[key]?)
-          # Get the highest privilege setting
-          .last
+          # Get the lowest privilege setting
+          .first
       end
     end
 
