@@ -15,7 +15,7 @@ module PlaceOS::Model
             found_settings = model.settings_at(level)
             found_settings.id.should eq settings.id
 
-            if level == Encryption::Level::None
+            if level.none?
                 found_settings.settings_string.should eq old_settings
             else
                 found_settings.settings_string.should_not eq old_settings
@@ -35,5 +35,20 @@ module PlaceOS::Model
     test_settings(Module)
     test_settings(Zone)
     test_settings(Driver)
+
+    describe "#all_settings" do
+      it "merges settings, in favour of lower privilege" do
+        Settings.clear
+        model = Generator.driver.save!
+        key = "secret_key"
+        Encryption::Level.values.each do |level|
+          settings_string = {key => level}.to_json
+          Generator.settings(parent: model, settings_string: settings_string, encryption_level: level).save!
+        end
+
+        Encryption::Level.parse(model.all_settings[YAML::Any.new(key)].as_s).none?.should be_true
+        model.destroy
+      end
+    end
   end
 end
