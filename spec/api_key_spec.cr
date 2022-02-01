@@ -4,14 +4,14 @@ module PlaceOS::Model
   describe ApiKey do
     describe ".saas_api_key" do
       it "checks for existing domain" do
-        expect_raises(SaasKeyError) do
+        expect_raises(Error::InvalidSaasKey) do
           ApiKey.saas_api_key(instance_domain: "does-not-exist", instance_email: "definitely-does-not-exist")
         end
       end
 
       it "checks for existing email" do
         authority = Generator.authority.save!
-        expect_raises(SaasKeyError) do
+        expect_raises(Error::InvalidSaasKey) do
           ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: "does-not-exist")
         end
       end
@@ -27,7 +27,7 @@ module PlaceOS::Model
         key.user = user
         key.save!
 
-        expect_raises(SaasKeyError) do
+        expect_raises(Error::InvalidSaasKey) do
           ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: user.email)
         end
       end
