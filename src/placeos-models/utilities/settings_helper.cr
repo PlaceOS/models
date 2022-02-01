@@ -32,7 +32,6 @@ module PlaceOS::Model
     # Lower privilged settings are favoured during the merge process.
     def all_settings : Hash(YAML::Any, YAML::Any)
       master_settings
-        .reverse!
         .each_with_object({} of YAML::Any => YAML::Any) do |settings, acc|
           # Parse and merge into accumulated settings hash
           begin
