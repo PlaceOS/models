@@ -92,6 +92,11 @@ module PlaceOS::Model
 
     validate ->(this : User) {
       this.validation_error(:email, "is an invalid email") unless this.email.valid?
+      if lang = this.preferred_language
+        # match ISO 639-x codes - 2 and 3 letters
+        # the country code is optional and not validated as i8n libs will fallback to the base language
+        this.validation_error(:preferred_language, "is an invalid preferred language") unless lang =~ /^[a-zA-Z]{2}[a-zA-Z]?(-[a-zA-Z]+)?$/
+      end
     }
 
     # Ensure email is unique under the authority scope
