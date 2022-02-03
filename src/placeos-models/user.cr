@@ -28,6 +28,8 @@ module PlaceOS::Model
     attribute first_name : String?
     attribute last_name : String?
     attribute building : String?
+    attribute department : String?
+    attribute preferred_language : String?
 
     attribute password_digest : String?, mass_assignment: false
     attribute email_digest : String?, mass_assignment: false
