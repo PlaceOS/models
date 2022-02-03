@@ -85,6 +85,40 @@ module PlaceOS::Model
         user.valid?.should be_false
         user.errors.first.field.should eq :email
       end
+
+      it "ensure valid languages" do
+        user = Generator.user
+        user.preferred_language = "en"
+        user.valid?.should be_true
+
+        user = Generator.user
+        user.preferred_language = "eng"
+        user.valid?.should be_true
+
+        user = Generator.user
+        user.preferred_language = "en-US"
+        user.valid?.should be_true
+
+        user = Generator.user
+        user.preferred_language = " en"
+        user.valid?.should be_false
+        user.errors.first.field.should eq :preferred_language
+
+        user = Generator.user
+        user.preferred_language = "english"
+        user.valid?.should be_false
+        user.errors.first.field.should eq :preferred_language
+
+        user = Generator.user
+        user.preferred_language = "en- US"
+        user.valid?.should be_false
+        user.errors.first.field.should eq :preferred_language
+
+        user = Generator.user
+        user.preferred_language = "en_US"
+        user.valid?.should be_false
+        user.errors.first.field.should eq :preferred_language
+      end
     end
 
     describe "mass assignment" do
