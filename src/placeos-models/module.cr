@@ -273,7 +273,7 @@ module PlaceOS::Model
     #
     protected def set_name_and_role
       driver_ref = driver
-      raise NoParentError.new("Module<#{id}> missing parent Driver") unless driver_ref
+      raise Model::Error::NoParent.new("Module<#{id}> missing parent Driver") unless driver_ref
 
       self.role = driver_ref.role
       self.name = driver_ref.module_name

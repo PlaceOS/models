@@ -133,7 +133,7 @@ module PlaceOS::Model
         raise Model::Error.new("Failed to parse Settings' parent type from #{parent_id}")
       end
     rescue e : NilAssertionError
-      raise NoParentError.new("Missing required parent for Settings<#{id}>")
+      raise Model::Error::NoParent.new("Missing required parent for Settings<#{id}>")
     end
 
     # Generate keys for settings object
@@ -231,7 +231,7 @@ module PlaceOS::Model
     ###########################################################################
 
     protected def encrypt(string : String)
-      raise NoParentError.new if (encryption_id = parent_id).nil?
+      raise Model::Error::NoParent.new if (encryption_id = parent_id).nil?
 
       Encryption.encrypt(string, level: encryption_level, id: encryption_id)
     end
@@ -252,7 +252,7 @@ module PlaceOS::Model
     # Decrypts the model's setting string
     #
     protected def decrypt
-      raise NoParentError.new if (encryption_id = parent_id).nil?
+      raise Model::Error::NoParent.new if (encryption_id = parent_id).nil?
 
       Encryption.decrypt(string: settings_string, level: encryption_level, id: encryption_id)
     end
@@ -267,7 +267,7 @@ module PlaceOS::Model
     # Decrypts (if user has correct privilege) and returns the settings string
     #
     def decrypt_for(user) : String
-      raise NoParentError.new unless (encryption_id = parent_id)
+      raise Model::Error::NoParent.new unless (encryption_id = parent_id)
 
       Encryption.decrypt_for(user: user, string: settings_string, level: encryption_level, id: encryption_id)
     end

@@ -4,20 +4,20 @@ module PlaceOS::Model
 
     def initialize(@message = "", @cause = nil)
     end
-  end
 
-  class NoParentError < Error
-  end
+    class NoParent < Error
+    end
 
-  class SaasKeyError < Error
-  end
+    class InvalidSaasKey < Error
+    end
 
-  class NoScope < Error
-  end
+    class NoScope < Error
+    end
 
-  class MalformedFilter < Error
-    def initialize(filters : Array(String)?)
-      super("One or more invalid regexes: #{filters}")
+    class MalformedFilter < Error
+      def initialize(filters : Array(String)?)
+        super("One or more invalid regexes: #{filters}")
+      end
     end
   end
 end

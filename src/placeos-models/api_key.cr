@@ -121,14 +121,14 @@ module PlaceOS::Model
     # Used to delegate control of the instance by the PortalAPI.
     def self.saas_api_key(instance_domain, instance_email) : String
       unless authority = Model::Authority.find_by_domain(instance_domain)
-        raise SaasKeyError.new("authority does not exist for #{instance_domain}")
+        raise Model::Error::InvalidSaasKey.new("authority does not exist for #{instance_domain}")
       end
 
       authority_id = authority.id.as(String)
 
       # Fetch token for instance user
       unless user = Model::User.find_by_email(authority_id, instance_email)
-        raise SaasKeyError.new("instance user does not exist for #{instance_email}")
+        raise Model::Error::InvalidSaasKey.new("instance user does not exist for #{instance_email}")
       end
 
       user_id = user.id.as(String)
@@ -152,7 +152,7 @@ module PlaceOS::Model
         } }
         token
       else
-        raise SaasKeyError.new("key already exists for #{instance_email} on #{instance_domain}")
+        raise Model::Error::InvalidSaasKey.new("key already exists for #{instance_email} on #{instance_domain}")
       end
     end
   end
