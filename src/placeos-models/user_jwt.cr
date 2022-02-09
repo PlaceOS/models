@@ -111,7 +111,7 @@ module PlaceOS::Model
         io << resource
 
         # Full assumed without an access field
-        unless access == Access::All
+        unless access.all?
           io << '.'
           access.to_s(io)
         end
@@ -120,7 +120,10 @@ module PlaceOS::Model
       def self.from_json(json : JSON::PullParser)
         scope = json.read_string
         tokens = scope.split('.')
-        raise "Invalid scope structure: #{scope}" if tokens.empty? || tokens.size > 2
+
+        if tokens.empty? || tokens.size > 2
+          raise Model::Error.new("Invalid scope structure: #{scope}")
+        end
 
         resource = tokens.first
         access = tokens[1]?.try { |str| Access.parse(str) }
@@ -128,7 +131,7 @@ module PlaceOS::Model
       end
 
       def to_json(builder : JSON::Builder)
-        builder.string to_s
+        builder.string(to_s)
       end
     end
 

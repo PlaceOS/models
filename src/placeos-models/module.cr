@@ -202,7 +202,7 @@ module PlaceOS::Model
 
       if role.logic?
         cs = self.control_system
-        raise "Missing control system: module_id=#{@id} control_system_id=#{@control_system_id}" if cs.nil?
+        raise Error::NoParent.new("Missing control system: module_id=#{@id} control_system_id=#{@control_system_id}") if cs.nil?
         # Control System < Zone Settings
         settings.concat(cs.settings_hierarchy)
       end
