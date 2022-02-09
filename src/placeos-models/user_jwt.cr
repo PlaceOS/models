@@ -111,7 +111,7 @@ module PlaceOS::Model
         io << resource
 
         # Full assumed without an access field
-        unless access == Access::All
+        unless access.all?
           io << '.'
           access.to_s(io)
         end
