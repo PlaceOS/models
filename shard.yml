@@ -1,5 +1,5 @@
 name: placeos-models
-version: 6.2.0
+version: 6.3.0
 crystal: ~> 1.0
 
 dependencies:
@@ -24,6 +24,16 @@ dependencies:
   neuroplastic:
     github: spider-gazelle/neuroplastic
     version: ~> 1.6
+
+  # OpenAPI types
+  open_api:
+    github: elbywan/open_api.cr
+    version: ~> 1.3
+
+  # OpenAPI schema serialization
+  openapi-generator:
+    github: place-labs/openapi-generator
+    branch: master
 
   # PlaceOS log backend
   placeos-log-backend:
