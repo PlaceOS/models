@@ -141,11 +141,10 @@ module PlaceOS::Model
       mod
     end
 
-    def self.edge(key : ApiKey? = nil)
-      key = api_key.save! if key.nil?
-      Edge.new(name: "#{Faker::Address.city}_#{RANDOM.base64(5)}").tap do |edge|
-        edge.api_key_id = key.id.as(String)
-      end
+    def self.edge(user : User? = nil)
+      user = self.user.save! if user.nil?
+      create_body = Edge::CreateBody.new("#{Faker::Address.city}_#{RANDOM.base64(5)}")
+      Edge.create(create_body, user)
     end
 
     def self.encryption_level
