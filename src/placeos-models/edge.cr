@@ -104,9 +104,9 @@ module PlaceOS::Model
       UserJWT::Scope.new(EDGE_SCOPE_PREFIX + id)
     end
 
-    def self.scope_edge_id?(jwt : UserJWT) : String?
+    def self.jwt_edge_id?(jwt : UserJWT) : String?
       jwt
-        .scopes
+        .scope
         .find(&.resource.starts_with?(EDGE_SCOPE_PREFIX))
         .try(&.resource.lchop(EDGE_SCOPE_PREFIX))
     end

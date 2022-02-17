@@ -20,11 +20,7 @@ module PlaceOS::Model
       create_body = Edge::CreateBody.new(Faker::Name.name)
       user = Generator.user.save!
       edge = Edge.create(create_body, user)
-      edge
-        .api_key.not_nil!
-        .build_jwt
-        .scope.first
-        .resource.should eq("#{Edge::EDGE_SCOPE_PREFIX}#{edge.id}")
+      Edge.jwt_edge_id?(edge.api_key.not_nil!.build_jwt).should eq(edge.id)
     end
   end
 end
