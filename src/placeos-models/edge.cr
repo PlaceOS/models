@@ -1,5 +1,3 @@
-require "random"
-
 require "./base/model"
 
 module PlaceOS::Model
@@ -12,7 +10,50 @@ module PlaceOS::Model
 
     attribute description : String = ""
 
-    attribute secret : String = ->{ Random::Secure.urlsafe_base64(32) }, mass_assignment: false
+    attribute api_key_id : String, presence: true, mass_assignment: false
+
+    @[JSON::Field(ignore: true)]
+    getter x_api_key : String do
+      self.api_key.as(ApiKey).x_api_key.as(String)
+    end
+
+    # Creation
+    ###############################################################################################
+
+    record(
+      CreateBody,
+      name : String,
+      description : String = "",
+    ) { include JSON::Serializable }
+
+    def self.create(request_body : Edge::CreateBody, user : User)
+      Edge.new(
+        name: request_body.name,
+        description: request_body.description,
+      ).tap do |edge|
+        edge.set_id
+        key = ApiKey.new(name: "Edge X-API-KEY for #{name}")
+        key.user = user
+        key.scopes = [self.edge_scope(edge.id.as(String))]
+        key.save!
+        edge.api_key_id = key.id.as(String)
+
+        begin
+          edge.save!
+        rescue error : RethinkORM::Error
+          # Ensure api_key is cleaned up
+          key.destroy
+          raise error
+        end
+      end
+    end
+
+    # Serialization
+    ###############################################################################################
+
+    define_to_json :public, only: [
+      :name, :description, :api_key_id, :created_at, :updated_at,
+    ], methods: [:x_api_key, :id]
 
     # Association
     ###############################################################################################
@@ -24,90 +65,57 @@ module PlaceOS::Model
       foreign_key: "edge_id",
     )
 
+    # Edges authenticate with an X-API-KEY
+    has_one(
+      child_class: ApiKey,
+      dependent: :destroy,
+      create_index: true,
+      association_name: "api_key",
+      presence: true,
+    )
+
+    # Callbacks
+    ###############################################################################################
+
+    before_create :set_id
+    before_create :set_api_key
+
+    # Generate ID before document is created
+    protected def set_id
+      if @id.nil?
+        self._new_flag = true
+        @id = RethinkORM::IdGenerator.next(self)
+      end
+    end
+
+    # Create an ApiKey with the Edge id as a scope
+    protected def set_api_key
+      if key = api_key
+        self.api_key_id = key.id.as(String)
+      end
+    end
+
+    # Api Key methods
+    ###############################################################################################
+
+    EDGE_SCOPE_PREFIX = "ei|"
+
+    def self.edge_scope(id : String) : UserJWT::Scope
+      UserJWT::Scope.new(EDGE_SCOPE_PREFIX + id)
+    end
+
+    def self.jwt_edge_id?(jwt : UserJWT) : String?
+      jwt
+        .scope
+        .find(&.resource.starts_with?(EDGE_SCOPE_PREFIX))
+        .try(&.resource.lchop(EDGE_SCOPE_PREFIX))
+    end
+
     # Validation
     ###############################################################################################
 
     ensure_unique :name do |name|
       name.strip
-    end
-
-    ensure_unique :secret
-
-    # Callbacks
-    ###############################################################################################
-
-    before_create :safe_id
-
-    before_save :encrypt!
-
-    # Reject '+' and '~'
-    protected def safe_id
-      self._new_flag = true
-      @id = RethinkORM::IdGenerator.next(self).gsub({"+": '-', "~": '-'})
-    end
-
-    # Token Methods
-    ###############################################################################################
-
-    TOKEN_SEPERATOR = '~'
-
-    # Yield a token if the user has privileges
-    #
-    def token(user : Model::User) : String?
-      return unless user.is_admin?
-      unencoded = {self.id, decrypt_secret_for(user)}.join(TOKEN_SEPERATOR)
-      Base64.urlsafe_encode(unencoded)
-    end
-
-    def self.validate_token?(token : String) : String?
-      parts = Base64.decode_string(token).split(TOKEN_SEPERATOR) rescue nil
-
-      if parts.nil? || parts.size != 2
-        Log.info { {message: "deformed token", token: token} }
-        return
-      end
-
-      edge_id, secret = parts
-      if (edge = Model::Edge.find(edge_id)).nil?
-        Log.info { {message: "edge not found", edge_id: edge_id} }
-        return
-      end
-
-      if edge.check_secret?(secret)
-        edge_id
-      else
-        Log.info { {message: "edge secret is invalid", edge_id: edge_id} }
-        nil
-      end
-    end
-
-    # Encryption
-    ###############################################################################################
-
-    ENCRYPTION_LEVEL = Encryption::Level::Admin
-
-    # Encrypt all encrypted attributes
-    def encrypt!
-      self.secret = encrypt_secret
-      self
-    end
-
-    # Decrypt all encrypted attributes
-    def decrypt_for!(user)
-      self.secret = decrypt_secret_for(user)
-      self
-    end
-
-    def check_secret?(test : String) : Bool
-      Encryption.check?(encrypted: secret, test: test, level: ENCRYPTION_LEVEL, id: "")
-    end
-
-    def encrypt_secret
-      Encryption.encrypt(string: secret, level: ENCRYPTION_LEVEL, id: "")
-    end
-
-    def decrypt_secret_for(user)
-      Encryption.decrypt_for(user: user, string: secret, level: ENCRYPTION_LEVEL, id: "")
     end
   end
 end

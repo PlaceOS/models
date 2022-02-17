@@ -2,6 +2,12 @@ require "./helper"
 
 module PlaceOS::Model
   describe Edge do
+    it ".create" do
+      create_body = Edge::CreateBody.new(Faker::Name.name)
+      user = Generator.user.save!
+      Edge.create(create_body, user)
+    end
+
     it "saves an Edge" do
       edge = Generator.edge.save!
 
@@ -10,42 +16,9 @@ module PlaceOS::Model
       Edge.find!(edge.id.as(String)).id.should eq edge.id
     end
 
-    it "encrypts secrets on save" do
-      edge = Generator.edge
-      Encryption.is_encrypted?(edge.secret).should be_false
-      edge.save!
-      Encryption.is_encrypted?(edge.secret).should be_true
-    end
-
-    it "validates secrets" do
-      edge = Generator.edge
-      secret = edge.secret
-      edge.encrypt!
-
-      edge.check_secret?("not likely").should be_false
-      edge.check_secret?(secret).should be_true
-    end
-
-    describe "validate_token?" do
-      it "validates a token, returning the edge_id" do
-        edge = Generator.edge.save!
-        token = edge.token(Generator.authenticated_user).not_nil!
-        Edge.validate_token?(token).should eq edge.id
-      end
-
-      it "if token is malformed, it returns nil" do
-        edge = Generator.edge.save!
-        token = "#{edge.id}#{Edge::TOKEN_SEPERATOR}rubbish"
-        Edge.validate_token?(token).should be_nil
-      end
-    end
-
-    it "generates a token" do
-      edge = Generator.edge
-      secret = edge.secret
-      edge.save!
-      expected = Base64.urlsafe_encode "#{edge.id}#{Edge::TOKEN_SEPERATOR}#{secret}"
-      edge.token(Generator.authenticated_user).should eq expected
+    it "generates a token for the edge" do
+      edge = Generator.edge.save!
+      Edge.jwt_edge_id?(edge.api_key.not_nil!.build_jwt).should eq(edge.id)
     end
   end
 end
