@@ -17,6 +17,8 @@ module PlaceOS::Model
       self.api_key.as(ApiKey).x_api_key.as(String)
     end
 
+    CONTROL_SCOPE = "edge-control"
+
     # Creation
     ###############################################################################################
 
@@ -34,7 +36,10 @@ module PlaceOS::Model
         edge.set_id
         key = ApiKey.new(name: "Edge X-API-KEY for #{name}")
         key.user = user
-        key.scopes = [self.edge_scope(edge.id.as(String))]
+        key.scopes = [
+          self.edge_scope(edge.id.as(String)),
+          UserJWT::Scope.new(CONTROL_SCOPE),
+        ]
         key.save!
         edge.api_key_id = key.id.as(String)
 
@@ -47,13 +52,6 @@ module PlaceOS::Model
         end
       end
     end
-
-    # Serialization
-    ###############################################################################################
-
-    define_to_json :public, only: [
-      :name, :description, :api_key_id, :created_at, :updated_at,
-    ], methods: [:x_api_key, :id]
 
     # Association
     ###############################################################################################
