@@ -22,36 +22,33 @@ module PlaceOS::Model
     # Creation
     ###############################################################################################
 
+    def self.for_user(user : Model::User, **attributes)
+      Model::Edge.new(**attributes).tap do |edge|
+        edge.set_id
+        key = ApiKey.new(name: "Edge X-API-KEY for #{edge.name}")
+        key.user = user
+        key.scopes = [
+          Model::Edge.edge_scope(edge.id.as(String)),
+          UserJWT::Scope.new(CONTROL_SCOPE),
+        ]
+        key.save!
+        edge.api_key = key
+      end
+    end
+
+    def save!(**options)
+      super(**options)
+    rescue error : RethinkORM::Error
+      # Ensure api_key is cleaned up
+      self.api_key.try(&.destroy)
+      raise error
+    end
+
     record(
       CreateBody,
       name : String,
       description : String = "",
     ) { include JSON::Serializable }
-
-    def self.create(request_body : Edge::CreateBody, user : User)
-      Edge.new(
-        name: request_body.name,
-        description: request_body.description,
-      ).tap do |edge|
-        edge.set_id
-        key = ApiKey.new(name: "Edge X-API-KEY for #{name}")
-        key.user = user
-        key.scopes = [
-          self.edge_scope(edge.id.as(String)),
-          UserJWT::Scope.new(CONTROL_SCOPE),
-        ]
-        key.save!
-        edge.api_key_id = key.id.as(String)
-
-        begin
-          edge.save!
-        rescue error : RethinkORM::Error
-          # Ensure api_key is cleaned up
-          key.destroy
-          raise error
-        end
-      end
-    end
 
     # Association
     ###############################################################################################
@@ -76,20 +73,12 @@ module PlaceOS::Model
     ###############################################################################################
 
     before_create :set_id
-    before_create :set_api_key
 
     # Generate ID before document is created
     protected def set_id
       if @id.nil?
         self._new_flag = true
         @id = RethinkORM::IdGenerator.next(self)
-      end
-    end
-
-    # Create an ApiKey with the Edge id as a scope
-    protected def set_api_key
-      if key = api_key
-        self.api_key_id = key.id.as(String)
       end
     end
 

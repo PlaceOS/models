@@ -143,8 +143,7 @@ module PlaceOS::Model
 
     def self.edge(user : User? = nil)
       user = self.user.save! if user.nil?
-      create_body = Edge::CreateBody.new("#{Faker::Address.city}_#{RANDOM.base64(5)}")
-      Edge.create(create_body, user)
+      Edge.for_user(user, name: "#{Faker::Address.city}_#{RANDOM.base64(5)}")
     end
 
     def self.encryption_level
