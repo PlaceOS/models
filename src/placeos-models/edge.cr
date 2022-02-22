@@ -26,12 +26,12 @@ module PlaceOS::Model
       Model::Edge.new(**attributes).tap do |edge|
         edge.set_id
         key = ApiKey.new(name: "Edge X-API-KEY for #{edge.name}")
+        key.safe_id
         key.user = user
         key.scopes = [
           Model::Edge.edge_scope(edge.id.as(String)),
           UserJWT::Scope.new(CONTROL_SCOPE),
         ]
-        key.save!
         edge.api_key = key
       end
     end
@@ -73,6 +73,7 @@ module PlaceOS::Model
     ###############################################################################################
 
     before_create :set_id
+    before_create :save_api_key
 
     # Generate ID before document is created
     protected def set_id
@@ -80,6 +81,12 @@ module PlaceOS::Model
         self._new_flag = true
         @id = RethinkORM::IdGenerator.next(self)
       end
+    end
+
+    protected def save_api_key
+      raise Model::Error.new("No ApiKey associated with Edge") if (key = self.api_key).nil?
+
+      key.save!
     end
 
     # Api Key methods
