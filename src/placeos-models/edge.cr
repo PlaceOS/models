@@ -12,6 +12,8 @@ module PlaceOS::Model
 
     attribute api_key_id : String, presence: true, mass_assignment: false
 
+    attribute user_id : String, presence: true, mass_assignment: false
+
     @[JSON::Field(ignore: true)]
     getter x_api_key : String do
       self.api_key.as(ApiKey).x_api_key.as(String)
@@ -21,6 +23,13 @@ module PlaceOS::Model
 
     # Creation
     ###############################################################################################
+
+    macro finished
+      def api_key=(key)
+        self.user_id = key.user_id.as(String)
+        previous_def(key)
+      end
+    end
 
     def self.for_user(user : Model::User, **attributes)
       Model::Edge.new(**attributes).tap do |edge|
@@ -86,6 +95,9 @@ module PlaceOS::Model
 
     protected def save_api_key
       raise Model::Error.new("No ApiKey associated with Edge") if (key = self.api_key).nil?
+
+      # Ensure `user_id` is set
+      self.user_id = key.user_id.as(String)
 
       key.save!
     end
