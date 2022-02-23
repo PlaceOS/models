@@ -47,6 +47,7 @@ module PlaceOS::Model
     record(
       CreateBody,
       name : String,
+      user_id : String,
       description : String = "",
     ) { include JSON::Serializable }
 
