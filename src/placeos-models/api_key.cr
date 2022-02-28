@@ -133,12 +133,13 @@ module PlaceOS::Model
 
       user_id = user.id.as(String)
       saas_scope = UserJWT::Scope::SAAS.to_s
-
-      if Model::ApiKey.where(authority_id: authority_id, user_id: user_id, scopes: [saas_scope]).empty?
+      public_scope = UserJWT::Scope::PUBLIC.to_s
+      existing_key = Model::ApiKey.where(authority_id: authority_id, user_id: user_id, scopes: [saas_scope, public_scope]).first?
+      if existing_key.nil?
         key = Model::ApiKey.new(
           name: "Portal SaaS Key",
           description: "Key for PortalAPI to manage SaaS instances",
-          scopes: [UserJWT::Scope::SAAS],
+          scopes: [UserJWT::Scope::SAAS, UserJWT::Scope::PUBLIC],
         )
 
         key.user = user
@@ -152,7 +153,12 @@ module PlaceOS::Model
         } }
         token
       else
-        raise Model::Error::InvalidSaasKey.new("key already exists for #{instance_email} on #{instance_domain}")
+        Log.info { {
+          message:         "using existing SaaS API key",
+          instance_domain: instance_domain,
+          instance_email:  instance_email,
+        } }
+        existing_key.x_api_key.as(String)
       end
     end
   end
