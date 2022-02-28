@@ -27,9 +27,9 @@ module PlaceOS::Model
         key.user = user
         key.save!
 
-        expect_raises(Error::InvalidSaasKey) do
-          ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: user.email)
-        end
+        ApiKey
+          .saas_api_key(instance_domain: authority.domain, instance_email: user.email)
+          .should eq(key.x_api_key)
       end
 
       it "creates a key by domain and email" do
