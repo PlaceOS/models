@@ -1,4 +1,8 @@
-## Unreleased
+## v6.6.5 (2022-03-01)
+
+### Fix
+
+- scope errors, add missing require
 
 ## v6.6.4 (2022-03-01)
 
