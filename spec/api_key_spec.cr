@@ -21,7 +21,7 @@ module PlaceOS::Model
         user = Generator.user(authority).save!
         key = ApiKey.new(
           name: "test",
-          scopes: [UserJWT::Scope::SAAS]
+          scopes: [UserJWT::Scope::SAAS, UserJWT::Scope::PUBLIC]
         )
         key.authority = authority
         key.user = user
