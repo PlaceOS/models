@@ -119,7 +119,7 @@ module PlaceOS::Model
 
     # Builds an API token for a SaaS instance.
     # Used to delegate control of the instance by the PortalAPI.
-    def self.saas_api_key(instance_domain, instance_email) : String
+    def self.saas_api_key(instance_domain, instance_email) : String?
       unless authority = Model::Authority.find_by_domain(instance_domain)
         raise Model::Error::InvalidSaasKey.new("authority does not exist for #{instance_domain}")
       end
@@ -154,11 +154,11 @@ module PlaceOS::Model
         token
       else
         Log.info { {
-          message:         "using existing SaaS API key",
+          message:         "existing SaaS API key",
           instance_domain: instance_domain,
           instance_email:  instance_email,
         } }
-        existing_key.x_api_key.as(String)
+        nil
       end
     end
   end

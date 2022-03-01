@@ -29,7 +29,7 @@ module PlaceOS::Model
 
         ApiKey
           .saas_api_key(instance_domain: authority.domain, instance_email: user.email)
-          .should eq(key.x_api_key)
+          .should be_nil
       end
 
       it "creates a key by domain and email" do
