@@ -1,4 +1,6 @@
 require "./base/model"
+require "./user"
+require "./api_key"
 
 module PlaceOS::Model
   class Edge < ModelBase

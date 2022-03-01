@@ -71,7 +71,7 @@ module PlaceOS::Model
         hmac_sha256(match_string)
       end
     rescue e : ArgumentError
-      raise MalformedFilter.new(self.filters)
+      raise Model::Error::MalformedFilter.new(self.filters)
     end
 
     protected def hmac_sha256(data : String)
