@@ -21,21 +21,21 @@ module PlaceOS::Model
         user = Generator.user(authority).save!
         key = ApiKey.new(
           name: "test",
-          scopes: [UserJWT::Scope::SAAS]
+          scopes: [UserJWT::Scope::SAAS, UserJWT::Scope::PUBLIC]
         )
         key.authority = authority
         key.user = user
         key.save!
 
-        expect_raises(Error::InvalidSaasKey) do
-          ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: user.email)
-        end
+        ApiKey
+          .saas_api_key(instance_domain: authority.domain, instance_email: user.email)
+          .should be_nil
       end
 
       it "creates a key by domain and email" do
         authority = Generator.authority.save!
         user = Generator.user(authority).save!
-        token = ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: user.email)
+        token = ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: user.email).not_nil!
         ApiKey.find_key!(token).should be_a(ApiKey)
       end
     end
