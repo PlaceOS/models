@@ -12,7 +12,3 @@ jobs:
     uses: PlaceOS/.github/.github/workflows/containerised-test.yml@main
     with:
       cache_shards: false
-
-  publish:
-    needs: test
-    uses: PlaceOS/.github/.github/workflows/publish-crystal-docs.yml@feat/crystal-docs
