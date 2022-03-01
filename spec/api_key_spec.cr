@@ -35,7 +35,7 @@ module PlaceOS::Model
       it "creates a key by domain and email" do
         authority = Generator.authority.save!
         user = Generator.user(authority).save!
-        token = ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: user.email)
+        token = ApiKey.saas_api_key(instance_domain: authority.domain, instance_email: user.email).not_nil!
         ApiKey.find_key!(token).should be_a(ApiKey)
       end
     end
