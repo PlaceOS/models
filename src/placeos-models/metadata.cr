@@ -3,6 +3,7 @@ require "time"
 require "json"
 
 require "./utilities/json_string_converter"
+require "./utilities/last_modified.cr"
 
 require "./base/model"
 require "./control_system"
@@ -11,6 +12,7 @@ require "./zone"
 module PlaceOS::Model
   class Metadata < ModelBase
     include RethinkORM::Timestamps
+    include Utilities::LastModified
 
     table :metadata
 

@@ -4,6 +4,7 @@ require "time"
 require "./base/model"
 require "./error"
 require "./utilities/encryption"
+require "./utilities/last_modified"
 
 require "./control_system"
 require "./driver"
@@ -13,6 +14,7 @@ require "./zone"
 module PlaceOS::Model
   class Settings < ModelBase
     include RethinkORM::Timestamps
+    include Utilities::LastModified
 
     table :sets
 
