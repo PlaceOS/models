@@ -3,7 +3,7 @@ require "time"
 require "json"
 
 require "./utilities/json_string_converter"
-require "./utilities/last_modified.cr"
+require "./utilities/last_modified"
 
 require "./base/model"
 require "./control_system"

@@ -13,6 +13,21 @@ module PlaceOS::Model
       control_system.destroy
     end
 
+    it "ensures modifying user is recorded" do
+      modifier = Generator.user.save!
+      control_system = Generator.control_system.save!
+      model = Metadata.new(name: "test")
+      model.details = JSON::Any.new({} of String => JSON::Any)
+      model.control_system = control_system
+
+      expect_raises(Model::Error, /Modifying user/) do
+        model.save
+      end
+
+      model.modified_by = modifier
+      model.save.should be_true
+    end
+
     it "saves zone metadata" do
       zone = Generator.zone.save!
       meta = Generator.metadata(parent: zone.id.as(String)).save!

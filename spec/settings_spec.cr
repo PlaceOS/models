@@ -16,6 +16,20 @@ module PlaceOS::Model
       settings.id.as(String).should start_with "sets-"
     end
 
+    it "ensures modifying user is recorded" do
+      modifier = Generator.user.save!
+      control_system = Generator.control_system.save!
+      model = Settings.new
+      model.control_system = control_system
+
+      expect_raises(Model::Error, /Modifying user/) do
+        model.save
+      end
+
+      model.modified_by = modifier
+      model.save.should be_true
+    end
+
     it "strips whitespace from empty settings string" do
       settings = Generator.settings(settings_string: "\n")
       settings.save
