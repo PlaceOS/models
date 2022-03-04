@@ -74,7 +74,7 @@ module PlaceOS::Model
 
       it "#zone_data" do
         cs = Generator.control_system.save!
-        zones = 3.times.to_a.map { |_| Generator.zone.save! }
+        zones = Array(Zone).new(3) { Generator.zone.save! }
         zone_ids = zones.compact_map(&.id)
         cs.zones = zone_ids
 

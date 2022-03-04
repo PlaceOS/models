@@ -83,10 +83,7 @@ module PlaceOS::Model
     it "removes dependent Drivers on destroy" do
       repo = Generator.repository(type: Repository::Type::Driver).save!
 
-      drivers = 3.times.to_a.map {
-        Generator.driver(repo: repo).save!
-      }
-
+      drivers = Array(Driver).new(3) { Generator.driver(repo: repo).save! }
       Repository.find(repo.id.as(String)).should_not be_nil
       repo.destroy
       Driver.find_all(drivers.compact_map &.id).to_a.should be_empty
