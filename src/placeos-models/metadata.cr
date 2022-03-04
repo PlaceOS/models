@@ -2,7 +2,7 @@ require "rethinkdb-orm"
 require "time"
 require "json"
 
-require "./utilities/json_string_converter"
+require "./converter/json_string"
 
 require "./base/model"
 require "./control_system"
