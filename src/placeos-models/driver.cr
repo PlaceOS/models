@@ -1,6 +1,6 @@
 require "./base/model"
+require "./converter/json_string"
 require "./utilities/settings_helper"
-require "./utilities/json_string_converter"
 
 require "./repository"
 require "./settings"
