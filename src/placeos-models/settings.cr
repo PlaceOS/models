@@ -154,6 +154,7 @@ module PlaceOS::Model
       attrs = attributes_tuple.merge({id: nil, created_at: nil, updated_at: nil, settings_string: old_settings})
       version = Settings.new(**attrs)
       version.settings_id = self.id
+      version.modified_by = modified_by.as(User) if version.responds_to? :modified_by
       version.save!
     end
 
