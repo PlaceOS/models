@@ -1,3 +1,9 @@
+## v6.6.6 (2022-03-07)
+
+### Refactor
+
+- change path of converters ([#149](https://github.com/PlaceOS/models/pull/149))
+
 ## v6.6.5 (2022-03-01)
 
 ### Fix
