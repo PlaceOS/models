@@ -3,10 +3,11 @@ require "time"
 require "uri"
 require "future"
 
+require "./converter/time_location"
+
 require "./base/model"
 require "./settings"
 require "./utilities/settings_helper"
-require "./utilities/time_location_converter"
 
 module PlaceOS::Model
   class ControlSystem < ModelBase

@@ -1,5 +1,5 @@
 require "./base/model"
-require "./utilities/json_string_converter"
+require "./converter/json_string"
 
 module PlaceOS::Model
   class JsonSchema < ModelBase
