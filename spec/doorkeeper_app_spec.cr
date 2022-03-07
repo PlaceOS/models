@@ -54,7 +54,7 @@ module PlaceOS::Model
     it "saves an app with a random UID" do
       app = DoorkeeperApplication.new
       app.name = RANDOM.hex(10)
-      app.redirect_uri = "appuri://test.redirect.com.au/"
+      app.redirect_uri = "appuri://test.redirect.com.au/#{RANDOM.hex(3)}"
       app.owner_id = RANDOM.hex(10)
 
       begin
@@ -71,7 +71,7 @@ module PlaceOS::Model
     it "saves an app with a specified UID" do
       app = DoorkeeperApplication.new
       app.name = RANDOM.hex(10)
-      app.redirect_uri = "http://test.redirect.com.au/"
+      app.redirect_uri = "http://test.redirect.com.au/#{RANDOM.hex(3)}"
       app.uid = "my-special-uid"
       app.owner_id = RANDOM.hex(10)
 
