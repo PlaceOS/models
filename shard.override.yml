@@ -3,3 +3,6 @@ dependencies:
     github: place-labs/neuroplastic
   retriable:
     github: Sija/retriable.cr
+  rethinkdb-orm:
+    github: spider-gazelle/rethinkdb-orm
+    branch: chore/update-active-model
