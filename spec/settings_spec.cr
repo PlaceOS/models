@@ -16,6 +16,22 @@ module PlaceOS::Model
       settings.id.as(String).should start_with "sets-"
     end
 
+    it "`modifying_user_id` is `nil` if modifying user is not recorded" do
+      modifier = Generator.user.save!
+      control_system = Generator.control_system.save!
+      model = Settings.new
+      model.control_system = control_system
+      model.modified_by = modifier
+      model.save
+      puts model.attributes
+      model.modified_by_id.should eq(modifier.id)
+
+      # Subsequent saves should not have a `modified_by_id` set
+      model.settings_string_will_change!
+      model.save
+      model.modified_by_id.should be_nil
+    end
+
     it "strips whitespace from empty settings string" do
       settings = Generator.settings(settings_string: "\n")
       settings.save
@@ -78,15 +94,18 @@ module PlaceOS::Model
     end
 
     it "creates versions on updates to the master Settings" do
+      modifying_user = Generator.user.save!
       settings_history = ["a: 0\n", "a: 1\n", "a: 2\n", "a: 3\n"]
       settings = Generator.settings(
         encryption_level: Encryption::Level::None,
-        settings_string: settings_history.first
+        settings_string: settings_history.first,
+        modifier: modifying_user,
       ).save!
 
       settings_history[1..].each_with_index(offset: 1) do |string, i|
         Timecop.freeze(i.seconds.from_now) do
           settings.settings_string = string
+          settings.modified_by = modifying_user
           settings.save!
         end
       end
@@ -100,9 +119,13 @@ module PlaceOS::Model
       it "queries for a single parent_ids" do
         Settings.clear
 
+        modifying_user = Generator.user.save!
         id = "sys-1234"
         settings = mock_data.map do |level, string|
-          Settings.new(encryption_level: level, settings_string: string, parent_id: id).save!
+          Settings.new(encryption_level: level, settings_string: string, parent_id: id).tap do |setting|
+            setting.modified_by = modifying_user
+            setting.save!
+          end
         end.to_a
 
         ids = settings.compact_map(&.id).sort!
@@ -113,9 +136,13 @@ module PlaceOS::Model
       it "queries for a collection of parent_ids" do
         Settings.clear
 
+        modifying_user = Generator.user.save!
         mock_ids = Array.new(mock_data.size) { "sys-#{rand(9999)}" }
         settings = mock_data.zip(mock_ids).map do |(level, string), id|
-          Settings.new(encryption_level: level, settings_string: string, parent_id: id).save!
+          Settings.new(encryption_level: level, settings_string: string, parent_id: id).tap do |setting|
+            setting.modified_by = modifying_user
+            setting.save!
+          end
         end.to_a
 
         ids = settings.compact_map(&.id).sort!

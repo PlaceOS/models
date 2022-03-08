@@ -150,25 +150,30 @@ module PlaceOS::Model
       Encryption::Level.parse(Encryption::Level.names.sample(1).first)
     end
 
-    def self.metadata(name : String = Faker::Hacker.noun + RANDOM.base64(10), parent : String | Zone | ControlSystem? = nil)
-      meta = Metadata.new(name: name, details: JSON::Any.new({} of String => JSON::Any))
+    def self.metadata(
+      name : String = Faker::Hacker.noun + RANDOM.base64(10),
+      parent : String | Zone | ControlSystem? = nil,
+      modifier : User? = nil
+    )
+      Metadata.new(name: name, details: JSON::Any.new({} of String => JSON::Any)).tap do |meta|
+        case parent
+        in ControlSystem
+          meta.control_system = parent
+        in String
+          meta.parent_id = parent
+        in Zone
+          meta.zone = parent
+        in Nil
+          # Generate a single parent for the metadata model
+          {
+            ->{ meta.control_system = self.control_system.save! },
+            ->{ meta.zone = self.zone.save! },
+          }.sample.call
+        end
 
-      case parent
-      in ControlSystem
-        meta.control_system = parent
-      in String
-        meta.parent_id = parent
-      in Zone
-        meta.zone = parent
-      in Nil
-        # Generate a single parent for the metadata model
-        {
-          ->{ meta.control_system = self.control_system.save! },
-          ->{ meta.zone = self.zone.save! },
-        }.sample.call
+        modifier = user.save! if modifier.nil?
+        meta.modified_by = modifier
       end
-
-      meta
     end
 
     def self.settings(
@@ -178,32 +183,33 @@ module PlaceOS::Model
       mod : Module? = nil,
       control_system : ControlSystem? = nil,
       zone : Zone? = nil,
-      parent : Union(Zone, ControlSystem, Driver, Module)? = nil
+      parent : Union(Zone, ControlSystem, Driver, Module)? = nil,
+      modifier : User? = nil
     ) : Settings
-      settings = Settings.new(
+      Settings.new(
         settings_string: settings_string,
         encryption_level: encryption_level,
-      )
+      ).tap do |settings|
+        settings.control_system = control_system if control_system
+        settings.driver = driver if driver
+        settings.mod = mod if mod
+        settings.zone = zone if zone
+        settings.parent = parent if parent
 
-      settings.control_system = control_system if control_system
-      settings.driver = driver if driver
-      settings.mod = mod if mod
-      settings.zone = zone if zone
-      settings.parent = parent if parent
+        unless {parent, control_system, driver, mod, zone}.one?
+          # Generate a single parent for the settings model
+          {
+            ->{ settings.control_system = self.control_system.save! },
+            ->{ settings.driver = self.driver.save! },
+            ->{ settings.mod = self.module.save! },
+            ->{ settings.zone = self.zone.save! },
+          }.sample.call
+        end
 
-      unless {parent, control_system, driver, mod, zone}.one?
-        # Generate a single parent for the settings model
-        {
-          ->{ settings.control_system = self.control_system.save! },
-          ->{ settings.driver = self.driver.save! },
-          ->{ settings.mod = self.module.save! },
-          ->{ settings.zone = self.zone.save! },
-        }.sample.call
+        settings.parse_parent_type
+        modifier = user.save! if modifier.nil?
+        settings.modified_by = modifier
       end
-
-      settings.parse_parent_type
-
-      settings
     end
 
     def self.zone

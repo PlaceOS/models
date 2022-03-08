@@ -13,6 +13,20 @@ module PlaceOS::Model
       control_system.destroy
     end
 
+    it "`modifying_user_id` is `nil` if modifying user is not recorded" do
+      modifier = Generator.user.save!
+      control_system = Generator.control_system.save!
+      model = Metadata.new(name: "test")
+      model.details = JSON::Any.new({} of String => JSON::Any)
+      model.control_system = control_system
+      model.modified_by = modifier
+      model.save
+      model.modified_by_id.should eq(modifier.id)
+      model.details_will_change!
+      model.save
+      model.modified_by_id.should be_nil
+    end
+
     it "saves zone metadata" do
       zone = Generator.zone.save!
       meta = Generator.metadata(parent: zone.id.as(String)).save!

@@ -4,6 +4,7 @@ require "time"
 require "./base/model"
 require "./error"
 require "./utilities/encryption"
+require "./utilities/last_modified"
 
 require "./control_system"
 require "./driver"
@@ -13,6 +14,7 @@ require "./zone"
 module PlaceOS::Model
   class Settings < ModelBase
     include RethinkORM::Timestamps
+    include Utilities::LastModified
 
     table :sets
 
@@ -152,6 +154,7 @@ module PlaceOS::Model
       attrs = attributes_tuple.merge({id: nil, created_at: nil, updated_at: nil, settings_string: old_settings})
       version = Settings.new(**attrs)
       version.settings_id = self.id
+      version.modified_by = modified_by.as(User) if version.responds_to? :modified_by
       version.save!
     end
 
