@@ -1,3 +1,5 @@
+require "./ext/*"
+
 require "log"
 require "rethinkdb-orm"
 
