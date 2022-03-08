@@ -5,4 +5,4 @@ dependencies:
     github: Sija/retriable.cr
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
-    branch: chore/update-active-model
+    version: ">= 6.0"
