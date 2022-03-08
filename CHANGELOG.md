@@ -1,3 +1,9 @@
+## v6.7.0 (2022-03-08)
+
+### Feat
+
+- add `modified_at` and `modified_by` to Settings and Metadata ([#148](https://github.com/PlaceOS/models/pull/148))
+
 ## v6.6.6 (2022-03-07)
 
 ### Refactor
