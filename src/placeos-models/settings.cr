@@ -150,12 +150,24 @@ module PlaceOS::Model
     protected def create_version
       return if is_version?
 
+      saved_created = created_at
+      saved_updated = updated_at
       old_settings = encrypt(settings_string)
-      attrs = attributes_tuple.merge({id: nil, created_at: nil, updated_at: nil, settings_string: old_settings})
-      version = Settings.new(**attrs)
+
+      @created_at = nil
+      @updated_at = nil
+
+      version = self.dup
+      version.id = nil
+      version.settings_string = old_settings
       version.settings_id = self.id
+      version.parent_id
+      version.keys = [] of String
       version.modified_by = modified_by.as(User) if version.responds_to? :modified_by
       version.save!
+
+      self.created_at = saved_created
+      self.updated_at = saved_updated
     end
 
     # Queries
