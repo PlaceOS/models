@@ -6,7 +6,6 @@ dependencies:
   # Data validation library
   active-model:
     github: spider-gazelle/active-model
-    version: ~> 3.1
 
   # Data validation library
   CrystalEmail:
@@ -43,7 +42,7 @@ dependencies:
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
-    version: ~> 5.0
+    version: ~> 6.0
 
 development_dependencies:
   ameba:

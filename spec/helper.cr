@@ -1,3 +1,5 @@
+require "../src/ext/*"
+
 require "placeos-log-backend"
 
 ::Log.setup("*", backend: PlaceOS::LogBackend.log_backend, level: :trace)

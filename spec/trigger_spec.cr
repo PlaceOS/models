@@ -74,7 +74,7 @@ module PlaceOS::Model
       end
 
       it "validates comparison condition" do
-        expect_raises(JSON::SerializableError | JSON::MappingError) do
+        expect_raises(JSON::SerializableError) do
           Trigger::Conditions::Comparison.from_json({
             left:     false,
             operator: "asldkgjbn",

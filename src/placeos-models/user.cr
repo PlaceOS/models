@@ -323,16 +323,6 @@ module PlaceOS::Model
     # Groups only
     define_to_json :group, only: :groups, methods: :id
 
-    @[Deprecated("Use `to_public_json` instead.")]
-    def as_public_json
-      to_public_json
-    end
-
-    @[Deprecated("Use `to_admin_json` instead.")]
-    def as_admin_json
-      to_admin_json
-    end
-
     # Password Encryption
     ###############################################################################################
 
@@ -351,6 +341,8 @@ module PlaceOS::Model
       @password = nil
     end
 
+    @[JSON::Field(ignore: true)]
+    @[YAML::Field(ignore: true)]
     @pass_compare : Password? = nil
 
     def password : Password
