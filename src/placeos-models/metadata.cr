@@ -4,6 +4,7 @@ require "json"
 
 require "./converter/json_string"
 require "./utilities/last_modified"
+require "./utilities/versions"
 
 require "./base/model"
 require "./control_system"
@@ -13,6 +14,7 @@ module PlaceOS::Model
   class Metadata < ModelBase
     include RethinkORM::Timestamps
     include Utilities::LastModified
+    include Utilities::Versions
 
     table :metadata
 
@@ -64,6 +66,12 @@ module PlaceOS::Model
           query
         end
       end
+    end
+
+    # Generate a version upon save of a master Metadata
+    #
+    protected def create_version(version : self) : self
+      version
     end
 
     # Serialisation

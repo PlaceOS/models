@@ -2,6 +2,7 @@ require "rethinkdb-orm"
 
 require "../user"
 
+# Adds modification data to a `PlaceOS::Model`
 module PlaceOS::Model::Utilities::LastModified
   macro included
     attribute modified_at : Time = ->{ Time.utc }, converter: Time::EpochConverter

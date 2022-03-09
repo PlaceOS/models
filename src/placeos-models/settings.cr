@@ -5,6 +5,7 @@ require "./base/model"
 require "./error"
 require "./utilities/encryption"
 require "./utilities/last_modified"
+require "./utilities/versions"
 
 require "./control_system"
 require "./driver"
@@ -15,6 +16,7 @@ module PlaceOS::Model
   class Settings < ModelBase
     include RethinkORM::Timestamps
     include Utilities::LastModified
+    include Utilities::Versions
 
     table :sets
 
@@ -59,14 +61,6 @@ module PlaceOS::Model
     belongs_to Driver, foreign_key: "parent_id"
     belongs_to Module, foreign_key: "parent_id", association_name: "mod"
     belongs_to Zone, foreign_key: "parent_id"
-
-    # Settings self-referential entity relationship acts as a 2-level tree
-    has_many(
-      child_class: Settings,
-      collection_name: "settings",
-      foreign_key: "settings_id",
-      dependent: :destroy
-    )
 
     # Validation
     ###############################################################################################
@@ -124,8 +118,6 @@ module PlaceOS::Model
 
     before_save :encrypt_settings
 
-    after_save :create_version
-
     # Parse `parent_id` and set the `parent_type` of the `Settings`
     #
     protected def parse_parent_type
@@ -147,31 +139,29 @@ module PlaceOS::Model
 
     # Generate a version upon save of a master Settings
     #
-    protected def create_version
-      return if is_version?
-
-      saved_created = created_at
-      saved_updated = updated_at
-      old_settings = encrypt(settings_string)
-
-      @created_at = nil
-      @updated_at = nil
-
-      version = self.dup
-      version.id = nil
-      version.settings_string = old_settings
-      version.settings_id = self.id
-      version.parent_id
-      version.keys = [] of String
-      version.modified_by = modified_by.as(User) if version.responds_to? :modified_by
-      version.save!
-
-      self.created_at = saved_created
-      self.updated_at = saved_updated
+    protected def create_version(version : self) : self
+      version.settings_string = encrypt(settings_string)
+      version
     end
 
     # Queries
     ###########################################################################
+
+    def self.master_settings_query(ids : String | Array(String))
+      previous_def.sort_by! do |setting|
+        # Reversed
+        -1 * setting.encryption_level.value
+      end
+    end
+
+    # Query all settings under `parent_id`
+    #
+    def self.query(ids : String | Array(String))
+      ids = ids.is_a?(Array) ? ids : [ids]
+      Settings.raw_query do |q|
+        yield q.table(Settings.table_name).get_all(ids, index: :parent_id)
+      end
+    end
 
     # Locate the modules that will be affected by the change of this setting
     #
@@ -195,50 +185,6 @@ module PlaceOS::Model
           .in_zone(model_id)
           .select(&.role.logic?)
           .to_a
-      end
-    end
-
-    # Get version history
-    #
-    # Versions are in descending order of creation
-    def history(offset : Int32 = 0, limit : Int32 = 10)
-      Settings.raw_query do |r|
-        r
-          .table(Settings.table_name)
-          .get_all([parent_id.as(String)], index: :parent_id)
-          .filter({settings_id: id.as(String)})
-          .order_by(r.desc(:created_at)).slice(offset, offset + limit)
-      end.to_a
-    end
-
-    # Get settings for given parent id/s
-    #
-    def self.for_parent(parent_ids : String | Array(String)) : Array(Settings)
-      master_settings_query(parent_ids, &.itself)
-    end
-
-    # Query on master settings associated with ids
-    #
-    def self.master_settings_query(ids : String | Array(String))
-      # Get documents where the settings_id does not exist, i.e. is the master
-      cursor = query(ids) do |q|
-        yield q.filter(&.has_fields(:settings_id).not)
-      end
-
-      cursor
-        .to_a
-        .sort_by! do |setting|
-          # Reversed
-          -1 * setting.encryption_level.value
-        end
-    end
-
-    # Query all settings under `parent_id`
-    #
-    def self.query(ids : String | Array(String))
-      ids = ids.is_a?(Array) ? ids : [ids]
-      Settings.raw_query do |q|
-        yield q.table(Settings.table_name).get_all(ids, index: :parent_id)
       end
     end
 
@@ -358,12 +304,6 @@ module PlaceOS::Model
       in .admin?         then user.is_admin?
       in .never_display? then false
       end
-    end
-
-    # If a Settings has a parent, it's a version
-    #
-    def is_version? : Bool
-      !settings_id.nil?
     end
 
     # Determine if setting_string is encrypted
