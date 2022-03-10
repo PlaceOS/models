@@ -3,7 +3,7 @@ require "rethinkdb-orm"
 # Adds version history to a `PlaceOS::Model`
 module PlaceOS::Model::Utilities::Versions
   # Number of version models to retain
-  MAX_HISTORY = 20
+  MAX_VERSIONS = (ENV["PLACE_MAX_VERSIONS"]?.try(&.to_i?) || 20)
 
   macro included
     {% klass_name = @type.id.split("::").last.underscore.id %}
@@ -57,7 +57,7 @@ module PlaceOS::Model::Utilities::Versions
 
       ::RethinkORM::Connection.raw do |q|
         master_query(q, &.itself)
-          .slice(MAX_HISTORY)
+          .slice(MAX_VERSIONS)
           .delete
       end
     end

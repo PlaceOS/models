@@ -74,7 +74,7 @@ module PlaceOS::Model
       end
 
       it "limits number of stored versions" do
-        changes = Array(JSON::Any).new(2 * Utilities::Versions::MAX_HISTORY) { |i|
+        changes = Array(JSON::Any).new(2 * Utilities::Versions::MAX_VERSIONS) { |i|
           JSON::Any.new({"test" => JSON::Any.new(i.to_i64)})
         }
 
@@ -89,7 +89,7 @@ module PlaceOS::Model
           end
         end
 
-        metadata.history.size.should eq Utilities::Versions::MAX_HISTORY
+        metadata.history.size.should eq Utilities::Versions::MAX_VERSIONS
       end
     end
   end
