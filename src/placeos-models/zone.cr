@@ -61,7 +61,7 @@ module PlaceOS::Model
     # Metadata belonging to this zone
     has_many(
       child_class: Metadata,
-      collection_name: "metadata",
+      collection_name: "metadata_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
@@ -69,7 +69,7 @@ module PlaceOS::Model
     # Encrypted yaml settings
     has_many(
       child_class: Settings,
-      collection_name: "settings",
+      collection_name: "settings_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
@@ -150,7 +150,7 @@ module PlaceOS::Model
     ###########################################################################
 
     def settings_hierarchy : Array(Settings)
-      master_settings
+      settings
     end
 
     def self.with_tag(tag : String)

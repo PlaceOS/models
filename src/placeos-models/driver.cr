@@ -57,7 +57,7 @@ module PlaceOS::Model
     # Encrypted yaml settings
     has_many(
       child_class: Settings,
-      collection_name: "settings",
+      collection_name: "settings_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
@@ -71,7 +71,7 @@ module PlaceOS::Model
     end
 
     def settings_hierarchy : Array(Settings)
-      master_settings
+      settings
     end
 
     # Callbacks

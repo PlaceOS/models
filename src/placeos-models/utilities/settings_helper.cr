@@ -6,17 +6,17 @@ module PlaceOS::Model::Utilities
   module SettingsHelper
     abstract def settings_hierarchy : Array(Settings)
 
-    # Attain the settings associated with the model
+    # Query the master settings attached to a model
     #
-    def settings_collection
-      RethinkORM::AssociationCollection(self.class, Settings).new(self)
+    def settings : Array(Settings)
+      Settings.for_parent(self.id.as(String))
     end
 
     # Get the settings at a particular encryption level
     #
     def settings_at(encryption_level : Encryption::Level)
-      raise IndexError.new unless (settings = settings_at?(encryption_level))
-      settings
+      raise IndexError.new unless (settings_at_level = settings_at?(encryption_level))
+      settings_at_level
     end
 
     # Get the settings at a particular encryption level
@@ -31,13 +31,13 @@ module PlaceOS::Model::Utilities
     #
     # Lower privilged settings are favoured during the merge process.
     def all_settings : Hash(YAML::Any, YAML::Any)
-      master_settings
-        .each_with_object({} of YAML::Any => YAML::Any) do |settings, acc|
+      settings
+        .each_with_object({} of YAML::Any => YAML::Any) do |setting, acc|
           # Parse and merge into accumulated settings hash
           begin
-            acc.merge!(settings.any)
+            acc.merge!(setting.any)
           rescue error
-            Log.warn(exception: error) { "failed to merge all settings: #{settings.inspect}" }
+            Log.warn(exception: error) { "failed to merge all settings: #{setting.inspect}" }
           end
         end
     end
@@ -46,12 +46,6 @@ module PlaceOS::Model::Utilities
     #
     def settings_json : String
       all_settings.to_json
-    end
-
-    # Query the master settings attached to a model
-    #
-    def master_settings : Array(Settings)
-      Settings.for_parent(self.id.as(String))
     end
   end
 end

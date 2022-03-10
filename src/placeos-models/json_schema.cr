@@ -13,7 +13,7 @@ module PlaceOS::Model
 
     has_many(
       child_class: Metadata,
-      collection_name: "all_metadata",
+      collection_name: "metadata_and_versions",
       foreign_key: "schema_id",
     )
 

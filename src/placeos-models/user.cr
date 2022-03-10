@@ -68,7 +68,7 @@ module PlaceOS::Model
     # Metadata belonging to this user
     has_many(
       child_class: Metadata,
-      collection_name: "metadata",
+      collection_name: "metadata_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
