@@ -1,4 +1,10 @@
-## Unreleased
+## v7.1.0 (2022-03-10)
+
+### Feat
+
+- **metadata**: add `#history` ([#153](https://github.com/PlaceOS/models/pull/153))
+
+## v7.0.0 (2022-03-09)
 
 ## v6.7.0 (2022-03-08)
 
