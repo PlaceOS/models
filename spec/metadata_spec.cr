@@ -56,6 +56,21 @@ module PlaceOS::Model
       Metadata.from_json(meta.to_json).details.should eq JSON.parse(object)
     end
 
+    context "validation" do
+      it "ensures `name` is unique beneath `parent_id`, ignoring versions" do
+        parent = Generator.zone.save!
+        parent_id = parent.id.as(String)
+        name = UUID.random.to_s
+        original, duplicate = Array(Metadata).new(2) { Generator.metadata(name: name, parent: parent_id) }
+        puts original, duplicate
+
+        original.save!
+        expect_raises(RethinkORM::Error::DocumentInvalid, /`name` must be unique beneath 'parent_id'/) do
+          duplicate.save!
+        end
+      end
+    end
+
     describe "#history" do
       it "renders versions made on updates to the master Metadata" do
         changes = [0, 1, 2, 3].map { |i| JSON::Any.new({"test" => JSON::Any.new(i.to_i64)}) }
