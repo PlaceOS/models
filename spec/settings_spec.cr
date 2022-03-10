@@ -23,7 +23,6 @@ module PlaceOS::Model
       model.control_system = control_system
       model.modified_by = modifier
       model.save
-      puts model.attributes
       model.modified_by_id.should eq(modifier.id)
 
       # Subsequent saves should not have a `modified_by_id` set
@@ -111,8 +110,6 @@ module PlaceOS::Model
       end
 
       settings.history.map(&.any["a"]).should eq [3, 2, 1, 0]
-
-      settings.history(limit: 3).size.should eq 3
     end
 
     describe "#for_parent" do

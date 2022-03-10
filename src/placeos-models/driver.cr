@@ -8,7 +8,7 @@ require "./settings"
 module PlaceOS::Model
   class Driver < ModelBase
     include RethinkORM::Timestamps
-    include SettingsHelper
+    include Utilities::SettingsHelper
 
     table :driver
 
@@ -54,10 +54,10 @@ module PlaceOS::Model
 
     belongs_to Repository, foreign_key: "repository_id", presence: true
 
-    # Encrypted yaml settings, with metadata
+    # Encrypted yaml settings
     has_many(
       child_class: Settings,
-      collection_name: "settings",
+      collection_name: "settings_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
@@ -71,7 +71,7 @@ module PlaceOS::Model
     end
 
     def settings_hierarchy : Array(Settings)
-      master_settings
+      settings
     end
 
     # Callbacks

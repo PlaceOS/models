@@ -8,11 +8,13 @@ require "./converter/time_location"
 require "./base/model"
 require "./settings"
 require "./utilities/settings_helper"
+require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class ControlSystem < ModelBase
     include RethinkORM::Timestamps
-    include SettingsHelper
+    include Utilities::SettingsHelper
+    include Utilities::MetadataHelper
 
     table :sys
 
@@ -54,7 +56,7 @@ module PlaceOS::Model
     # Encrypted yaml settings, with metadata
     has_many(
       child_class: Settings,
-      collection_name: "settings",
+      collection_name: "settings_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
@@ -62,7 +64,7 @@ module PlaceOS::Model
     # Metadata belonging to this control_system
     has_many(
       child_class: Metadata,
-      collection_name: "metadata",
+      collection_name: "metadata_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
@@ -161,7 +163,7 @@ module PlaceOS::Model
     # Control System < Zone/n < Zone/(n-1) < ... < Zone/0
     def settings_hierarchy : Array(Settings)
       # Start with Control System Settings
-      settings = master_settings
+      hierarchy = settings
 
       # Zone Settings
       zone_models = Model::Zone.find_all(self.zones).to_a
@@ -170,13 +172,13 @@ module PlaceOS::Model
         next if (zone = zone_models.find &.id.==(zone_id)).nil?
 
         begin
-          settings.concat(zone.master_settings)
+          hierarchy.concat(zone.settings)
         rescue error
           Log.warn(exception: error) { "failed to merge zone #{zone_id} settings" }
         end
       end
 
-      settings.compact
+      hierarchy.compact
     end
 
     # Callbacks

@@ -4,6 +4,7 @@ require "json"
 
 require "./converter/json_string"
 require "./utilities/last_modified"
+require "./utilities/versions"
 
 require "./base/model"
 require "./control_system"
@@ -13,6 +14,7 @@ module PlaceOS::Model
   class Metadata < ModelBase
     include RethinkORM::Timestamps
     include Utilities::LastModified
+    include Utilities::Versions
 
     table :metadata
 
@@ -41,8 +43,25 @@ module PlaceOS::Model
     validates :name, presence: true
     validates :parent_id, presence: true
 
-    ensure_unique :name, scope: [:parent_id, :name] do |parent_id, name|
-      {parent_id, name.strip.downcase}
+    validate ->Metadata.unique_name_main(Metadata)
+
+    def self.unique_name_main(metadata : Metadata)
+      return if (name = metadata.name.strip.presence).nil?
+      # Ignore validating versions uniqueness
+      return if metadata.is_version?
+
+      # Set to stripped value
+      metadata.name = name
+
+      # TODO: Optimise uniqueness validation query in RethinkORM
+      # `is_empty` should make this a faster query.
+      model = Metadata
+        .master_metadata_query(&.filter({parent_id: metadata.parent_id, name: name}))
+        .first?
+
+      if model && model.id != metadata.id
+        metadata.validation_error(:name, "must be unique beneath 'parent_id'")
+      end
     end
 
     # Queries
@@ -56,14 +75,18 @@ module PlaceOS::Model
                     parent.id.as(String)
                   end
 
-      Metadata.raw_query do |q|
-        query = q.table(Model::Metadata.table_name).get_all(parent_id, index: :parent_id)
-        if name && !name.empty?
-          query.filter({name: name})
-        else
-          query
-        end
+      master_metadata_query do |q|
+        q = q.get_all(parent_id, index: :parent_id)
+        q = q.filter({name: name}) if name && !name.empty?
+        q
       end
+    end
+
+    # Generate a version upon save of a master Metadata
+    #
+    protected def create_version(version : self) : self
+      version.details = details.clone
+      version
     end
 
     # Serialisation

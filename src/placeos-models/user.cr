@@ -6,11 +6,14 @@ require "rethinkdb-orm/lock"
 
 require "./base/model"
 require "./api_key"
+require "./metadata"
 require "./email"
+require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class User < ModelBase
     include RethinkORM::Timestamps
+    include Utilities::MetadataHelper
 
     table :user
 
@@ -65,7 +68,7 @@ module PlaceOS::Model
     # Metadata belonging to this user
     has_many(
       child_class: Metadata,
-      collection_name: "metadata",
+      collection_name: "metadata_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )

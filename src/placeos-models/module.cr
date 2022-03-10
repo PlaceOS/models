@@ -11,7 +11,7 @@ require "./utilities/settings_helper"
 module PlaceOS::Model
   class Module < ModelBase
     include RethinkORM::Timestamps
-    include SettingsHelper
+    include Utilities::SettingsHelper
 
     table :mod
 
@@ -58,7 +58,7 @@ module PlaceOS::Model
     # Encrypted yaml settings, with metadata
     has_many(
       child_class: Settings,
-      collection_name: "settings",
+      collection_name: "settings_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
@@ -198,19 +198,19 @@ module PlaceOS::Model
     # Module > (Control System > Zones) > Driver
     def settings_hierarchy : Array(Settings)
       # Accumulate settings, starting with the Module's
-      settings = master_settings
+      hierarchy = settings
 
       if role.logic?
         cs = self.control_system
         raise Model::Error::NoParent.new("Missing control system: module_id=#{@id} control_system_id=#{@control_system_id}") if cs.nil?
         # Control System < Zone Settings
-        settings.concat(cs.settings_hierarchy)
+        hierarchy.concat(cs.settings_hierarchy)
       end
 
       # Driver Settings
-      settings.concat(self.driver.as(Model::Driver).master_settings)
+      hierarchy.concat(self.driver.as(Model::Driver).settings)
 
-      settings.compact
+      hierarchy.compact
     end
 
     # Merge settings hierarchy to JSON

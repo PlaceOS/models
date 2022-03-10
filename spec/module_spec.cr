@@ -227,10 +227,10 @@ module PlaceOS::Model
         Generator.settings(mod: mod, settings_string: module_settings_string).save!
 
         expected_settings_ids = [
-          mod.master_settings,
-          control_system.master_settings,
-          zone.master_settings,
-          driver.master_settings,
+          mod.settings,
+          control_system.settings,
+          zone.settings,
+          driver.settings,
         ].flat_map(&.compact_map(&.id))
 
         settings_hierarchy_ids = mod.settings_hierarchy.compact_map(&.id)

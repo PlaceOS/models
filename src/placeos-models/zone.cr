@@ -4,11 +4,13 @@ require "time"
 require "./base/model"
 require "./settings"
 require "./utilities/settings_helper"
+require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class Zone < ModelBase
     include RethinkORM::Timestamps
-    include SettingsHelper
+    include Utilities::SettingsHelper
+    include Utilities::MetadataHelper
 
     table :zone
 
@@ -59,7 +61,7 @@ module PlaceOS::Model
     # Metadata belonging to this zone
     has_many(
       child_class: Metadata,
-      collection_name: "metadata",
+      collection_name: "metadata_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
@@ -67,7 +69,7 @@ module PlaceOS::Model
     # Encrypted yaml settings
     has_many(
       child_class: Settings,
-      collection_name: "settings",
+      collection_name: "settings_and_versions",
       foreign_key: "parent_id",
       dependent: :destroy
     )
@@ -148,7 +150,7 @@ module PlaceOS::Model
     ###########################################################################
 
     def settings_hierarchy : Array(Settings)
-      master_settings
+      settings
     end
 
     def self.with_tag(tag : String)
