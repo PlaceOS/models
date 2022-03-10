@@ -6,7 +6,7 @@ module PlaceOS::Model
       control_system = Generator.control_system.save!
       meta = Generator.metadata(name: "test", parent: control_system.id.as(String)).save!
 
-      control_system.master_metadata.first.id.should eq meta.id
+      control_system.metadata.first.id.should eq meta.id
 
       meta_find = Metadata.find!(meta.id.as(String))
       meta_find.control_system!.id.should eq control_system.id
@@ -32,7 +32,7 @@ module PlaceOS::Model
       zone = Generator.zone.save!
       meta = Generator.metadata(parent: zone.id.as(String)).save!
 
-      zone.master_metadata.first.id.should eq meta.id
+      zone.metadata.first.id.should eq meta.id
       meta_find = Metadata.find!(meta.id.as(String))
       meta_find.zone!.id.should eq zone.id
 
