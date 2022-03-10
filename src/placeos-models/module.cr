@@ -11,7 +11,7 @@ require "./utilities/settings_helper"
 module PlaceOS::Model
   class Module < ModelBase
     include RethinkORM::Timestamps
-    include SettingsHelper
+    include Utilities::SettingsHelper
 
     table :mod
 

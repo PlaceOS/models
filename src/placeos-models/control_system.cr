@@ -8,11 +8,13 @@ require "./converter/time_location"
 require "./base/model"
 require "./settings"
 require "./utilities/settings_helper"
+require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class ControlSystem < ModelBase
     include RethinkORM::Timestamps
-    include SettingsHelper
+    include Utilities::SettingsHelper
+    include Utilities::MetadataHelper
 
     table :sys
 

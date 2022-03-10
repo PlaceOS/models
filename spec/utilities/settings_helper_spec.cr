@@ -1,4 +1,4 @@
-require "./helper"
+require "../helper"
 
 module PlaceOS::Model
   macro test_settings(klass)
@@ -30,7 +30,7 @@ module PlaceOS::Model
     end
   end
 
-  describe SettingsHelper do
+  describe Utilities::SettingsHelper do
     test_settings(ControlSystem)
     test_settings(Module)
     test_settings(Zone)
@@ -46,7 +46,9 @@ module PlaceOS::Model
           Generator.settings(parent: model, settings_string: settings_string, encryption_level: level).save!
         end
 
-        Encryption::Level.parse(model.all_settings[YAML::Any.new(key)].as_s).none?.should be_true
+        level = Encryption::Level.parse(model.all_settings[YAML::Any.new(key)].as_s)
+        pp! level
+        level.none?.should be_true
         model.destroy
       end
     end

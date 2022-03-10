@@ -2,6 +2,9 @@ require "rethinkdb-orm"
 
 # Adds version history to a `PlaceOS::Model`
 module PlaceOS::Model::Utilities::Versions
+  # Number of version models to retain
+  MAX_HISTORY = 20
+
   macro included
     {% klass_name = @type.id.split("::").last.underscore.id %}
     {% parent_id = "#{klass_name}_id".id %}
@@ -26,6 +29,7 @@ module PlaceOS::Model::Utilities::Versions
     ###########################################################################
 
     after_save :__create_version__
+    after_save :cleanup_history
 
     protected def __create_version__
       return if is_version?
@@ -48,36 +52,50 @@ module PlaceOS::Model::Utilities::Versions
       self.updated_at = saved_updated
     end
 
+    private def cleanup_history
+      return if is_version?
+
+      ::RethinkORM::Connection.raw do |q|
+        master_query(q, &.itself)
+          .slice(MAX_HISTORY)
+          .delete
+      end
+    end
+
+
     # Queries
     ###########################################################################
 
     # Get version history
     #
     # Versions are in descending order of creation
-    def history(offset : Int32 = 0, limit : Int32 = 10)
+    def history
       {{ @type }}.raw_query do |r|
-        r
-          .table({{ @type }}.table_name)
-          .get_all([parent_id.as(String)], index: :parent_id)
-          .filter({
-            {{ parent_id }}: id.as(String)
-          })
-          .order_by(r.desc(:created_at)).slice(offset, offset + limit)
-      end.to_a
+        master_query(r) do |query_builder|
+          yield query_builder
+        end
+      end
     end
 
-    # Get {{ @type }} for given parent id/s
-    #
-    def self.for_parent(parent_ids : String | Array(String)) : Array(self)
-      master_{{ klass_name }}_query(parent_ids, &.itself)
+    private def master_query(query_builder)
+      query_builder = query_builder
+        .table({{ @type }}.table_name)
+        .get_all([id.as(String)], index: {{ parent_id.symbolize }})
+      query_builder = yield query_builder
+      query_builder.order_by(r.desc(:created_at))
     end
 
-    # Query on master {{ klass_name }} associated with ids
+    # :ditto:
+    def history
+      history(&.itself)
+    end
+
+    # Query on master {{ klass_name }} documents
     #
     # Gets documents where the {{ parent_id }} does not exist, i.e. is the master
-    def self.master_{{ klass_name }}_query(ids : String | Array(String))
-      cursor = query(ids) do |q|
-        yield q.filter(&.has_fields({{ parent_id.symbolize }}).not)
+    def self.master_{{ klass_name }}_query
+      cursor = raw_query do |q|
+        (yield q.table(table_name)).filter(&.has_fields({{ parent_id.symbolize }}).not)
       end
 
       cursor.to_a

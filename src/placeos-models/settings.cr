@@ -147,11 +147,24 @@ module PlaceOS::Model
     # Queries
     ###########################################################################
 
-    def self.master_settings_query(ids : String | Array(String))
+    def self.master_settings_query
       previous_def.sort_by! do |setting|
         # Reversed
         -1 * setting.encryption_level.value
       end
+    end
+
+    # Get `Settings` for given parent id/s
+    #
+    def self.for_parent(parent_ids : String | Array(String), &) : Array(self)
+      master_settings_query do |q|
+        yield (q.get_all(parent_ids, index: :parent_id))
+      end
+    end
+
+    # :ditto:
+    def self.for_parent(parent_ids : String | Array(String)) : Array(self)
+      for_parent(parent_ids, &.itself)
     end
 
     # Query all settings under `parent_id`

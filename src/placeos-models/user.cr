@@ -6,11 +6,14 @@ require "rethinkdb-orm/lock"
 
 require "./base/model"
 require "./api_key"
+require "./metadata"
 require "./email"
+require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class User < ModelBase
     include RethinkORM::Timestamps
+    include Utilities::MetadataHelper
 
     table :user
 

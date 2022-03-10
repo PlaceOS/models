@@ -43,9 +43,9 @@ module PlaceOS::Model
     validates :name, presence: true
     validates :parent_id, presence: true
 
-    ensure_unique :name, scope: [:parent_id, :name] do |parent_id, name|
-      {parent_id, name.strip.downcase}
-    end
+    # ensure_unique :name, scope: [:parent_id, :name] do |parent_id, name|
+    #   {parent_id, name.strip.downcase}
+    # end
 
     # Queries
     ###############################################################################################
@@ -58,19 +58,17 @@ module PlaceOS::Model
                     parent.id.as(String)
                   end
 
-      Metadata.raw_query do |q|
-        query = q.table(Model::Metadata.table_name).get_all(parent_id, index: :parent_id)
-        if name && !name.empty?
-          query.filter({name: name})
-        else
-          query
-        end
+      master_metadata_query do |q|
+        q = q.get_all(parent_id, index: :parent_id)
+        q = q.filter({name: name}) if name && !name.empty?
+        q
       end
     end
 
     # Generate a version upon save of a master Metadata
     #
     protected def create_version(version : self) : self
+      version.details = details.clone
       version
     end
 

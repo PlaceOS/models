@@ -13,8 +13,14 @@ module PlaceOS::Model
 
     has_many(
       child_class: Metadata,
-      collection_name: "metadata",
+      collection_name: "all_metadata",
       foreign_key: "schema_id",
     )
+
+    def metadata
+      Metadata.master_metadata_query do |q|
+        q.filter({schema_id: self.id.as(String)})
+      end
+    end
   end
 end
