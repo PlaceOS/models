@@ -46,9 +46,7 @@ module PlaceOS::Model
           Generator.settings(parent: model, settings_string: settings_string, encryption_level: level).save!
         end
 
-        level = Encryption::Level.parse(model.all_settings[YAML::Any.new(key)].as_s)
-        pp! level
-        level.none?.should be_true
+        Encryption::Level.parse(model.all_settings[YAML::Any.new(key)].as_s).none?.should be_true
         model.destroy
       end
     end
