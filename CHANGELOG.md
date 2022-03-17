@@ -1,3 +1,9 @@
+## v7.2.0 (2022-03-17)
+
+### Feat
+
+- **metadata**: validate parent exists ([#155](https://github.com/PlaceOS/models/pull/155))
+
 ## v7.1.1 (2022-03-17)
 
 ### Fix
