@@ -31,9 +31,12 @@ module PlaceOS::Model
 
     secondary_index :parent_id
 
+    # Models that `Metadata` is attached to
     belongs_to Zone, foreign_key: "parent_id", association_name: "zone"
     belongs_to ControlSystem, foreign_key: "parent_id", association_name: "control_system"
     belongs_to User, foreign_key: "parent_id", association_name: "user"
+
+    # Schema for validating `details` object
     belongs_to JsonSchema, foreign_key: "schema_id", association_name: "schema"
 
     # Validation
@@ -43,9 +46,20 @@ module PlaceOS::Model
     validates :name, presence: true
     validates :parent_id, presence: true
 
-    validate ->Metadata.unique_name_main(Metadata)
+    validate ->Metadata.validate_parent_exists(Metadata)
+    validate ->Metadata.validate_unique_name(Metadata)
 
-    def self.unique_name_main(metadata : Metadata)
+    def self.validate_parent_exists(metadata : Metadata)
+      # Skip validation if `Metadata` has been created
+      return unless metadata.id.nil?
+
+      table_name = metadata.parent_id.as(String).partition('-').first
+      if RethinkORM::Connection.raw(&.table(table_name).get(metadata.parent_id)).raw.nil?
+        metadata.validation_error(:parent_id, "must reference an existing model")
+      end
+    end
+
+    def self.validate_unique_name(metadata : Metadata)
       return if (name = metadata.name.strip.presence).nil?
       # Ignore validating versions uniqueness
       return if metadata.is_version?
