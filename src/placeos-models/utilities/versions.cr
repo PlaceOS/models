@@ -57,7 +57,7 @@ module PlaceOS::Model::Utilities::Versions
       return if is_version?
 
       ::RethinkORM::Connection.raw do |q|
-        master_query(q, &.itself)
+        associated_version_query(q, &.itself)
           .slice(MAX_VERSIONS)
           .delete
       end
@@ -69,20 +69,20 @@ module PlaceOS::Model::Utilities::Versions
     # Get version history
     #
     # Versions are in descending order of creation
-    def history
+    def history(offset : Int32 = 0, limit : Int32 = 10, &)
       {{ @type }}.raw_query do |r|
-        master_query(r) do |query_builder|
-          yield query_builder
+        associated_version_query(r) do |query_builder|
+          (yield query_builder).slice(offset, offset + limit)
         end
       end
     end
 
     # :ditto:
-    def history
-      history(&.itself)
+    def history(offset : Int32 = 0, limit : Int32 = 10)
+      history(offset, limit, &.itself)
     end
 
-    private def master_query(query_builder)
+    private def associated_version_query(query_builder)
       query_builder = query_builder
         .table({{ @type }}.table_name)
         .get_all([id.as(String)], index: {{ parent_id.symbolize }})
