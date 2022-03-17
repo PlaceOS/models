@@ -1,4 +1,8 @@
-## Unreleased
+## v7.1.1 (2022-03-17)
+
+### Fix
+
+- **versions#history**: restore `offset` and `limit` ([#154](https://github.com/PlaceOS/models/pull/154))
 
 ## v7.1.0 (2022-03-10)
 
