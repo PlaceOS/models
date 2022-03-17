@@ -62,11 +62,19 @@ module PlaceOS::Model
         parent_id = parent.id.as(String)
         name = UUID.random.to_s
         original, duplicate = Array(Metadata).new(2) { Generator.metadata(name: name, parent: parent_id) }
-        puts original, duplicate
-
         original.save!
+
         expect_raises(RethinkORM::Error::DocumentInvalid, /`name` must be unique beneath 'parent_id'/) do
           duplicate.save!
+        end
+      end
+
+      it "ensures `parent_id` exists" do
+        parent_id = "zone-doesnotexist"
+        metadata = Generator.metadata(parent: parent_id)
+
+        expect_raises(RethinkORM::Error::DocumentInvalid, /`parent_id` must reference an existing model/) do
+          metadata.save!
         end
       end
     end

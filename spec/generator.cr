@@ -152,22 +152,21 @@ module PlaceOS::Model
 
     def self.metadata(
       name : String = Faker::Hacker.noun + RANDOM.base64(10),
-      parent : String | Zone | ControlSystem? = nil,
+      parent : String | User | Zone | ControlSystem? = nil,
       modifier : User? = nil
     )
       Metadata.new(name: name, details: JSON::Any.new({} of String => JSON::Any)).tap do |meta|
         case parent
-        in ControlSystem
-          meta.control_system = parent
-        in String
-          meta.parent_id = parent
-        in Zone
-          meta.zone = parent
+        in ControlSystem then meta.control_system = parent
+        in String        then meta.parent_id = parent
+        in User          then meta.user = parent
+        in Zone          then meta.zone = parent
         in Nil
           # Generate a single parent for the metadata model
           {
             ->{ meta.control_system = self.control_system.save! },
             ->{ meta.zone = self.zone.save! },
+            ->{ meta.user = self.user.save! },
           }.sample.call
         end
 
