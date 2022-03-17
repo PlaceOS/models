@@ -104,7 +104,8 @@ module PlaceOS::Model
           end
         end
 
-        metadata.history.size.should eq Utilities::Versions::MAX_VERSIONS
+        metadata.history(limit: 2).size.should eq 2
+        metadata.history(limit: 1000).size.should eq Utilities::Versions::MAX_VERSIONS
       end
     end
   end
