@@ -79,6 +79,40 @@ module PlaceOS::Model
       end
     end
 
+    describe "#history_count" do
+      it "returns 0 for versions" do
+        changes = [0, 1].map { |i| JSON::Any.new({"test" => JSON::Any.new(i.to_i64)}) }
+        metadata = Generator.metadata
+        metadata.details = changes.first
+        metadata.save!
+
+        changes[1..].each_with_index(offset: 1) do |detail, i|
+          Timecop.freeze(i.seconds.from_now) do
+            metadata.details = detail
+            metadata.save!
+          end
+        end
+
+        metadata.history.first.history_count.should eq 0
+      end
+
+      it "returns count of versions for main document" do
+        changes = [0, 1, 2, 3].map { |i| JSON::Any.new({"test" => JSON::Any.new(i.to_i64)}) }
+        metadata = Generator.metadata
+        metadata.details = changes.first
+        metadata.save!
+
+        changes[1..].each_with_index(offset: 1) do |detail, i|
+          Timecop.freeze(i.seconds.from_now) do
+            metadata.details = detail
+            metadata.save!
+          end
+        end
+
+        metadata.history_count.should eq changes.size
+      end
+    end
+
     describe "#history" do
       it "renders versions made on updates to the master Metadata" do
         changes = [0, 1, 2, 3].map { |i| JSON::Any.new({"test" => JSON::Any.new(i.to_i64)}) }

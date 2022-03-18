@@ -56,7 +56,7 @@ module PlaceOS::Model::Utilities::Versions
     private def cleanup_history
       return if is_version?
 
-      ::RethinkORM::Connection.raw do |q|
+      {{ @type }}.table_query do |q|
         associated_version_query(q, &.itself)
           .slice(MAX_VERSIONS)
           .delete
@@ -71,7 +71,7 @@ module PlaceOS::Model::Utilities::Versions
     # Versions are in descending order of creation
     def history(offset : Int32 = 0, limit : Int32 = 10, &)
       {{ @type }}.raw_query do |r|
-        associated_version_query(r) do |query_builder|
+        associated_version_query(r.table({{ @type }}.table_name)) do |query_builder|
           (yield query_builder).slice(offset, offset + limit)
         end
       end
@@ -82,26 +82,35 @@ module PlaceOS::Model::Utilities::Versions
       history(offset, limit, &.itself)
     end
 
+    # Return the number of versions for the main document.
+    #
+    # If the document is a version, this is always 0.
+    def history_count
+      return 0 if is_version?
+      {{ @type }}.table_query do |q|
+        associated_version_query(q, &.itself).count
+      end.as_i
+    end
+
     private def associated_version_query(query_builder)
       query_builder = query_builder
-        .table({{ @type }}.table_name)
         .get_all([id.as(String)], index: {{ parent_id.symbolize }})
       query_builder = yield query_builder
       query_builder.order_by(r.desc(:created_at))
     end
 
-    # Query on master {{ klass_name }} documents
+    # Query on main {{ klass_name }} documents
     #
-    # Gets documents where the {{ parent_id }} does not exist, i.e. is the master
+    # Gets documents where the {{ parent_id }} does not exist, i.e. is the main
     def self.master_{{ klass_name }}_query
       raw_query do |q|
         (yield q.table(table_name)).filter(&.has_fields({{ parent_id.symbolize }}).not)
       end.to_a
     end
 
-    # Query on master {{ klass_name }} documents
+    # Query on main {{ klass_name }} documents
     #
-    # Gets documents where the {{ parent_id }} does not exist, i.e. is the master
+    # Gets documents where the {{ parent_id }} does not exist, i.e. is the main
     def self.master_{{ klass_name }}_raw_query
       ::RethinkORM::Connection.raw do |q|
         (yield q.table(table_name)).filter(&.has_fields({{ parent_id.symbolize }}).not)

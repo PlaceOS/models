@@ -81,6 +81,25 @@ module PlaceOS::Model
     # Queries
     ###############################################################################################
 
+    enum Association
+      Zone
+      ControlSystem
+      User
+
+      def prefix
+        case self
+        in Zone          then Zone.table_name
+        in ControlSystem then ControlSystem.table_name
+        in User          then User.table_name
+        end
+      end
+    end
+
+    def self.search(
+      association : Association
+    )
+    end
+
     def self.for(parent : String | Zone | ControlSystem | User, name : String? = nil)
       parent_id = case parent
                   in String
