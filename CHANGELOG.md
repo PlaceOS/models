@@ -1,3 +1,9 @@
+## v7.3.0 (2022-03-18)
+
+### Feat
+
+- **versions**: add `#history_count`
+
 ## v7.2.0 (2022-03-17)
 
 ### Feat
