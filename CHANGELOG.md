@@ -1,3 +1,9 @@
+## v7.4.0 (2022-03-21)
+
+### Feat
+
+- **metadata**: add `id` to `Metadata::Interface` ([#157](https://github.com/PlaceOS/models/pull/157))
+
 ## v7.3.0 (2022-03-18)
 
 ### Feat
