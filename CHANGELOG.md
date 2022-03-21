@@ -1,3 +1,9 @@
+## v7.5.0 (2022-03-21)
+
+### Feat
+
+- **metadata**: add `Metadata.build_history` ([#159](https://github.com/PlaceOS/models/pull/159))
+
 ## v7.4.0 (2022-03-21)
 
 ### Feat
