@@ -1,3 +1,9 @@
+## v7.6.1 (2022-03-21)
+
+### Fix
+
+- resolve a missing symbol
+
 ## v7.6.0 (2022-03-21)
 
 ### Feat
