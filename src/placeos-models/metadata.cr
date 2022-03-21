@@ -1,6 +1,7 @@
+require "json"
+require "openapi-generator/serializable"
 require "rethinkdb-orm"
 require "time"
-require "json"
 
 require "./converter/json_string"
 require "./utilities/last_modified"
@@ -137,6 +138,7 @@ module PlaceOS::Model
       created_at : Time,
     ) do
       include JSON::Serializable
+      extend OpenAPI::Generator::Serializable
 
       @[JSON::Field(converter: Time::EpochConverter)]
       @updated_at : Time
