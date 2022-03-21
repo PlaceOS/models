@@ -8,4 +8,5 @@ record(PlaceOS::Model::Version,
   platform_version : String = {{ env("PLACE_VERSION") || "DEV" }},
 ) do
   include JSON::Serializable
+  extend OpenAPI::Generator::Serializable
 end
