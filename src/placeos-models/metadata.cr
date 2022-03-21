@@ -125,7 +125,7 @@ module PlaceOS::Model
     # Serialisation
     ###############################################################################################
 
-    record Interface, name : String, description : String, details : JSON::Any, editors : Set(String)?, parent_id : String? {
+    record Interface, name : String, description : String, details : JSON::Any, editors : Set(String)?, parent_id : String?, id : String? {
       include JSON::Serializable
     }
 
@@ -136,6 +136,7 @@ module PlaceOS::Model
         details: model.details,
         parent_id: model.parent_id,
         editors: model.editors,
+        id: model.id,
       )
     end
 
