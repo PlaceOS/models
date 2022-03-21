@@ -1,3 +1,5 @@
+require "openapi-generator"
+require "openapi-generator/serializable"
 require "jwt"
 require "time"
 
