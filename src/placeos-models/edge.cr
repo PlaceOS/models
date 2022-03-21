@@ -60,8 +60,10 @@ module PlaceOS::Model
       name : String,
       user_id : String,
       description : String = "",
-    ) { include JSON::Serializable
-    extend OpenAPI::Generator::Serializable }
+    ) do
+      include JSON::Serializable
+      extend OpenAPI::Generator::Serializable
+    end
 
     # Association
     ###############################################################################################
