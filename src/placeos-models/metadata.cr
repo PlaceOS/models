@@ -1,6 +1,7 @@
+require "json"
+require "openapi-generator/serializable"
 require "rethinkdb-orm"
 require "time"
-require "json"
 
 require "./converter/json_string"
 require "./utilities/last_modified"
@@ -125,25 +126,49 @@ module PlaceOS::Model
     # Serialisation
     ###############################################################################################
 
-    record Interface, name : String, description : String, details : JSON::Any, editors : Set(String)?, parent_id : String?, id : String? {
+    record(
+      Interface,
+      name : String,
+      description : String,
+      details : JSON::Any,
+      editors : Set(String)?,
+      parent_id : String?,
+      modified_by_id : String?,
+      updated_at : Time,
+      created_at : Time,
+    ) do
       include JSON::Serializable
       extend OpenAPI::Generator::Serializable
-    }
+
+      @[JSON::Field(converter: Time::EpochConverter)]
+      @updated_at : Time
+      @[JSON::Field(converter: Time::EpochConverter)]
+      @created_at : Time
+    end
 
     def self.interface(model : Metadata)
+      {% begin %}
       Interface.new(
-        name: model.name,
-        description: model.description,
-        details: model.details,
-        parent_id: model.parent_id,
-        editors: model.editors,
-        id: model.id,
+        {% for instance_variable in Model::Metadata::Interface.instance_vars %}
+          {{ instance_variable.name }}: model.{{ instance_variable.name }},
+        {% end %}
       )
+      {% end %}
+    end
+
+    def interface
+      self.class.interface(self)
     end
 
     def self.build_metadata(parent, name : String? = nil) : Hash(String, Interface)
       for(parent, name).each_with_object({} of String => Interface) do |data, results|
-        results[data.name] = self.interface(data)
+        results[data.name] = data.interface
+      end
+    end
+
+    def self.build_history(parent, name : String? = nil, offset : Int32 = 0, limit : Int32 = 10)
+      for(parent, name).each_with_object({} of String => Array(Interface)) do |data, results|
+        results[data.name] = data.history(offset, limit).map(&.interface)
       end
     end
   end

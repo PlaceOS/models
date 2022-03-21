@@ -175,4 +175,34 @@ module PlaceOS::Model
       parent.destroy
     end
   end
+
+  describe "build_history" do
+    it "builds a response of metadata history for a parent" do
+      parent = Generator.zone.save!
+      parent_id = parent.id.as(String)
+      changes = [0, 1, 2, 3, 4].map { |i| JSON::Any.new({"test" => JSON::Any.new(i.to_i64)}) }
+
+      4.times do |index|
+        metadata = Generator.metadata(parent: parent_id)
+        metadata.details = changes.first
+        metadata.save!
+        changes[1..(index + 1)].each_with_index(offset: 1) do |detail, i|
+          Timecop.freeze(i.seconds.from_now) do
+            metadata.details = detail
+            metadata.save!
+          end
+        end
+      end
+
+      history = Metadata.build_history(parent_id)
+      history.size.should eq 4
+      history.values.map(&.map(&.details["test"].as_i)).sort_by!(&.size).should eq [
+        [1, 0],
+        [2, 1, 0],
+        [3, 2, 1, 0],
+        [4, 3, 2, 1, 0],
+      ]
+      parent.destroy
+    end
+  end
 end
