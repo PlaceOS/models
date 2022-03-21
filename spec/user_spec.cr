@@ -24,7 +24,7 @@ module PlaceOS::Model
     describe "before_destroy" do
       context "ensure_admin_remains" do
         it "protects against concurrent deletes of admins" do
-          num_tests = 30
+          num_tests = 15
           errors = [] of Model::Error
           num_tests.times do
             User.clear
