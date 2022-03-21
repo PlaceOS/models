@@ -127,6 +127,7 @@ module PlaceOS::Model
 
     record Interface, name : String, description : String, details : JSON::Any, editors : Set(String)?, parent_id : String?, id : String? {
       include JSON::Serializable
+      extend OpenAPI::Generator::Serializable
     }
 
     def self.interface(model : Metadata)

@@ -41,7 +41,8 @@ module PlaceOS::Model
         # Unparsed hash of a status variable
         status : String,
         # Keys to look up in the module
-        keys : Array(String) { include JSON::Serializable }
+        keys : Array(String) { include JSON::Serializable
+      extend OpenAPI::Generator::Serializable }
 
       enum Operator
         And

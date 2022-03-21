@@ -5,6 +5,7 @@ module PlaceOS::Model
   # Base ORM for JWT
   abstract struct JWTBase
     include JSON::Serializable
+    extend OpenAPI::Generator::Serializable
 
     Log = ::Log.for(PlaceOS::Model).for("jwt")
 
