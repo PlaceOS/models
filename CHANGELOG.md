@@ -1,3 +1,9 @@
+## v7.6.0 (2022-03-21)
+
+### Feat
+
+- **model**: produce model schema ([#158](https://github.com/PlaceOS/models/pull/158))
+
 ## v7.5.0 (2022-03-21)
 
 ### Feat
