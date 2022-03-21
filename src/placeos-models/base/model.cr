@@ -19,6 +19,7 @@ module PlaceOS::Model
     macro inherited
       Log = ::Log.for(self)
       include OpenAPI::Generator::Serializable::Adapters::ActiveModel
+      extend OpenAPI::Generator::Serializable
     end
   end
 
@@ -29,6 +30,7 @@ module PlaceOS::Model
     macro inherited
       Log = ::Log.for(self)
       include OpenAPI::Generator::Serializable::Adapters::ActiveModel
+      extend OpenAPI::Generator::Serializable
     end
 
     # RethinkDB library serializes through JSON::Any
