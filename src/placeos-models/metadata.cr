@@ -166,7 +166,7 @@ module PlaceOS::Model
     # Determine if a user has create access to the Metadata
     # - Support+ `User`s can edit `Metadata`
     # - `User`s can edit their own `Metadata`
-    def self.user_can_create?(parent_id : String, user : Model::UserJWT)
+    def self.user_can_create?(parent_id : String?, user : Model::UserJWT)
       user.is_support? ||
         user.is_admin? ||
         parent_id == user.id
