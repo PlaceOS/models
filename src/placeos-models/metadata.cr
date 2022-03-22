@@ -82,25 +82,6 @@ module PlaceOS::Model
     # Queries
     ###############################################################################################
 
-    enum Association
-      Zone
-      ControlSystem
-      User
-
-      def prefix
-        case self
-        in Zone          then Zone.table_name
-        in ControlSystem then ControlSystem.table_name
-        in User          then User.table_name
-        end
-      end
-    end
-
-    def self.search(
-      association : Association
-    )
-    end
-
     def self.for(parent : String | Zone | ControlSystem | User, name : String? = nil)
       parent_id = case parent
                   in String
@@ -131,11 +112,12 @@ module PlaceOS::Model
       name : String,
       description : String,
       details : JSON::Any,
-      editors : Set(String)?,
       parent_id : String?,
-      modified_by_id : String?,
-      updated_at : Time,
-      created_at : Time,
+      schema_id : String? = nil,
+      editors : Set(String) = Set(String).new,
+      modified_by_id : String? = nil,
+      updated_at : Time = Time.utc,
+      created_at : Time = Time.utc,
     ) do
       include JSON::Serializable
       extend OpenAPI::Generator::Serializable
@@ -158,6 +140,53 @@ module PlaceOS::Model
 
     def interface
       self.class.interface(self)
+    end
+
+    def self.from_interface(interface : Interface)
+      new.tap do |model|
+        {% begin %}
+          {% for instance_variable in Model::Metadata::Interface.instance_vars.reject { |var| {:updated_at, :created_at, :modified_by_id}.includes?(var.name.symbolize) } %}
+            if %value{instance_variable} = interface.{{instance_variable.name}}
+              model.{{instance_variable.name}} = %value{instance_variable}
+            end
+          {% end %}
+        {% end %}
+      end
+    end
+
+    # Determine if a user has edit access to the Metadata
+    # - Support+ `User`s can edit `Metadata`
+    # - `User`s can edit their own `Metadata`
+    # - `User`'s with roles in the `Metadata`'s `editors` can edit
+    def user_can_update?(user : Model::UserJWT)
+      self.class.user_can_create?(self.parent_id, user) ||
+        !(self.editors & Set.new(user_token.user.roles)).empty?
+    end
+
+    # Determine if a user has create access to the Metadata
+    # - Support+ `User`s can edit `Metadata`
+    # - `User`s can edit their own `Metadata`
+    def self.user_can_create?(parent_id : String, user : Model::UserJWT)
+      user.is_support? ||
+        user.is_admin? ||
+        parent_id == user.id
+    end
+
+    def assign_from_interface(user : Model::UserJWT, interface : Interface)
+      # Only support+ users can edit the editors list
+      if (updated_editors = interface.editors) && user.is_support?
+        self.editors = updated_editors
+      end
+
+      # Only support+ users can edit the schema
+      if (updated_schema_id = interface.schema_id) && user.is_support?
+        self.schema_id = updated_schema_id
+      end
+
+      # Update existing Metadata
+      self.description = interface.description
+      self.details = interface.details
+      self
     end
 
     def self.build_metadata(parent, name : String? = nil) : Hash(String, Interface)
