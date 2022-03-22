@@ -1,3 +1,9 @@
+## v7.6.2 (2022-03-22)
+
+### Refactor
+
+- **metadata**: creation/update helpers ([#160](https://github.com/PlaceOS/models/pull/160))
+
 ## v7.6.1 (2022-03-21)
 
 ### Fix
