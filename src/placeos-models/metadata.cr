@@ -160,7 +160,7 @@ module PlaceOS::Model
     # - `User`'s with roles in the `Metadata`'s `editors` can edit
     def user_can_update?(user : Model::UserJWT)
       self.class.user_can_create?(self.parent_id, user) ||
-        !(self.editors & Set.new(user_token.user.roles)).empty?
+        !(self.editors & Set.new(user.user.roles)).empty?
     end
 
     # Determine if a user has create access to the Metadata
