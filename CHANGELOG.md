@@ -1,3 +1,9 @@
+## v7.6.3 (2022-03-22)
+
+### Fix
+
+- **Metadata.user_can_create?**: looser `parent_id` restriction ([#161](https://github.com/PlaceOS/models/pull/161))
+
 ## v7.6.2 (2022-03-22)
 
 ### Refactor
