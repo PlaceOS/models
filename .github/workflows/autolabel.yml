@@ -5,4 +5,4 @@ on:
 
 jobs:
   label:
-    uses: PlaceOS/.github/.github/workflows/autolabel-pr.yml@feat/auto-label
+    uses: PlaceOS/.github/.github/workflows/autolabel-pr.yml@main
