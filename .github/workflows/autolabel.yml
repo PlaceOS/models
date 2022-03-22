@@ -1,0 +1,12 @@
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - reopened
+
+name: Auto Label
+
+jobs:
+  label:
+    uses: PlaceOS/.github/.github/workflows/autolabel-pr.yml@feat/auto-label
