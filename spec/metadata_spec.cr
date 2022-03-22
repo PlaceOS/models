@@ -152,7 +152,7 @@ module PlaceOS::Model
     end
   end
 
-  describe "for" do
+  describe ".for" do
     it "fetches metadata for a parent" do
       parent = Generator.zone.save!
       parent_id = parent.id.as(String)
@@ -164,7 +164,40 @@ module PlaceOS::Model
     end
   end
 
-  describe "build_metadata" do
+  describe "#assign_from_interface" do
+    it "updates a metadata from an interface" do
+      interface = Metadata::Interface.new(
+        description: "hello",
+        name: "jeff",
+        details: JSON.parse("{}"),
+        parent_id: "zone-doesntexist",
+      )
+      metadata = Generator.metadata
+      metadata.assign_from_interface(Generator.user_jwt(permission: :admin_support), interface)
+
+      # `parent_id` remains unchanged
+      metadata.parent_id.should_not eq interface.parent_id
+      # `name` remains unchanged
+      metadata.name.should_not eq interface.name
+
+      metadata.description.should eq interface.description
+      metadata.details.should eq interface.details
+    end
+  end
+
+  describe ".from_interface" do
+    it "builds a metadata from an interface" do
+      interface = Metadata::Interface.new(
+        description: "hello",
+        name: "jeff",
+        details: JSON.parse("{}"),
+        parent_id: "zone-doesntexist",
+      )
+      Metadata.from_interface(interface)
+    end
+  end
+
+  describe ".build_metadata" do
     it "builds a response of metadata for a parent" do
       parent = Generator.zone.save!
       parent_id = parent.id.as(String)
@@ -176,7 +209,7 @@ module PlaceOS::Model
     end
   end
 
-  describe "build_history" do
+  describe ".build_history" do
     it "builds a response of metadata history for a parent" do
       parent = Generator.zone.save!
       parent_id = parent.id.as(String)
