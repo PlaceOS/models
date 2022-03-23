@@ -35,13 +35,15 @@ module PlaceOS::Model
       alias Constant = Int64 | Float64 | String | Bool
 
       # Status of a Module
-      record StatusVariable,
+      record(
+        StatusVariable,
         # Module that defines the status variable
         mod : String,
         # Unparsed hash of a status variable
         status : String,
         # Keys to look up in the module
-        keys : Array(String) do
+        keys : Array(String)
+      ) do
         include JSON::Serializable
         extend OpenAPI::Generator::Serializable
       end
