@@ -1,3 +1,9 @@
+## v7.6.6 (2022-03-23)
+
+### Fix
+
+- **last_modified**: skip warn for versions
+
 ## v7.6.5 (2022-03-23)
 
 ### Fix
