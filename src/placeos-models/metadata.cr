@@ -53,6 +53,8 @@ module PlaceOS::Model
     def self.validate_parent_exists(metadata : Metadata)
       # Skip validation if `Metadata` has been created
       return unless metadata.id.nil?
+      # `parent_id` presence is already enforced
+      return if metadata.parent_id.nil?
 
       table_name = metadata.parent_id.as(String).partition('-').first
       if RethinkORM::Connection.raw(&.table(table_name).get(metadata.parent_id)).raw.nil?
