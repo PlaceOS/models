@@ -34,6 +34,10 @@ dependencies:
     github: place-labs/openapi-generator
     branch: master
 
+  # Parser combinators
+  pars:
+    github: spider-gazelle/pars
+
   # PlaceOS log backend
   placeos-log-backend:
     github: place-labs/log-backend

@@ -83,6 +83,107 @@ module PlaceOS::Model
     # Queries
     ###############################################################################################
 
+    abstract struct Condition
+      getter type : Type
+      getter key : String
+      getter value : String
+
+      enum Type
+        Association
+        Equals
+        StartsWith
+        EndsWith
+        # TODO: Add `key_missing` Metadata query
+      end
+
+      def initialize(@type, @key, @value)
+      end
+
+      enum Association
+        System
+        Zone
+        User
+
+        def id_prefix
+          case self
+          in .system? then ControlSystem.table_name
+          in .zone?   then Zone.table_name
+          in .user?   then User.table_name
+          end
+        end
+      end
+
+      # Query Building
+      #########################################################################
+
+      def apply(query_builder)
+        case type
+        in .association?
+          if association_type = Association.parse?(value)
+            query_builder.filter do |document|
+              document["id"].match("^#{association_type.id_prefix}")
+            end
+          else
+            # Ignore the filter
+            Log.info { "invalid metadata association '#{value}'" }
+            query_builder
+          end
+        in .equals?
+          query_builder.filter do |document|
+            lookup_key(document).eq(value)
+          end
+        in .ends_with?
+          query_builder.filter do |document|
+            lookup_key(document).match("#{value}$")
+          end
+        in .starts_with?
+          query_builder.filter do |document|
+            lookup_key(document).match("^#{value}")
+          end
+        end
+      end
+
+      protected getter key_parts : Array(String) do
+        key.split('.')
+      end
+
+      protected def lookup_key(document)
+        key_parts.reduce(document) do |object, part|
+          object[part]
+        end
+      end
+
+      # Parsing
+      #########################################################################
+
+      def self.from_param?(param_key : String, param_value : String)
+        type, key = key_parser.parse(param_key)
+        value = param_string_parser.parse(param_value)
+
+        new(type, key, value)
+      rescue Pars::ParseError
+        nil
+      end
+
+      protected class_getter param_string_parser : Pars::Parser(String) do
+        param_safe_char_parser = Pars::Parse.alphanumeric | Pars::Parse.one_char_of('-', '.', '_', '~')
+        (param_safe_char_parser * (1..)).map &.join
+      end
+
+      protected class_getter key_parser : Pars::Parser({Type, String}) do
+        type_parser = Pars::Parse.word.map { |word| Type.parse(word) }
+        type_parser << Pars::Parse.char('[') &+ param_string_parser << Pars::Parse.char(']')
+      end
+    end
+
+    def self.query(conditions : Array(Condition))
+      master_metadata_query do |query_builder|
+        conditions.reduce(query_builder) do |q, condition|
+          condition.apply(q)
+        end
+      end
+    end
+
     def self.for(parent : String | Zone | ControlSystem | User, name : String? = nil)
       parent_id = case parent
                   in String
