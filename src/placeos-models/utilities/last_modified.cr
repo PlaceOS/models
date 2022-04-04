@@ -20,7 +20,10 @@ module PlaceOS::Model::Utilities::LastModified
 
     protected def set_modified_by
       unless self.modified_by_id_changed?
-        Log.debug { "No modifying user recorded for #{self.id}" }
+        unless self.responds_to? :is_version? && is_version?
+          Log.debug { "No modifying user recorded for #{self.id}" }
+        end
+
         self.modified_by_id = nil
       end
     end

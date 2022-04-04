@@ -1,3 +1,15 @@
+## v7.6.6 (2022-03-23)
+
+### Fix
+
+- **last_modified**: skip warn for versions
+
+## v7.6.5 (2022-03-23)
+
+### Fix
+
+- **metadata**: skip parent validation if no `parent_id` ([#162](https://github.com/PlaceOS/models/pull/162))
+
 ## v7.6.4 (2022-03-22)
 
 ### Fix

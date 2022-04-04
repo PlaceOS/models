@@ -1,6 +1,8 @@
 require "json"
+require "openapi-generator/serializable"
 
-record(PlaceOS::Model::Version,
+record(
+  PlaceOS::Model::Version,
   service : String,
   commit : String,
   version : String,
