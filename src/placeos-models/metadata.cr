@@ -83,7 +83,7 @@ module PlaceOS::Model
     # Queries
     ###############################################################################################
 
-    abstract struct Condition
+    struct Condition
       getter type : Type
       getter key : String
       getter value : String
