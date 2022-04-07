@@ -150,7 +150,7 @@ module PlaceOS::Model
   end
 
   describe ".query" do
-    Metadata::Condition::Type.each do |type|
+    Metadata::Query::Type.each do |type|
       before_all { Metadata.clear }
       describe type do
         case type
@@ -160,14 +160,45 @@ module PlaceOS::Model
             _metadatas = models.map { |model| Generator.metadata(parent: model.id.as(String)).save! }
           end
 
-          Metadata::Condition::Association.each do |association|
+          Metadata::Query::Association::Type.each do |association|
             it "filters by #{association}" do
               Metadata
-                .query([Metadata::Condition.new(type, nil, association.to_s)])
+                .query([Metadata::Query::Association.new(association)])
                 .tap(&.should_not be_empty)
                 .all?(&.parent_id.not_nil!.starts_with?(association.id_prefix))
                 .should be_true
             end
+          end
+        in .key_missing?
+          it "checks for missing keys" do
+            Metadata.clear
+            mock_value = UUID.random.to_s
+            mock_details = {
+              {
+                "one" => mock_value,
+              },
+              {
+                "one" => {"two" => mock_value},
+              },
+            }
+
+            mock_details.each do |details|
+              meta = Generator.metadata
+              meta.details = JSON.parse(details.to_json)
+              meta.save!
+            end
+
+            Metadata
+              .query([Metadata::Query::KeyMissing.new("one.two")])
+              .size.should eq(1)
+
+            Metadata
+              .query([Metadata::Query::KeyMissing.new("one")])
+              .size.should eq(1)
+
+            Metadata
+              .query([Metadata::Query::KeyMissing.new("two")])
+              .size.should eq(2)
           end
         in .equals?
           key_paths = {"one", "one.two"}
@@ -192,7 +223,7 @@ module PlaceOS::Model
           key_paths.each_with_index(offset: 1) do |path, depth|
             it "matches values at key depth of #{depth}" do
               Metadata
-                .query([Metadata::Condition.new(type, path, mock_value)])
+                .query([Metadata::Query::Equals.new(path, mock_value)])
                 .tap(&.size.should eq(1))
                 .first.tap do |metadata|
                 path.split('.').reduce(metadata.details) do |object, key|
@@ -224,7 +255,7 @@ module PlaceOS::Model
           key_paths.each_with_index(offset: 1) do |path, depth|
             it "matches the start of values at key depth of #{depth}" do
               Metadata
-                .query([Metadata::Condition.new(type, path, mock_value[..mock_value.size//2])])
+                .query([Metadata::Query::StartsWith.new(path, mock_value[..mock_value.size//2])])
                 .tap(&.size.should eq(1))
                 .first.tap do |metadata|
                 path.split('.').reduce(metadata.details) do |object, key|
@@ -238,31 +269,47 @@ module PlaceOS::Model
     end
   end
 
-  describe Metadata::Condition do
+  describe Metadata::Query do
     describe ".from_param?" do
-      Metadata::Condition::Type.each do |type|
+      Metadata::Query::Type.each do |type|
         describe type do
           case type
           in .association?
             it "doesn't expect a key" do
-              Metadata::Condition.from_param?("association[uh-oh]", "system")
+              Metadata::Query.from_param?("association[uh-oh]", "system")
                 .should be_nil
             end
 
             it "expects a valid association" do
-              Metadata::Condition.from_param?("association", "system")
+              Metadata::Query.from_param?("association", "system")
                 .tap(&.should_not be_nil)
                 .not_nil!
-                .type.association?.should be_true
+                .should be_a Metadata::Query::Association
+
+              Metadata::Query.from_param?("association", "foot")
+                .should be_nil
+            end
+          in .key_missing?
+            it "expects a key" do
+              Metadata::Query.from_param?("key_missing", nil)
+                .should be_nil
+
+              Metadata::Query.from_param?("key_missing[uh-oh]", nil)
+                .should be_a Metadata::Query::KeyMissing
+            end
+
+            it "doesn't expect a value" do
+              Metadata::Query.from_param?("key_missing[uh-oh]", "something")
+                .should be_nil
             end
           in .equals?
             it "expects a key" do
-              Metadata::Condition.from_param?("equals", "foo")
+              Metadata::Query.from_param?("equals", "foo")
                 .should be_nil
             end
           in .starts_with?
             it "expects a key" do
-              Metadata::Condition.from_param?("starts_with", "foo")
+              Metadata::Query.from_param?("starts_with", "foo")
                 .should be_nil
             end
           end
