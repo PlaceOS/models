@@ -149,7 +149,7 @@ module PlaceOS::Model
     end
   end
 
-  describe ".query", focus: true do
+  describe ".query" do
     Metadata::Condition::Type.each do |type|
       before_all { Metadata.clear }
       describe type do

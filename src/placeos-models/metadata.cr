@@ -1,6 +1,7 @@
 require "json"
 require "openapi-generator/serializable"
 require "rethinkdb-orm"
+require "rethinkdb"
 require "time"
 require "pars"
 
@@ -125,11 +126,15 @@ module PlaceOS::Model
           end
         in .equals?
           query_builder.filter do |document|
-            lookup_key(document).eq(value)
+            lookup_key(document) do |lookup|
+              lookup.eq(value)
+            end
           end
         in .starts_with?
           query_builder.filter do |document|
-            lookup_key(document).match("^#{value}")
+            lookup_key(document) do |lookup|
+              lookup.match("^#{value}")
+            end
           end
         end
       end
@@ -139,9 +144,23 @@ module PlaceOS::Model
       end
 
       protected def lookup_key(document)
-        key_parts.reduce(document["details"]) do |object, part|
-          object[part]
+        # Ensure final value is string and all intermediates are objects
+        lookups = key_parts.reduce([document["details"]]) do |objects, part|
+          objects.push(objects.last[part])
         end
+
+        # Intermediate lookups MUST be objects
+        object_lookups = lookups[..-2].reduce(RethinkDB.expr(true)) do |objects_so_far, lookup|
+          objects_so_far.and(lookup.type_of.eq("OBJECT"))
+        end
+
+        string_lookup = lookups.last
+
+        query = yield string_lookup
+
+        object_lookups
+          .and(string_lookup.type_of.eq("STRING"))
+          .and(query)
       end
 
       # Parsing
@@ -198,7 +217,7 @@ module PlaceOS::Model
     def self.query(conditions : Array(Condition))
       master_metadata_query do |query_builder|
         conditions.reduce(query_builder) do |q, condition|
-          condition.apply(q).tap { |t| pp! t }
+          condition.apply(q)
         end
       end
     end
