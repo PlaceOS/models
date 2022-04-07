@@ -196,7 +196,7 @@ module PlaceOS::Model
         protected def initialize(@key)
         end
 
-        protected def lookup_key(document, expected = true)
+        protected def lookup_key(document)
           # Ensure final value is not an object and all intermediates are objects
           lookups = key_parts.reduce([document["details"]]) do |objects, part|
             objects.push(objects.last[part])
@@ -208,9 +208,9 @@ module PlaceOS::Model
           end
 
           value_lookup = lookups.last
-          query = object_lookups
-          query = query.and(value_lookup.type_of.ne("OBJECT")) if expected
-          query.and(yield value_lookup)
+          object_lookups
+            .and(value_lookup.type_of.ne("OBJECT"))
+            .and(yield value_lookup)
         end
       end
 
@@ -220,9 +220,14 @@ module PlaceOS::Model
 
         def apply(query_builder)
           query_builder.filter do |document|
-            lookup_key(document, expected: false) do |_lookup|
-              RethinkDB.expr(true)
-            end.not
+            lookups = key_parts.reduce([document["details"]]) do |objects, part|
+              objects.push(objects.last[part])
+            end
+
+            lookup_with_key = lookups[..-2].zip(key_parts)
+            lookup_with_key.reduce(RethinkDB.expr(false)) do |query, (object, key)|
+              query.or(object.type_of.ne("OBJECT").or(object.has_fields(key).not))
+            end
           end
         end
       end

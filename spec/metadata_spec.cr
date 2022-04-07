@@ -170,7 +170,7 @@ module PlaceOS::Model
             end
           end
         in .key_missing?
-          it "checks for missing keys" do
+          before_all do
             Metadata.clear
             mock_value = UUID.random.to_s
             mock_details = {
@@ -187,15 +187,21 @@ module PlaceOS::Model
               meta.details = JSON.parse(details.to_json)
               meta.save!
             end
+          end
 
+          it "checks for missing keys, where values can be objects" do
+            Metadata
+              .query([Metadata::Query::KeyMissing.new("one")])
+              .size.should eq(0)
+          end
+
+          it "checks for missing keys of depth 2" do
             Metadata
               .query([Metadata::Query::KeyMissing.new("one.two")])
               .size.should eq(1)
+          end
 
-            Metadata
-              .query([Metadata::Query::KeyMissing.new("one")])
-              .size.should eq(1)
-
+          it "checks for keys that are entirely missing" do
             Metadata
               .query([Metadata::Query::KeyMissing.new("two")])
               .size.should eq(2)
