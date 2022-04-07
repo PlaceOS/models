@@ -49,9 +49,6 @@ module PlaceOS::Model
         editors: Set(String).new,
       )
 
-      # Serializes details to a string
-      JSON.parse(meta.to_json)["details"].should eq %({"hello":"world"})
-
       # Satisfies round trip property
       Metadata.from_json(meta.to_json).details.should eq JSON.parse(object)
     end

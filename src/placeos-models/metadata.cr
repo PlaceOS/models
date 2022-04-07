@@ -3,7 +3,6 @@ require "openapi-generator/serializable"
 require "rethinkdb-orm"
 require "time"
 
-require "./converter/json_string"
 require "./utilities/last_modified"
 require "./utilities/versions"
 
@@ -21,7 +20,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
-    attribute details : JSON::Any, converter: JSON::Any::StringConverter
+    attribute details : JSON::Any
     attribute editors : Set(String) = ->{ Set(String).new }
 
     attribute parent_id : String, es_type: "keyword"
