@@ -149,6 +149,128 @@ module PlaceOS::Model
     end
   end
 
+  describe ".query", focus: true do
+    Metadata::Condition::Type.each do |type|
+      before_all { Metadata.clear }
+      describe type do
+        case type
+        in .association?
+          before_all do
+            models = {Generator.control_system, Generator.zone, Generator.user}.tap &.each(&.save!)
+            _metadatas = models.map { |model| Generator.metadata(parent: model.id.as(String)).save! }
+          end
+
+          Metadata::Condition::Association.each do |association|
+            it "filters by #{association}" do
+              Metadata
+                .query([Metadata::Condition.new(type, nil, association.to_s)])
+                .tap(&.should_not be_empty)
+                .all?(&.parent_id.not_nil!.starts_with?(association.id_prefix))
+                .should be_true
+            end
+          end
+        in .equals?
+          key_paths = {"one", "one.two"}
+          mock_value = UUID.random.to_s
+          before_all do
+            mock_details = {
+              {
+                "one" => mock_value,
+              },
+              {
+                "one" => {"two" => mock_value},
+              },
+            }
+
+            mock_details.each do |details|
+              meta = Generator.metadata
+              meta.details = JSON.parse(details.to_json)
+              meta.save!
+            end
+          end
+
+          key_paths.each_with_index(offset: 1) do |path, depth|
+            it "matches values at key depth of #{depth}" do
+              Metadata
+                .query([Metadata::Condition.new(type, path, mock_value)])
+                .tap(&.size.should eq(1))
+                .first.tap do |metadata|
+                path.split('.').reduce(metadata.details) do |object, key|
+                  object.as_h[key]
+                end.should eq(mock_value)
+              end
+            end
+          end
+        in .starts_with?
+          key_paths = {"one", "one.two"}
+          mock_value = UUID.random.to_s
+          before_all do
+            mock_details = {
+              {
+                "one" => mock_value,
+              },
+              {
+                "one" => {"two" => mock_value},
+              },
+            }
+
+            mock_details.each do |details|
+              meta = Generator.metadata
+              meta.details = JSON.parse(details.to_json)
+              meta.save!
+            end
+          end
+
+          key_paths.each_with_index(offset: 1) do |path, depth|
+            it "matches the start of values at key depth of #{depth}" do
+              Metadata
+                .query([Metadata::Condition.new(type, path, mock_value[..mock_value.size//2])])
+                .tap(&.size.should eq(1))
+                .first.tap do |metadata|
+                path.split('.').reduce(metadata.details) do |object, key|
+                  object.as_h[key]
+                end.should eq(mock_value)
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  describe Metadata::Condition do
+    describe ".from_param?" do
+      Metadata::Condition::Type.each do |type|
+        describe type do
+          case type
+          in .association?
+            it "doesn't expect a key" do
+              Metadata::Condition.from_param?("association[uh-oh]", "system")
+                .should be_nil
+            end
+
+            it "expects a valid association" do
+              Metadata::Condition.from_param?("association", "system")
+                .tap(&.should_not be_nil)
+                .not_nil!
+                .type.association?.should be_true
+            end
+          in .equals?
+            it "expects a key" do
+              Metadata::Condition.from_param?("equals", "foo")
+                .should be_nil
+            end
+          in .starts_with?
+            it "expects a key" do
+              Metadata::Condition.from_param?("starts_with", "foo")
+                .should be_nil
+            end
+          end
+        end
+      end
+    end
+  end
+
   describe ".for" do
     it "fetches metadata for a parent" do
       parent = Generator.zone.save!

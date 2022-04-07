@@ -2,6 +2,7 @@ require "json"
 require "openapi-generator/serializable"
 require "rethinkdb-orm"
 require "time"
+require "pars"
 
 require "./utilities/last_modified"
 require "./utilities/versions"
@@ -85,18 +86,17 @@ module PlaceOS::Model
 
     struct Condition
       getter type : Type
-      getter key : String
+      getter key : String?
       getter value : String
 
       enum Type
         Association
         Equals
         StartsWith
-        EndsWith
         # TODO: Add `key_missing` Metadata query
       end
 
-      def initialize(@type, @key, @value)
+      protected def initialize(@type, @key, @value)
       end
 
       enum Association
@@ -106,9 +106,9 @@ module PlaceOS::Model
 
         def id_prefix
           case self
-          in .system? then ControlSystem.table_name
-          in .zone?   then Zone.table_name
-          in .user?   then User.table_name
+          in .system? then Model::ControlSystem.table_name
+          in .zone?   then Model::Zone.table_name
+          in .user?   then Model::User.table_name
           end
         end
       end
@@ -119,22 +119,13 @@ module PlaceOS::Model
       def apply(query_builder)
         case type
         in .association?
-          if association_type = Association.parse?(value)
-            query_builder.filter do |document|
-              document["id"].match("^#{association_type.id_prefix}")
-            end
-          else
-            # Ignore the filter
-            Log.info { "invalid metadata association '#{value}'" }
-            query_builder
+          association_type = Association.parse(value)
+          query_builder.filter do |document|
+            document["parent_id"].match("^#{association_type.id_prefix}")
           end
         in .equals?
           query_builder.filter do |document|
             lookup_key(document).eq(value)
-          end
-        in .ends_with?
-          query_builder.filter do |document|
-            lookup_key(document).match("#{value}$")
           end
         in .starts_with?
           query_builder.filter do |document|
@@ -144,11 +135,11 @@ module PlaceOS::Model
       end
 
       protected getter key_parts : Array(String) do
-        key.split('.')
+        key.not_nil!.split('.')
       end
 
       protected def lookup_key(document)
-        key_parts.reduce(document) do |object, part|
+        key_parts.reduce(document["details"]) do |object, part|
           object[part]
         end
       end
@@ -157,29 +148,57 @@ module PlaceOS::Model
       #########################################################################
 
       def self.from_param?(param_key : String, param_value : String)
-        type, key = key_parser.parse(param_key)
-        value = param_string_parser.parse(param_value)
+        parsed_key = key_parser.parse(param_key)
+        return if parsed_key.is_a?(Pars::ParseError)
+        type, key = parsed_key[:type], parsed_key[:key]
 
-        new(type, key, value)
-      rescue Pars::ParseError
-        nil
+        value = param_string_parser.parse(param_value)
+        return if value.is_a?(Pars::ParseError)
+
+        if type.association? && !key.nil?
+          Log.warn { "did not expect key for association" }
+          nil
+        elsif !type.association? && key.nil?
+          Log.warn { "expected key for #{type}" }
+          nil
+        elsif type.association? && Association.parse?(value).nil?
+          # Ignore the filter if the association type not recognised.
+          Log.warn { "invalid metadata association '#{value}'" }
+          nil
+        else
+          new(type, key, value)
+        end
       end
 
       protected class_getter param_string_parser : Pars::Parser(String) do
-        param_safe_char_parser = Pars::Parse.alphanumeric | Pars::Parse.one_char_of('-', '.', '_', '~')
+        param_safe_char_parser = Pars::Parse.alphanumeric | Pars::Parse.one_char_of({'-', '.', '_', '~'})
         (param_safe_char_parser * (1..)).map &.join
       end
 
-      protected class_getter key_parser : Pars::Parser({Type, String}) do
-        type_parser = Pars::Parse.word.map { |word| Type.parse(word) }
-        type_parser << Pars::Parse.char('[') &+ param_string_parser << Pars::Parse.char(']')
+      protected class_getter key_bracket_parser : Pars::Parser(String?) do
+        bracketed_key = Pars::Parse.char('[') >> param_string_parser << Pars::Parse.char(']')
+        # Match 0 or 1
+        (bracketed_key * (0..1)).map do |result|
+          result.first?
+        end
+      end
+
+      protected class_getter key_parser : Pars::Parser(NamedTuple(type: Type, key: String?)) do
+        Pars::Parse.do({
+          type <= Pars::Parse.word.map { |word| Type.parse(word) },
+          key <= key_bracket_parser,
+          Pars::Parse.const({
+            type: type,
+            key:  key,
+          }),
+        })
       end
     end
 
     def self.query(conditions : Array(Condition))
       master_metadata_query do |query_builder|
         conditions.reduce(query_builder) do |q, condition|
-          condition.apply(q)
+          condition.apply(q).tap { |t| pp! t }
         end
       end
     end
