@@ -1,3 +1,9 @@
+## v8.1.0 (2022-04-07)
+
+### Feat
+
+- **metadata**: implement queries ([#164](https://github.com/PlaceOS/models/pull/164))
+
 ## v8.0.0 (2022-04-07)
 
 ## v7.6.7 (2022-03-24)
