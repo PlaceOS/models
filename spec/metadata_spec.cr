@@ -149,6 +149,181 @@ module PlaceOS::Model
     end
   end
 
+  describe ".query" do
+    Metadata::Query::Type.each do |type|
+      before_all { Metadata.clear }
+      describe type do
+        case type
+        in .association?
+          before_all do
+            models = {Generator.control_system, Generator.zone, Generator.user}.tap &.each(&.save!)
+            _metadatas = models.map { |model| Generator.metadata(parent: model.id.as(String)).save! }
+          end
+
+          Metadata::Query::Association::Type.each do |association|
+            it "filters by #{association}" do
+              Metadata
+                .query([Metadata::Query::Association.new(association)])
+                .tap(&.should_not be_empty)
+                .all?(&.parent_id.not_nil!.starts_with?(association.id_prefix))
+                .should be_true
+            end
+          end
+        in .key_missing?
+          before_all do
+            Metadata.clear
+            mock_value = UUID.random.to_s
+            mock_details = {
+              {
+                "one" => mock_value,
+              },
+              {
+                "one" => {"two" => mock_value},
+              },
+            }
+
+            mock_details.each do |details|
+              meta = Generator.metadata
+              meta.details = JSON.parse(details.to_json)
+              meta.save!
+            end
+          end
+
+          it "checks for missing keys, where values can be objects" do
+            Metadata
+              .query([Metadata::Query::KeyMissing.new("one")])
+              .size.should eq(0)
+          end
+
+          it "checks for missing keys of depth 2" do
+            Metadata
+              .query([Metadata::Query::KeyMissing.new("one.two")])
+              .size.should eq(1)
+          end
+
+          it "checks for keys that are entirely missing" do
+            Metadata
+              .query([Metadata::Query::KeyMissing.new("two")])
+              .size.should eq(2)
+          end
+        in .equals?
+          key_paths = {"one", "one.two"}
+          mock_value = UUID.random.to_s
+          before_all do
+            mock_details = {
+              {
+                "one" => mock_value,
+              },
+              {
+                "one" => {"two" => mock_value},
+              },
+            }
+
+            mock_details.each do |details|
+              meta = Generator.metadata
+              meta.details = JSON.parse(details.to_json)
+              meta.save!
+            end
+          end
+
+          key_paths.each_with_index(offset: 1) do |path, depth|
+            it "matches values at key depth of #{depth}" do
+              Metadata
+                .query([Metadata::Query::Equals.new(path, mock_value)])
+                .tap(&.size.should eq(1))
+                .first.tap do |metadata|
+                path.split('.').reduce(metadata.details) do |object, key|
+                  object.as_h[key]
+                end.should eq(mock_value)
+              end
+            end
+          end
+        in .starts_with?
+          key_paths = {"one", "one.two"}
+          mock_value = UUID.random.to_s
+          before_all do
+            mock_details = {
+              {
+                "one" => mock_value,
+              },
+              {
+                "one" => {"two" => mock_value},
+              },
+            }
+
+            mock_details.each do |details|
+              meta = Generator.metadata
+              meta.details = JSON.parse(details.to_json)
+              meta.save!
+            end
+          end
+
+          key_paths.each_with_index(offset: 1) do |path, depth|
+            it "matches the start of values at key depth of #{depth}" do
+              Metadata
+                .query([Metadata::Query::StartsWith.new(path, mock_value[..mock_value.size//2])])
+                .tap(&.size.should eq(1))
+                .first.tap do |metadata|
+                path.split('.').reduce(metadata.details) do |object, key|
+                  object.as_h[key]
+                end.should eq(mock_value)
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  describe Metadata::Query do
+    describe ".from_param?" do
+      Metadata::Query::Type.each do |type|
+        describe type do
+          case type
+          in .association?
+            it "doesn't expect a key" do
+              Metadata::Query.from_param?("association[uh-oh]", "system")
+                .should be_nil
+            end
+
+            it "expects a valid association" do
+              Metadata::Query.from_param?("association", "system")
+                .tap(&.should_not be_nil)
+                .not_nil!
+                .should be_a Metadata::Query::Association
+
+              Metadata::Query.from_param?("association", "foot")
+                .should be_nil
+            end
+          in .key_missing?
+            it "expects a key" do
+              Metadata::Query.from_param?("key_missing", nil)
+                .should be_nil
+
+              Metadata::Query.from_param?("key_missing[uh-oh]", nil)
+                .should be_a Metadata::Query::KeyMissing
+            end
+
+            it "doesn't expect a value" do
+              Metadata::Query.from_param?("key_missing[uh-oh]", "something")
+                .should be_nil
+            end
+          in .equals?
+            it "expects a key" do
+              Metadata::Query.from_param?("equals", "foo")
+                .should be_nil
+            end
+          in .starts_with?
+            it "expects a key" do
+              Metadata::Query.from_param?("starts_with", "foo")
+                .should be_nil
+            end
+          end
+        end
+      end
+    end
+  end
+
   describe ".for" do
     it "fetches metadata for a parent" do
       parent = Generator.zone.save!
