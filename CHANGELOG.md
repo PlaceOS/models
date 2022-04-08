@@ -6,6 +6,8 @@
 
 ## v8.0.0 (2022-04-07)
 
+- **metadata**: convert `details` to JSON ([#163](https://github.com/PlaceOS/models/pull/163))
+
 ## v7.6.7 (2022-03-24)
 
 ### Fix
