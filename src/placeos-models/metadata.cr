@@ -38,8 +38,22 @@ module PlaceOS::Model
     belongs_to ControlSystem, foreign_key: "parent_id", association_name: "control_system"
     belongs_to User, foreign_key: "parent_id", association_name: "user"
 
+    def parent : User | ControlSystem | Zone | Nil
+      case parent_id
+      when .starts_with?(Model::ControlSystem.table_name) then control_system
+      when .starts_with?(Model::Zone.table_name)          then zone
+      when .starts_with?(Model::User.table_name)          then user
+      end
+    end
+
     # Schema for validating `details` object
     belongs_to JsonSchema, foreign_key: "schema_id", association_name: "schema"
+
+    # Serialisation
+    ###############################################################################################
+
+    # Groups only
+    define_to_json :parent, methods: :parent
 
     # Validation
     ###############################################################################################
