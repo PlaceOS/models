@@ -164,7 +164,6 @@ module PlaceOS::Model
             Metadata
               .query([Metadata::Query::Name.new(name)])
               .tap(&.size.should eq(expected))
-              .tap { |t| t.each { |e| pp! e.name } }
               .all?(&.name.==(name)).should be_true
           end
         in .association?
