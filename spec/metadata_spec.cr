@@ -154,6 +154,18 @@ module PlaceOS::Model
       before_all { Metadata.clear }
       describe type do
         case type
+        in .name?
+          it "filters by Metadata `name`" do
+            name = UUID.random.to_s
+            expected = 2
+            expected.times { Generator.metadata(name: name).save! }
+            5.times { Generator.metadata.save! }
+
+            Metadata
+              .query([Metadata::Query::Name.new(name)])
+              .tap(&.size.should eq(expected))
+              .all?(&.name.should eq(name)).should be_true
+          end
         in .association?
           before_all do
             models = {Generator.control_system, Generator.zone, Generator.user}.tap &.each(&.save!)
@@ -280,6 +292,16 @@ module PlaceOS::Model
       Metadata::Query::Type.each do |type|
         describe type do
           case type
+          in .name?
+            it "doesn't expect a key" do
+              Metadata::Query.from_param?("name[uh-oh]", "system")
+                .should be_nil
+
+              Metadata::Query.from_param?("name", "system")
+                .tap(&.should_not be_nil)
+                .not_nil!
+                .should be_a Metadata::Query::Name
+            end
           in .association?
             it "doesn't expect a key" do
               Metadata::Query.from_param?("association[uh-oh]", "system")
