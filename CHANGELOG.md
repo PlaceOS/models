@@ -1,4 +1,9 @@
-## Unreleased
+## v8.2.0 (2022-04-13)
+
+### Feat
+
+- **metadata**: add `to_parent_json` ([#166](https://github.com/PlaceOS/models/pull/166))
+- **metadata#query**: add ability to filter by name ([#167](https://github.com/PlaceOS/models/pull/167))
 
 ## v8.1.0 (2022-04-07)
 
