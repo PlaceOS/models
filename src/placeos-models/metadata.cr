@@ -146,6 +146,8 @@ module PlaceOS::Model
         type, key, value = parsed[:type], parsed[:key], parsed[:value]
 
         case type
+        in .name?
+          Name.new(value) if key.nil? && value
         in .association?
           if key.nil? && value && (association = Association::Type.parse?(value))
             Association.new(association)
@@ -156,6 +158,19 @@ module PlaceOS::Model
           Equals.new(key, value) if key && value
         in .starts_with?
           StartsWith.new(key, value) if key && value
+        end
+      end
+
+      struct Name < Query
+        getter value : String
+
+        protected def initialize(@value)
+        end
+
+        def apply(query_builder)
+          query_builder.filter do |document|
+            document["name"].eq(value)
+          end
         end
       end
 
