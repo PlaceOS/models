@@ -1,4 +1,8 @@
-## Unreleased
+## v8.2.1 (2022-04-14)
+
+### Perf
+
+- **metadata**: faster name queries
 
 ## v8.2.0 (2022-04-13)
 
