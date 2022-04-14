@@ -40,7 +40,8 @@ module PlaceOS::Model
     belongs_to User, foreign_key: "parent_id", association_name: "user"
 
     def parent : User | ControlSystem | Zone | Nil
-      case parent_id
+      return if (p_id = parent_id).nil?
+      case p_id
       when .starts_with?(Model::ControlSystem.table_name) then control_system
       when .starts_with?(Model::Zone.table_name)          then zone
       when .starts_with?(Model::User.table_name)          then user
