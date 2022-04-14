@@ -32,6 +32,7 @@ module PlaceOS::Model
     ###############################################################################################
 
     secondary_index :parent_id
+    secondary_index :name
 
     # Models that `Metadata` is attached to
     belongs_to Zone, foreign_key: "parent_id", association_name: "zone"
@@ -182,9 +183,7 @@ module PlaceOS::Model
         end
 
         def apply(query_builder)
-          query_builder.filter do |document|
-            document["name"].eq(value)
-          end
+          query_builder.get_all([value], index: :name)
         end
       end
 
@@ -296,7 +295,15 @@ module PlaceOS::Model
 
     def self.query(query_conditions : Array(Query))
       master_metadata_query do |query_builder|
-        query_conditions.reduce(query_builder) do |q, condition|
+        name_queries, filters = query_conditions.partition do |condition|
+          condition.is_a?(Query::Name)
+        end
+
+        if name_query = name_queries.first?
+          query_builder = name_query.apply(query_builder)
+        end
+
+        filters.reduce(query_builder) do |q, condition|
           condition.apply(q)
         end
       end
