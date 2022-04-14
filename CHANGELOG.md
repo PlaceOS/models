@@ -1,3 +1,9 @@
+## v8.2.2 (2022-04-14)
+
+### Fix
+
+- **metadata**: `parent_id` could be nil
+
 ## v8.2.1 (2022-04-14)
 
 ### Perf
