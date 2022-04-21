@@ -1,3 +1,9 @@
+## v8.2.3 (2022-04-21)
+
+### Fix
+
+- **User#find_by_email**: digest was not used ([#168](https://github.com/PlaceOS/models/pull/168))
+
 ## v8.2.2 (2022-04-14)
 
 ### Fix
