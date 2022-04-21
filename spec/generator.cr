@@ -134,7 +134,7 @@ module PlaceOS::Model
           # Set cs
           mod.control_system = !control_system ? Generator.control_system.save! : control_system
         rescue e : RethinkORM::Error::DocumentInvalid
-          pp! e.model.not_nil!.errors
+          inspect_error(e)
           raise e
         end
       end

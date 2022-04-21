@@ -9,8 +9,8 @@ module PlaceOS::Model
           mod = Generator.module(driver: driver)
           begin
             mod.save!
-          rescue
-            pp! mod.errors
+          rescue error : RethinkORM::Error::DocumentInvalid
+            inspect_error(error)
           end
           mod.persisted?.should be_true
         end
@@ -124,7 +124,7 @@ module PlaceOS::Model
         begin
           zone = Generator.zone.save!
         rescue e : RethinkORM::Error::DocumentInvalid
-          pp! e.model.not_nil!.errors
+          inspect_error(e)
           raise e
         end
         mod = Generator.module(control_system: control_system).save!
@@ -207,7 +207,7 @@ module PlaceOS::Model
         begin
           Generator.settings(driver: driver, settings_string: driver_settings_string).save!
         rescue e : RethinkORM::Error::DocumentInvalid
-          pp! e.model.not_nil!.errors
+          inspect_error(e)
           raise e
         end
 
