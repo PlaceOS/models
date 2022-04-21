@@ -35,13 +35,11 @@ end
 
 # Pretty prints document errors
 def inspect_error(error : RethinkORM::Error::DocumentInvalid)
-  errors = error.model.errors.map do |e|
-    {
-      field:   e.field,
-      message: e.message,
-    }
+  message = error.model.errors.join('\n') do |e|
+    "#{e.field} #{e.message}"
   end
-  pp! errors
+
+  puts message
 end
 
 # Helper to check if string is encrypted
