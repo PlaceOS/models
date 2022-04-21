@@ -183,11 +183,12 @@ module PlaceOS::Model
     secondary_index :email_digest
 
     def self.find_by_email(authority_id : String, email : PlaceOS::Model::Email | String)
-      find_by_emails(authority_id, [email])
+      find_by_emails(authority_id, [email]).first?
     end
 
     def self.find_by_emails(authority_id : String, emails : Enumerable(String) | Enumerable(Email))
       return [] of self if emails.empty?
+
       digests = emails.map do |email|
         email = PlaceOS::Model::Email.new(email) if email.is_a?(String)
         email.digest
