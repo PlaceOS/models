@@ -1,3 +1,9 @@
+## v8.2.6 (2022-04-22)
+
+### Fix
+
+- **metadata#query**: allow `@` and ` ` in keys and values ([#170](https://github.com/PlaceOS/models/pull/170))
+
 ## v8.2.5 (2022-04-22)
 
 ### Fix
