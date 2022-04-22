@@ -1,3 +1,9 @@
+## v8.2.7 (2022-04-22)
+
+### Fix
+
+- **spec/generator**: remove call to `inspect_error`
+
 ## v8.2.6 (2022-04-22)
 
 ### Fix
