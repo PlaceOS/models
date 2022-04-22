@@ -130,15 +130,8 @@ module PlaceOS::Model
       mod.driver = driver
 
       if driver.role.logic?
-        begin
-          # Set cs
-          mod.control_system = !control_system ? Generator.control_system.save! : control_system
-        rescue e : RethinkORM::Error::DocumentInvalid
-          inspect_error(e)
-          raise e
-        end
+        mod.control_system = !control_system ? Generator.control_system.save! : control_system
       end
-      mod
     end
 
     def self.edge(user : User? = nil)
