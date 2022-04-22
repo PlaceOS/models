@@ -7,6 +7,7 @@ module PlaceOS::Model::Utilities::LastModified
   macro included
     has_one User, association_name: :modified_by
 
+    @[JSON::Field(ignore: true)]
     @modified_by : User?
 
     def modified_by=(user)
