@@ -1,3 +1,9 @@
+## v8.2.8 (2022-04-22)
+
+### Fix
+
+- **generator**: typo in the generator
+
 ## v8.2.7 (2022-04-22)
 
 ### Fix
