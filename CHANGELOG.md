@@ -1,3 +1,9 @@
+## v8.2.5 (2022-04-22)
+
+### Fix
+
+- **last_modified**: prevent assignment of `modified_by_id`
+
 ## v8.2.4 (2022-04-22)
 
 ### Fix
