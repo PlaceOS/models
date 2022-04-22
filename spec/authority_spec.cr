@@ -6,6 +6,8 @@ module PlaceOS::Model
   end
 
   describe Authority do
+    test_round_trip(Authority)
+
     it "saves an Authority" do
       inst = Generator.authority.save!
       Authority.find!(inst.id.as(String)).id.should eq inst.id

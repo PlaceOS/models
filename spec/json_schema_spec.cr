@@ -1,9 +1,11 @@
 require "./helper"
 
 module PlaceOS::Model
-  describe Metadata do
-    it "saves json schema" do
-      schema = Generator.schema.save!
+  describe JsonSchema do
+    test_round_trip(JsonSchema)
+
+    it "saves a json schema" do
+      schema = Generator.json_schema.save!
 
       schema_find = JsonSchema.find!(schema.id.as(String))
       schema_find.id.should eq schema.id
@@ -13,9 +15,9 @@ module PlaceOS::Model
       schema.destroy
     end
 
-    it "works with metadata" do
+    it "is associated with metadata" do
       zone = Generator.zone.save!
-      schema = Generator.schema.save!
+      schema = Generator.json_schema.save!
       meta = Generator.metadata(parent: zone.id.as(String))
       meta.schema = schema
       meta.save!

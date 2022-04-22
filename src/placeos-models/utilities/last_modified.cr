@@ -30,7 +30,7 @@ module PlaceOS::Model::Utilities::LastModified
     end
 
     protected def clear_modifier
-      @modified_by = nil
+      @__modified_by = nil
     end
   end
 end

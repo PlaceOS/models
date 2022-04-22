@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe Trigger do
+    test_round_trip(Trigger)
+
     it "saves a trigger" do
       inst = Generator.trigger.save!
       Trigger.find!(inst.id.as(String)).id.should eq inst.id

@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe Broker do
+    test_round_trip(Broker)
+
     it "saves a Broker" do
       broker = Generator.broker.save!
 

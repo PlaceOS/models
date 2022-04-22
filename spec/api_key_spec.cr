@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe ApiKey do
+    test_round_trip(ApiKey)
+
     describe ".saas_api_key" do
       it "checks for existing domain" do
         expect_raises(Error::InvalidSaasKey) do

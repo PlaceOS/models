@@ -30,6 +30,20 @@ Spec.after_suite do
   end
 end
 
+# Spec Macros
+#################################################################
+
+macro test_round_trip(klass)
+  it "satisfies the round-trip property" do
+    model = Generator.{{ klass.stringify.split("::").last.underscore.id }}.save!
+
+    json = model.to_json
+    {{ klass }}.from_trusted_json(json).to_json.should eq(json)
+  ensure
+    model.try &.delete
+  end
+end
+
 # Models
 #################################################################
 

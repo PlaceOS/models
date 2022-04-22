@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe TriggerInstance do
+    test_round_trip(TriggerInstance)
+
     it "saves a TriggerInstance" do
       trigger = Generator.trigger.save!
 

@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe Zone do
+    test_round_trip(Zone)
+
     it "saves a zone" do
       zone = Generator.zone
 

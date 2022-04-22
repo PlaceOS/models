@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe AssetInstance do
+    test_round_trip(AssetInstance)
+
     it "saves a AssetInstance" do
       asset = Generator.asset.save!
 

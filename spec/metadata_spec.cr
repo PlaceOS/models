@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe Metadata do
+    test_round_trip(Metadata)
+
     it "saves control_system metadata" do
       control_system = Generator.control_system.save!
       meta = Generator.metadata(name: "test", parent: control_system.id.as(String)).save!
