@@ -220,7 +220,7 @@ module PlaceOS::Model
           end
         in .equals?
           key_paths = {"one", "one.two"}
-          mock_value = UUID.random.to_s
+          mock_value = "#{UUID.random}@evil.corp"
           before_all do
             mock_details = {
               {
@@ -240,8 +240,10 @@ module PlaceOS::Model
 
           key_paths.each_with_index(offset: 1) do |path, depth|
             it "matches values at key depth of #{depth}" do
+              # Ensure that queries with URI encoded values work
+              query = Metadata::Query.from_param?("equals[#{path}]", URI.encode_www_form(mock_value)).not_nil!
               Metadata
-                .query([Metadata::Query::Equals.new(path, mock_value)])
+                .query([query])
                 .tap(&.size.should eq(1))
                 .first.tap do |metadata|
                 path.split('.').reduce(metadata.details) do |object, key|

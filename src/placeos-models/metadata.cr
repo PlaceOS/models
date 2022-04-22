@@ -163,7 +163,7 @@ module PlaceOS::Model
 
       # Restrict the values/keys to a safe set of characters
       protected class_getter param_string_parser : Pars::Parser(String) do
-        param_safe_char_parser = Pars::Parse.alphanumeric | Pars::Parse.one_char_of({'-', '.', '_', '~'})
+        param_safe_char_parser = Pars::Parse.alphanumeric | Pars::Parse.one_char_of({'-', '.', '_', '~', '@', ' '})
         (param_safe_char_parser * (1..)).map &.join
       end
 
@@ -178,6 +178,10 @@ module PlaceOS::Model
 
       # ameba:disable Metrics/CyclomaticComplexity
       def self.from_param?(param_key : String, param_value : String?)
+        # Ensure that arguments have been URI decoded
+        param_key = URI.decode_www_form(param_key)
+        param_value = URI.decode_www_form(param_value) if param_value
+
         return unless parsed = parse?(param_key, param_value)
         type, key, value = parsed[:type], parsed[:key], parsed[:value]
 
