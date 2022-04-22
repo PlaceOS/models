@@ -6,6 +6,7 @@ require "../user"
 module PlaceOS::Model::Utilities::LastModified
   macro included
     has_one User, association_name: :modified_by
+    attribute modified_by_id : String | Nil, es_type: "keyword", mass_assignment: false
 
     def modified_by=(user)
       previous_def(user).tap do

@@ -31,19 +31,34 @@ module PlaceOS::Model
       settings.id.as(String).should start_with "sets-"
     end
 
-    it "`modifying_user_id` is `nil` if modifying user is not recorded" do
-      modifier = Generator.user.save!
-      control_system = Generator.control_system.save!
-      model = Settings.new
-      model.control_system = control_system
-      model.modified_by = modifier
-      model.save
-      model.modified_by_id.should eq(modifier.id)
+    describe "#modified_by_id" do
+      it "cannot be mass assigned" do
+        modifier = Generator.user.save!
+        control_system = Generator.control_system.save!
+        model = Settings.new
+        model.control_system = control_system
+        model.modified_by = modifier
+        model.save
+        model.modified_by_id.should eq(modifier.id)
 
-      # Subsequent saves should not have a `modified_by_id` set
-      model.settings_string_will_change!
-      model.save
-      model.modified_by_id.should be_nil
+        model.assign_attributes_from_json({modified_by_id: "wrong"}.to_json)
+        model.modified_by_id.should eq(modifier.id)
+      end
+
+      it "is `nil` if modifying user is not recorded" do
+        modifier = Generator.user.save!
+        control_system = Generator.control_system.save!
+        model = Settings.new
+        model.control_system = control_system
+        model.modified_by = modifier
+        model.save
+        model.modified_by_id.should eq(modifier.id)
+
+        # Subsequent saves should not have a `modified_by_id` set
+        model.settings_string_will_change!
+        model.save
+        model.modified_by_id.should be_nil
+      end
     end
 
     it "strips whitespace from empty settings string" do
