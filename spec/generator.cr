@@ -132,6 +132,7 @@ module PlaceOS::Model
       if driver.role.logic?
         mod.control_system = !control_system ? Generator.control_system.save! : control_system
       end
+      mod
     end
 
     def self.edge(user : User? = nil)
