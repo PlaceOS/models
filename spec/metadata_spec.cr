@@ -252,7 +252,8 @@ module PlaceOS::Model
           end
         in .starts_with?
           key_paths = {"one", "one.two"}
-          mock_value = UUID.random.to_s
+          mock_value = "^.#{UUID.random}"
+
           before_all do
             mock_details = {
               {

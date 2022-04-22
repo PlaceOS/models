@@ -141,6 +141,26 @@ module PlaceOS::Model
         end
       end
 
+      protected def self.escape_regex(value : String)
+        value.gsub({
+          "\\\\": %q(\\\\),
+          "\\":   %q(\\),
+          "^":    "\\^",
+          "$":    "\\$",
+          ".":    "\\.",
+          "|":    "\\|",
+          "?":    "\\?",
+          "*":    "\\*",
+          "+":    "\\+",
+          "(":    "\\(",
+          ")":    "\\)",
+          "[":    "\\[",
+          "]":    "\\]",
+          "{":    "\\{",
+          "}":    "\\}",
+        })
+      end
+
       # Restrict the values/keys to a safe set of characters
       protected class_getter param_string_parser : Pars::Parser(String) do
         param_safe_char_parser = Pars::Parse.alphanumeric | Pars::Parse.one_char_of({'-', '.', '_', '~'})
@@ -287,7 +307,7 @@ module PlaceOS::Model
         def apply(query_builder)
           query_builder.filter do |document|
             lookup_key(document) do |lookup|
-              lookup.match("^#{value}")
+              lookup.match("^#{self.class.escape_regex(value)}")
             end
           end
         end
