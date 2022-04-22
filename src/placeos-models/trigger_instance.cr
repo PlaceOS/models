@@ -106,10 +106,5 @@ module PlaceOS::Model
         end
       {% end %}
     {% end %}
-
-    @[Deprecated("Use `#id` instead.")]
-    def binding
-      self.id
-    end
   end
 end

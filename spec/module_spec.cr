@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe Module do
+    test_round_trip(Module)
+
     describe "persistence" do
       Driver::Role.values.each do |role|
         it "saves a #{role} module" do

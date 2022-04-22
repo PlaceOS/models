@@ -9,6 +9,21 @@ module PlaceOS::Model
   }
 
   describe Settings do
+    describe "serialisation" do
+      test_round_trip(Settings)
+
+      it "correctly serialises modified_by_id" do
+        user = Generator.user.save!
+        model = Generator.settings
+        model.modified_by = user
+        model.save!
+        json = model.to_json
+        deserialised_model = Settings.from_trusted_json(json)
+        deserialised_model.modified_by_id.should eq(user.id)
+        deserialised_model.to_json.should eq(json)
+      end
+    end
+
     it "saves a settings" do
       settings = Generator.settings
       settings.save

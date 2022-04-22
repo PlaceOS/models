@@ -26,7 +26,7 @@ module PlaceOS::Model
       driver
     end
 
-    def self.schema
+    def self.json_schema
       schema = JsonSchema.new
       schema.name = "test"
       schema.schema = JSON.parse %({

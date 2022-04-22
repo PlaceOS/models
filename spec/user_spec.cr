@@ -4,6 +4,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe User do
+    test_round_trip(User)
+
     describe "#save" do
       it "saves a User" do
         user = Generator.user.save!

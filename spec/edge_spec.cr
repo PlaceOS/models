@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe Edge do
+    test_round_trip(Edge)
+
     it "saves an Edge" do
       edge = Generator.edge.save!
       edge.should_not be_nil

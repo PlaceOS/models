@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe Driver do
+    test_round_trip(Driver)
+
     it "creates a driver" do
       driver = Generator.driver(role: Driver::Role::Service)
       driver.save!

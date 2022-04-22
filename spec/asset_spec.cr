@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe Asset do
+    test_round_trip(Asset)
+
     it "saves an asset" do
       asset = Generator.asset.save!
       asset.should_not be_nil

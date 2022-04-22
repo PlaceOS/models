@@ -7,8 +7,6 @@ module PlaceOS::Model::Utilities::LastModified
   macro included
     has_one User, association_name: :modified_by
 
-    @modified_by : User?
-
     def modified_by=(user)
       previous_def(user).tap do
         modified_by_id_will_change!
@@ -29,7 +27,7 @@ module PlaceOS::Model::Utilities::LastModified
     end
 
     protected def clear_modifier
-      @modified_by = nil
+      @__modified_by = nil
     end
   end
 end

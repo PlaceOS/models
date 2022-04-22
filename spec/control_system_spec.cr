@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe ControlSystem do
+    test_round_trip(ControlSystem)
+
     it "saves a control system" do
       cs = Generator.control_system
       begin

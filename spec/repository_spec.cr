@@ -2,6 +2,8 @@ require "./helper"
 
 module PlaceOS::Model
   describe Repository do
+    test_round_trip(Repository)
+
     it "saves a Repository" do
       repo = Generator.repository.save!
       Repository.find(repo.id.as(String)).should_not be_nil
