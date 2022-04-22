@@ -1,3 +1,9 @@
+## v8.2.4 (2022-04-22)
+
+### Fix
+
+- **last_modified**: ensure `modified_by_id` is serialised ([#169](https://github.com/PlaceOS/models/pull/169))
+
 ## v8.2.3 (2022-04-21)
 
 ### Fix
