@@ -1,3 +1,9 @@
+## Unreleased
+
+### Feat
+
+- **user**: expose `staff_id` ([#171](https://github.com/PlaceOS/models/pull/171))
+
 ## v8.2.8 (2022-04-22)
 
 ### Fix
