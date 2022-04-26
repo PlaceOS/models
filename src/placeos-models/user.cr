@@ -306,14 +306,14 @@ module PlaceOS::Model
     PUBLIC_DATA = [
       :email_digest, :nickname, :name, :first_name, :last_name, :groups,
       :country, :building, :image, :created_at, :authority_id, :deleted,
-      :department, :preferred_language,
+      :department, :preferred_language, :staff_id,
     ]
 
     {% begin %}
     ADMIN_DATA = {{
                    PUBLIC_DATA + [
-                     :sys_admin, :support, :email, :phone, :ui_theme, :misc, :login_name,
-                     :staff_id, :card_number,
+                     :sys_admin, :support, :misc, :login_name, :card_number,
+                     :email, :phone, :ui_theme,
                    ]
                  }}
     {% end %}
