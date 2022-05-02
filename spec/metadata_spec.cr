@@ -41,18 +41,71 @@ module PlaceOS::Model
       zone.destroy
     end
 
-    it "serializes details field to string" do
-      object = %({"hello":"world"})
-      meta = Metadata.new(
-        name: "hello",
-        description: "",
-        details: JSON.parse(object),
-        parent_id: "1234",
-        editors: Set(String).new,
-      )
+    describe "#details" do
+      it "serializes field to an JSON object" do
+        object = %({"hello":"world"})
+        meta = Metadata.new(
+          name: "hello",
+          description: "",
+          details: JSON.parse(object),
+          parent_id: "1234",
+          editors: Set(String).new,
+        )
 
-      # Satisfies round trip property
-      Metadata.from_json(meta.to_json).details.should eq JSON.parse(object)
+        # Satisfies round trip property
+        Metadata.from_json(meta.to_json).details.should eq JSON.parse(object)
+      end
+
+      context "JSON Merge Patch" do
+        it "deep merges objects" do
+          a = {
+            hello: :world,
+            a:     {aa: {aaa: 1}},
+            b:     {bb: 1},
+          }
+
+          b = {
+            hello: :friend,
+            a:     {aa: {bbb: 2}},
+            b:     {bb: 2},
+            c:     1,
+          }
+
+          b_into_a = {
+            hello: :friend,
+            a:     {aa: {aaa: 1, bbb: 2}},
+            b:     {bb: 2},
+            c:     1,
+          }
+
+          a_into_b = {
+            hello: :world,
+            a:     {aa: {aaa: 1, bbb: 2}},
+            b:     {bb: 1},
+            c:     1,
+          }
+
+          json = {a, b, a_into_b, b_into_a}.map { |o| JSON.parse(o.to_json) }
+          json_a, json_b, json_a_into_b, json_b_into_a = json
+
+          json_a.merge(json_b).should eq(json_b_into_a)
+          json_b.merge(json_a).should eq(json_a_into_b)
+        end
+
+        it "deletes keys for which new value is `null`" do
+          a, b = { {a: 1}, {a: nil} }.map { |o| JSON.parse(o.to_json) }
+          a.merge(b).as_h.has_key?("a").should be_false
+        end
+
+        it "replaces self with other if either are not an object" do
+          json = [{a: 1}, 1, 1.5, true, nil, [1]].map { |o| JSON.parse(o.to_json) }
+          a = json.shift
+          json.each do |b|
+            a.merge(b).should eq(b)
+            b.merge(a).should eq(a)
+          end
+        end
+      end
     end
 
     context "validation" do

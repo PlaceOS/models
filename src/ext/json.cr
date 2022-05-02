@@ -10,8 +10,11 @@ struct JSON::Any
         if other_value.nil? || other_value.raw.nil?
           hash.delete(other_key)
         else
-          original_value = hash[other_key]
-          hash[other_key] = original_value.merge(other_value)
+          hash[other_key] = if original_value = hash[other_key]?
+                              original_value.merge(other_value)
+                            else
+                              other_value
+                            end
         end
       end
       JSON::Any.new(hash)
