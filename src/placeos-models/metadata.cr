@@ -5,6 +5,7 @@ require "rethinkdb"
 require "time"
 require "pars"
 
+require "../ext/json"
 require "./utilities/last_modified"
 require "./utilities/versions"
 
