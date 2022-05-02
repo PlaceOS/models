@@ -42,7 +42,7 @@ module PlaceOS::Model
     end
 
     describe "#details" do
-      it "serializes field to an JSON object" do
+      it "serializes field to a JSON object" do
         object = %({"hello":"world"})
         meta = Metadata.new(
           name: "hello",
