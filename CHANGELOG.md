@@ -1,4 +1,10 @@
-## Unreleased
+## v8.3.0 (2022-05-02)
+
+### Feat
+
+- `Metadata#details` merge ([#172](https://github.com/PlaceOS/models/pull/172))
+
+## v8.2.9 (2022-04-26)
 
 ### Feat
 
