@@ -425,7 +425,7 @@ module PlaceOS::Model
         parent_id == user.id
     end
 
-    def assign_from_interface(user : Model::UserJWT, interface : Interface)
+    def assign_from_interface(user : Model::UserJWT, interface : Interface, merge_details : Bool = false)
       # Only support+ users can edit the editors list
       if (updated_editors = interface.editors) && user.is_support?
         self.editors = updated_editors
@@ -438,7 +438,9 @@ module PlaceOS::Model
 
       # Update existing Metadata
       self.description = interface.description
-      self.details = interface.details
+
+      # Merge or replace
+      self.details = merge_details ? self.details.merge(interface.details) : interface.details
       self
     end
 
