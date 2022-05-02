@@ -1,3 +1,9 @@
+## v8.4.0 (2022-05-02)
+
+### Feat
+
+- **metadata**: expose merge in `assign_from_interface`
+
 ## v8.3.0 (2022-05-02)
 
 ### Feat
