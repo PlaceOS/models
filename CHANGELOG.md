@@ -1,3 +1,9 @@
+## v8.4.1 (2022-05-04)
+
+### Fix
+
+- **edge**: optional `user_id` in create interface
+
 ## v8.4.0 (2022-05-02)
 
 ### Feat
