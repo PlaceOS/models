@@ -23,6 +23,8 @@ module PlaceOS::Model
 
     CONTROL_SCOPE = "edge-control"
 
+    define_to_json :key, methods: :x_api_key
+
     # Creation
     ###############################################################################################
 
