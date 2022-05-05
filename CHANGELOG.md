@@ -1,3 +1,9 @@
+## v8.5.0 (2022-05-05)
+
+### Feat
+
+- **edge**: add `#to_key_json` ([#173](https://github.com/PlaceOS/models/pull/173))
+
 ## v8.4.1 (2022-05-04)
 
 ### Fix
