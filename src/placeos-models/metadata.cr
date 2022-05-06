@@ -319,21 +319,32 @@ module PlaceOS::Model
       end
     end
 
+    # Returns the count of documents matching the query
+    def self.query_count(query_conditions : Array(Query)) : Int32
+      master_metadata_query_count do |query_builder|
+        apply_query(query_builder, query_conditions)
+      end
+    end
+
     def self.query(query_conditions : Array(Query), offset : Int32 = 0, limit : Int32 = 100)
       raise ArgumentError.new("Neither `offset` nor `limit` may be negative") if offset < 0 || limit < 0
 
       master_metadata_query(offset, limit) do |query_builder|
-        # Seperate name queries, so they can be applied first
-        name_queries, filters = query_conditions.partition do |condition|
-          condition.is_a?(Query::Name)
-        end
-
-        if name_query = name_queries.first?
-          query_builder = name_query.apply(query_builder)
-        end
-
-        filters.reduce(query_builder) { |q, condition| condition.apply(q) }
+        apply_query(query_builder, query_conditions)
       end
+    end
+
+    protected def self.apply_query(query_builder, query_conditions)
+      # Seperate name queries, so they can be applied first
+      name_queries, filters = query_conditions.partition do |condition|
+        condition.is_a?(Query::Name)
+      end
+
+      if name_query = name_queries.first?
+        query_builder = name_query.apply(query_builder)
+      end
+
+      filters.reduce(query_builder) { |q, condition| condition.apply(q) }
     end
 
     def self.for(parent : String | Zone | ControlSystem | User, name : String? = nil)

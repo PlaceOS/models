@@ -204,6 +204,16 @@ module PlaceOS::Model
     end
   end
 
+  describe ".query_count" do
+    it "counts total documents matching the query" do
+      name = Time.utc.to_unix_f.to_s
+      expected = 10
+      expected.times { Generator.metadata(name: name).save!.id.as(String) }
+
+      Metadata.query_count([Metadata::Query::Name.new(name)]).should eq expected
+    end
+  end
+
   describe ".query" do
     it "paginates" do
       name = Time.utc.to_unix_f.to_s

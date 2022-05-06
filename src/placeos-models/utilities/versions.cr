@@ -124,12 +124,22 @@ module PlaceOS::Model::Utilities::Versions
     # Query on main {{ klass_name }} documents
     #
     # Gets documents where the {{ parent_id }} does not exist, i.e. is the main
-    def self.master_{{ klass_name }}_raw_query(offset : Int32 = 0, limit : Int32 = 100)
+    def self.master_{{ klass_name }}_raw_query(count : Bool = false)
       ::RethinkORM::Connection.raw do |q|
         (yield q.table(table_name))
           .filter(&.has_fields({{ parent_id.symbolize }}).not)
-          .slice(offset, offest + limit)
       end
+    end
+
+    # Count of documents returned by query on main {{ klass_name }} documents
+    #
+    # Gets documents where the {{ parent_id }} does not exist, i.e. is the main
+    def self.master_{{ klass_name }}_query_count
+      ::RethinkORM::Connection.raw do |q|
+        (yield q.table(table_name))
+          .filter(&.has_fields({{ parent_id.symbolize }}).not)
+          .count
+      end.as_i
     end
   end
 end
