@@ -1,3 +1,9 @@
+## v8.7.0 (2022-05-06)
+
+### Feat
+
+- **metadata**: add `Metadata.query_count`
+
 ## v8.6.0 (2022-05-06)
 
 ### Feat
