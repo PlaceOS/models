@@ -112,7 +112,7 @@ module PlaceOS::Model
       it "ensures `name` is unique beneath `parent_id`, ignoring versions" do
         parent = Generator.zone.save!
         parent_id = parent.id.as(String)
-        name = UUID.random.to_s
+        name = Time.utc.to_unix_f.to_s
         original, duplicate = Array(Metadata).new(2) { Generator.metadata(name: name, parent: parent_id) }
         original.save!
 
@@ -205,13 +205,31 @@ module PlaceOS::Model
   end
 
   describe ".query" do
+    it "paginates" do
+      name = Time.utc.to_unix_f.to_s
+
+      expected = 10
+      model_ids = Array(String).new(size: expected) { Generator.metadata(name: name).save!.id.as(String) }.sort
+
+      Metadata.query([Metadata::Query::Name.new(name)], limit: 1).size.should eq(1)
+
+      first_query = Metadata.query([Metadata::Query::Name.new(name)], limit: 5)
+      last_query = Metadata.query([Metadata::Query::Name.new(name)], offset: 5)
+
+      first_query
+        .concat(last_query)
+        .map(&.id.as(String))
+        .sort!
+        .should eq(model_ids)
+    end
+
     Metadata::Query::Type.each do |type|
       before_all { Metadata.clear }
       describe type do
         case type
         in .name?
           it "filters by Metadata `name`" do
-            name = UUID.random.to_s
+            name = Time.utc.to_unix_f.to_s
             expected = 2
             expected.times { Generator.metadata(name: name).save! }
             5.times { Generator.metadata.save! }
@@ -239,7 +257,7 @@ module PlaceOS::Model
         in .key_missing?
           before_all do
             Metadata.clear
-            mock_value = UUID.random.to_s
+            mock_value = Time.utc.to_unix_f.to_s
             mock_details = {
               {
                 "one" => mock_value,
@@ -275,7 +293,7 @@ module PlaceOS::Model
           end
         in .equals?
           key_paths = {"one", "one.two"}
-          mock_value = "#{UUID.random}@evil.corp"
+          mock_value = "#{Time.utc.to_unix_ms}@evil.corp"
           before_all do
             mock_details = {
               {

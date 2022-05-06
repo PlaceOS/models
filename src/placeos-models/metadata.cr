@@ -319,8 +319,11 @@ module PlaceOS::Model
       end
     end
 
-    def self.query(query_conditions : Array(Query))
-      master_metadata_query do |query_builder|
+    def self.query(query_conditions : Array(Query), offset : Int32 = 0, limit : Int32 = 100)
+      raise ArgumentError.new("Neither `offset` nor `limit` may be negative") if offset < 0 || limit < 0
+
+      master_metadata_query(offset, limit) do |query_builder|
+        # Seperate name queries, so they can be applied first
         name_queries, filters = query_conditions.partition do |condition|
           condition.is_a?(Query::Name)
         end
@@ -329,9 +332,7 @@ module PlaceOS::Model
           query_builder = name_query.apply(query_builder)
         end
 
-        filters.reduce(query_builder) do |q, condition|
-          condition.apply(q)
-        end
+        filters.reduce(query_builder) { |q, condition| condition.apply(q) }
       end
     end
 
@@ -451,6 +452,7 @@ module PlaceOS::Model
     end
 
     def self.build_history(parent, name : String? = nil, offset : Int32 = 0, limit : Int32 = 10)
+      raise ArgumentError.new("Neither `offset` nor `limit` may be negative") if offset < 0 || limit < 0
       for(parent, name).each_with_object({} of String => Array(Interface)) do |data, results|
         results[data.name] = data.history(offset, limit).map(&.interface)
       end
