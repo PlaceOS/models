@@ -1,4 +1,8 @@
-## Unreleased
+## v8.6.0 (2022-05-06)
+
+### Feat
+
+- **metadata**: add pagination ([#174](https://github.com/PlaceOS/models/pull/174))
 
 ## v8.5.0 (2022-05-05)
 
