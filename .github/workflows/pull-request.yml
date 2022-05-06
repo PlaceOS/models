@@ -9,4 +9,4 @@ jobs:
     uses: PlaceOS/.github/.github/workflows/pull-request.yml@main
     with:
       title: ${{ github.event.pull_request.title }}
-      opened: ${{ github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened') }}
+      opened: ${{ github.event.action == 'opened' || github.event.action == 'reopened' }}
