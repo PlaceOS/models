@@ -22,6 +22,7 @@ module PlaceOS::Model
     attribute uri : String
     attribute commit_hash : String = "HEAD"
     attribute branch : String = "master"
+    attribute deployed_commit_hash : String? = nil
 
     # Whether the repository is pinned to a release asset
     attribute release : Bool = false
