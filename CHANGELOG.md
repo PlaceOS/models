@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fix
+
+- **repository**: pull! should use deployed_commit_hash ([#176](https://github.com/PlaceOS/models/pull/176))
+
 ## v8.8.0 (2022-05-16)
 
 ### Feat
