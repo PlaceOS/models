@@ -109,16 +109,8 @@ module PlaceOS::Model
 
     def pull!
       commit_hash_will_change!
-      self.commit_hash = self.class.pull_commit(self)
+      self.deployed_commit_hash = nil
       save!
-    end
-
-    def should_pull?
-      self.commit_hash == self.class.pull_commit(self)
-    end
-
-    def self.pull_commit(repo : Repository)
-      repo.repo_type.driver? ? "HEAD" : "PULL"
     end
   end
 end
