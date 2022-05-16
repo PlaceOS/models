@@ -1,3 +1,9 @@
+## v8.8.0 (2022-05-16)
+
+### Feat
+
+- **repository**: add deployed_commit_hash ([#175](https://github.com/PlaceOS/models/pull/175))
+
 ## v8.7.0 (2022-05-06)
 
 ### Feat
