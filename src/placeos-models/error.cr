@@ -1,22 +1,29 @@
-module PlaceOS::Model
-  class Error < Exception
-    getter message
+module PlaceOS
+  module Model
+    class Error < Exception
+      getter message
 
-    def initialize(@message = "", @cause = nil)
-    end
+      def initialize(io : IO, **args)
+        super(io.to_s, **args)
+      end
 
-    class NoParent < Error
-    end
+      def initialize(@message = "", **args)
+        super
+      end
 
-    class InvalidSaasKey < Error
-    end
+      class NoParent < Error
+      end
 
-    class NoScope < Error
-    end
+      class InvalidSaasKey < Error
+      end
 
-    class MalformedFilter < Error
-      def initialize(filters : Array(String)?)
-        super("One or more invalid regexes: #{filters}")
+      class NoScope < Error
+      end
+
+      class MalformedFilter < Error
+        def initialize(filters : Array(String)?)
+          super("One or more invalid regexes: #{filters}")
+        end
       end
     end
   end

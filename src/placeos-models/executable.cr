@@ -1,6 +1,8 @@
 require "json"
 require "semantic_version"
 
+require "./error"
+
 # Adds JSON serialisation
 require "../ext/semantic_version"
 
@@ -34,7 +36,7 @@ module PlaceOS::Model
         directory = Base64.decode_string(encoded_directory)
         crystal_version = SemanticVersion.parse(crystal_version)
       rescue e
-        raise Build::Error.new("#{File.basename(filename)} is not well-formed", cause: e)
+        raise Error.new("#{File.basename(filename)} is not well-formed", cause: e)
       end
 
       @entrypoint = File.join(directory, "#{name}.cr")
