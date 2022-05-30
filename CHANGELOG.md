@@ -1,4 +1,10 @@
-## Unreleased
+## v8.9.0 (2022-05-30)
+
+### Feat
+
+- add `PlaceOS::Model::Executable`
+
+## v8.8.1 (2022-05-16)
 
 ### Fix
 
