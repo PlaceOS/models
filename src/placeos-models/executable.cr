@@ -27,6 +27,7 @@ module PlaceOS::Model
 
     def initialize(@entrypoint, @commit, @digest, crystal_version)
       crystal_version = crystal_version.value if crystal_version.is_a? Shards::Version
+      @commit = self.class.normalized_commit(@commit)
       @crystal_version = SemanticVersion.parse(crystal_version)
     end
 
@@ -40,7 +41,7 @@ module PlaceOS::Model
       end
 
       @entrypoint = File.join(directory, "#{name}.cr")
-      @commit = commit
+      @commit = self.class.normalized_commit(commit)
       @digest = digest
       @crystal_version = crystal_version
     end
@@ -61,7 +62,7 @@ module PlaceOS::Model
     end
 
     def to_s(io)
-      io << "Driver(" << entrypoint << '@' << commit[0, 6]
+      io << "Driver(" << entrypoint << '@' << commit
       io << ", digest=" << digest
       io << ", crystal=" << crystal_version
       io << ")"
@@ -78,6 +79,10 @@ module PlaceOS::Model
       Path[entrypoint].basename.rchop(".cr")
     end
 
+    def self.normalized_commit(commit : String)
+      commit[0, 6]
+    end
+
     def self.encoded_directory(entrypoint)
       Base64.urlsafe_encode(Path[entrypoint].dirname, padding: false)
     end
@@ -87,7 +92,7 @@ module PlaceOS::Model
     def self.glob(entrypoint : String?, commit : String?, digest : String?, crystal_version : SemanticVersion | String?)
       {
         entrypoint.try &->name(String),
-        commit,
+        commit.try &->normalized_commit(String),
         digest,
         crystal_version,
         entrypoint.try &->encoded_directory(String),
