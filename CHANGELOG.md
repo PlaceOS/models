@@ -1,3 +1,9 @@
+## v8.9.2 (2022-06-01)
+
+### Fix
+
+- **executable**: short commit ([#177](https://github.com/PlaceOS/models/pull/177))
+
 ## v8.9.1 (2022-05-30)
 
 ### Fix
