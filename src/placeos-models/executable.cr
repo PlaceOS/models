@@ -79,8 +79,9 @@ module PlaceOS::Model
       Path[entrypoint].basename.rchop(".cr")
     end
 
+    # The default short commit hash is 7 characters
     def self.normalized_commit(commit : String)
-      commit[0, 6]
+      commit[0, 7]
     end
 
     def self.encoded_directory(entrypoint)
