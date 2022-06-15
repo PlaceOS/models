@@ -1,11 +1,11 @@
 require "json"
+require "json-merge-patch/ext"
 require "openapi-generator/serializable"
-require "rethinkdb-orm"
-require "rethinkdb"
-require "time"
 require "pars"
+require "rethinkdb"
+require "rethinkdb-orm"
+require "time"
 
-require "../ext/json"
 require "./utilities/last_modified"
 require "./utilities/versions"
 

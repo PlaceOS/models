@@ -19,6 +19,10 @@ dependencies:
   jwt:
     github: crystal-community/jwt
 
+  # JSON merge patch
+  json-merge-patch:
+    github: caspiano/json-merge-patch
+
   # Elasticsearch extension for RethinkORM
   neuroplastic:
     github: spider-gazelle/neuroplastic
