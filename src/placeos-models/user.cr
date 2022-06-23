@@ -321,11 +321,16 @@ module PlaceOS::Model
     # Public visible fields
     define_to_json :public, only: PUBLIC_DATA, methods: :id
 
-    # Admin visible fields
-    define_to_json :admin, only: ADMIN_DATA, methods: :id
-
     # Groups only
     define_to_json :group, only: :groups, methods: :id
+
+    # Admin visible fields
+    define_to_json :admin, only: ADMIN_DATA, methods: :id
+    define_to_json :admin_metadata, only: ADMIN_DATA, methods: [:id, :associated_metadata]
+
+    def associated_metadata
+      Model::Metadata.build_metadata(self)
+    end
 
     # Password Encryption
     ###############################################################################################
