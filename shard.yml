@@ -1,6 +1,6 @@
 name: placeos-models
 version: 8.11.0
-crystal: ~> 1.0
+crystal: ~> 1.4
 
 dependencies:
   # Data validation library
@@ -55,7 +55,9 @@ dependencies:
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
+
   faker:
     github: askn/faker
+
   timecop:
     github: crystal-community/timecop.cr
