@@ -1,4 +1,28 @@
-## Unreleased
+## v8.11.3 (2022-08-09)
+
+### Feat
+
+- **user**: user metadata should be available to authenticated users ([#181](https://github.com/PlaceOS/models/pull/181))
+
+## v8.11.2 (2022-07-06)
+
+## v8.11.1 (2022-07-05)
+
+## v8.11.0 (2022-06-23)
+
+### Perf
+
+- **metadata**: remove queries and optimize uniqueness check ([#180](https://github.com/PlaceOS/models/pull/180))
+
+## v8.10.0 (2022-06-23)
+
+### Feat
+
+- **user**: add admin_metadata json output ([#179](https://github.com/PlaceOS/models/pull/179))
+
+### Refactor
+
+- extracted json-merge-patch to a shard
 
 ## v8.9.2 (2022-06-01)
 
@@ -416,12 +440,6 @@
 
 ## v5.8.0 (2021-07-23)
 
-### Feat
-
-- add API key model
-- add helpers for rendering
-- add API key model
-
 ### Fix
 
 - ensure ID is returned in the JSON response
@@ -429,11 +447,15 @@
 - don't double up on authority_id
 - specs and use SHA512 as bcrypt is too slow
 
+### Feat
+
+- add helpers for rendering
+- add API key model
+
 ## v5.7.5 (2021-07-20)
 
 ### Fix
 
-- **repository**: check presence before encrypting
 - **repository**: check presence before encrypting
 
 ## v5.7.4 (2021-07-15)
@@ -452,7 +474,6 @@
 
 - **user**: `to_groups_json`
 - **doorkeeper**: ensure uniqueness of name + URL
-- **doorkeeper**: ensure uniqueness of name + URL
 
 ### Refactor
 
@@ -463,13 +484,8 @@
 ### Fix
 
 - ensure unique zone names
-- ensure unique zone names
 
 ## v5.5.1 (2021-06-22)
-
-### Refactor
-
-- add UserJWT as type to decrypt for
 
 ### Fix
 
@@ -506,12 +522,6 @@
 
 ## v5.2.0 (2021-06-04)
 
-### Feat
-
-- add support for storing JSON schema
-- move to using a JSON schema table
-- add support for storing JSON schema
-
 ### Fix
 
 - add the schema generator
@@ -520,11 +530,15 @@
 - supply default
 - supply default
 
+### Feat
+
+- move to using a JSON schema table
+- add support for storing JSON schema
+
 ## v5.1.1 (2021-06-02)
 
 ### Feat
 
-- **trigger conditions**: add support for timezones in CRON
 - **trigger conditions**: add support for timezones in CRON
 - **user**: ensure an admin user remains present
 
@@ -706,7 +720,6 @@
 ### Feat
 
 - **metadata**: add editors to record interface
-- **metadata**: add editors to record interface
 - **metadata**: add editors field
 
 ## v4.5.2 (2020-10-27)
@@ -726,7 +739,6 @@
 
 - **module**: add edge hint to module
 - **edge**: add edge model that represents an edge node
-- **metadata**: add support for user level metadata
 - **metadata**: add support for user level metadata
 
 ### Fix
@@ -847,13 +859,11 @@
 
 - **user**: password saving on JSON parse ([#33](https://github.com/PlaceOS/models/pull/33))
 - **doorkeeper-app**: use UID as id, if id not generated
-- **doorkeeper-app**: use UID as id, if id not generated
 
 ## v2.1.3 (2020-06-30)
 
 ### Feat
 
-- **user**: add groups attribute
 - **user**: add groups attribute
 
 ## v2.1.2 (2020-06-26)
@@ -915,13 +925,11 @@
 
 - improve doorkeeper app UID generation
 - **utilities:encryption**: use `PLACE_SERVER_SECRET` env var
-- **utilities:encryption**: use `PLACE_SERVER_SECRET` env var
 
 ## v1.0.9 (2020-05-14)
 
 ### Fix
 
-- **doorkeeper application**: UID is an MD5 of the redirect
 - **doorkeeper application**: UID is an MD5 of the redirect
 
 ## v1.0.8 (2020-05-13)
@@ -943,11 +951,9 @@
 ### Fix
 
 - **authority**: only save host of domain
-- **user**: catch auth cleanup failures
 
 ### Perf
 
-- **user**: add missing indices
 - **user**: add missing indices
 
 ## v1.0.4 (2020-04-27)
@@ -960,13 +966,11 @@
 ### Feat
 
 - **statistics**: add stats model
-- **statistics**: add stats model
 
 ## v1.0.3 (2020-04-22)
 
 ### Feat
 
-- add some common metadata
 - add some common metadata
 - **user**: add auth token cleanup
 - **user_auth_lookup**: clean up on user destroy
@@ -1069,7 +1073,6 @@
 
 - **doorkeeper app**: use UInt64 to represent revoked time
 - **doorkeeper app**: Bool not Boolean
-- **authority**: add timestamps and use `JSON::Any`
 - **authority**: add timestamps and use `JSON::Any`
 - **repository**: fix conflict between `type` fields in elastic search by renameing to `repo_type`
 - **trigger**: add additional supported webhook methods
