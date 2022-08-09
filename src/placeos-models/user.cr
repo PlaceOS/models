@@ -320,6 +320,7 @@ module PlaceOS::Model
 
     # Public visible fields
     define_to_json :public, only: PUBLIC_DATA, methods: :id
+    define_to_json :public_metadata, only: PUBLIC_DATA, methods: [:id, :associated_metadata]
 
     # Groups only
     define_to_json :group, only: :groups, methods: :id
