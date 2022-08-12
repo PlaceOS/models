@@ -1,3 +1,9 @@
+## v8.12.0 (2022-08-12)
+
+### Feat
+
+- **module**: `resolved_name_changed?`
+
 ## v8.11.3 (2022-08-09)
 
 ### Feat
