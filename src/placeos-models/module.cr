@@ -328,6 +328,10 @@ module PlaceOS::Model
       custom.nil? ? self.name : custom
     end
 
+    def resolved_name_changed? : Bool
+      self.custom_name_changed? || self.name_changed?
+    end
+
     # Edge Helpers
     ###############################################################################################
 
