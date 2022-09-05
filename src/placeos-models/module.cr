@@ -46,6 +46,10 @@ module PlaceOS::Model
     # Associations
     ###############################################################################################
 
+    secondary_index :authority_id
+
+    belongs_to Authority
+
     # Control System the _logic_ module may be assigned to
     belongs_to ControlSystem, foreign_key: "control_system_id"
 
@@ -66,6 +70,8 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
+    validates :authority_id, presence: true
+    
     validate ->(this : Module) {
       driver = this.driver
       role = driver.try(&.role)

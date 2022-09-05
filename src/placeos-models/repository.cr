@@ -46,6 +46,10 @@ module PlaceOS::Model
     # Association
     ###############################################################################################
 
+    secondary_index :authority_id
+
+    belongs_to Authority?
+
     has_many(
       child_class: Driver,
       collection_name: "drivers",

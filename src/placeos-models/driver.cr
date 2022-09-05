@@ -52,6 +52,10 @@ module PlaceOS::Model
     # Association
     ###############################################################################################
 
+    secondary_index :authority_id
+
+    belongs_to Authority?
+
     belongs_to Repository, foreign_key: "repository_id", presence: true
 
     # Encrypted yaml settings

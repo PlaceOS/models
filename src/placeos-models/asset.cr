@@ -35,6 +35,10 @@ module PlaceOS::Model
     # Association
     ###############################################################################################
 
+    secondary_index :authority_id
+
+    belongs_to Authority
+
     belongs_to Asset, foreign_key: "parent_id", association_name: "parent"
 
     has_many(
@@ -53,6 +57,7 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
+    validates :authority_id, presence: true
     validates :quantity, numericality: {minimum: 0}
     validates :in_use, numericality: {minimum: 0}
 
