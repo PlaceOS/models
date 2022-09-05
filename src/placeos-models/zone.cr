@@ -42,6 +42,10 @@ module PlaceOS::Model
     # Association
     ###############################################################################################
 
+    secondary_index :authority_id
+
+    belongs_to Authority
+
     belongs_to Zone, foreign_key: "parent_id", association_name: "parent"
 
     has_many(
@@ -77,9 +81,12 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
+    validates :authority_id, presence: true
     validates :name, presence: true
-    ensure_unique :name do |name|
-      name.strip
+
+    # Ensure unique name under authority scope
+    ensure_unique :name, scope: [:authority_id, :name] do |authority_id, name|
+      {authority_id, name.strip}
     end
 
     # Callbacks
