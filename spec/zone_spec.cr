@@ -131,5 +131,21 @@ module PlaceOS::Model
         zones.each &.destroy
       end
     end
+
+    describe "validations" do
+      it "ensure associated authority" do
+        zone = Generator.zone
+        zone.authority_id = ""
+        zone.valid?.should be_false
+        zone.errors.first.field.should eq :authority_id
+      end
+
+      it "ensure presence of zone's name" do
+        zone = Generator.zone
+        zone.name = ""
+        zone.valid?.should be_false
+        zone.errors.first.field.should eq :name
+      end
+    end
   end
 end
