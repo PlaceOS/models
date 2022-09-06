@@ -48,7 +48,7 @@ module PlaceOS::Model
     ###############################################################################################
 
     validates :authority_id, presence: true
-    
+
     # Validate `supported_methods`
     validate ->(this : Trigger) do
       invalid = this.supported_methods - METHODS

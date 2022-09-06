@@ -71,7 +71,7 @@ module PlaceOS::Model
     ###############################################################################################
 
     validates :authority_id, presence: true
-    
+
     validate ->(this : Module) {
       driver = this.driver
       role = driver.try(&.role)
