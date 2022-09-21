@@ -46,10 +46,6 @@ module PlaceOS::Model
     # Association
     ###############################################################################################
 
-    secondary_index :authority_id
-
-    belongs_to Authority?
-
     has_many(
       child_class: Driver,
       collection_name: "drivers",
@@ -70,8 +66,8 @@ module PlaceOS::Model
       this.validation_error(:uri, "is an invalid URI") unless Validation.valid_uri?(this.uri)
     }
 
-    ensure_unique :folder_name, scope: [:authority_id, :repo_type, :folder_name] do |authority_id, repo_type, folder_name|
-      {authority_id, repo_type, folder_name.strip.downcase}
+    ensure_unique :folder_name, scope: [:repo_type, :folder_name] do |repo_type, folder_name|
+      {repo_type, folder_name.strip.downcase}
     end
 
     # Callbacks
