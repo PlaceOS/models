@@ -76,6 +76,7 @@ module PlaceOS::Model
     def self.trigger(system : ControlSystem? = nil)
       trigger = Trigger.new(
         name: Faker::Hacker.noun,
+        authority_id: "spec-authority-id",
       )
       trigger.control_system = system if system
       trigger
@@ -96,6 +97,7 @@ module PlaceOS::Model
     def self.control_system
       ControlSystem.new(
         name: RANDOM.base64(10),
+        authority_id: "spec-authority-id",
       )
     end
 
@@ -107,13 +109,14 @@ module PlaceOS::Model
 
       mod = case driver.role
             in .logic?
-              Module.new(custom_name: mod_name, uri: Faker::Internet.url)
+              Module.new(custom_name: mod_name, uri: Faker::Internet.url, authority_id: "spec-authority-id")
             in .device?
               Module.new(
                 custom_name: mod_name,
                 uri: Faker::Internet.url,
                 ip: Faker::Internet.ip_v4_address,
                 port: rand((1..6555)),
+                authority_id: "spec-authority-id",
               )
             in .ssh?
               Module.new(
@@ -121,9 +124,10 @@ module PlaceOS::Model
                 uri: Faker::Internet.url,
                 ip: Faker::Internet.ip_v4_address,
                 port: rand((1..65_535)),
+                authority_id: "spec-authority-id",
               )
             in .service?, .websocket?
-              Module.new(custom_name: mod_name, uri: Faker::Internet.url)
+              Module.new(custom_name: mod_name, uri: Faker::Internet.url, authority_id: "spec-authority-id")
             end
 
       # Set driver
@@ -137,7 +141,7 @@ module PlaceOS::Model
 
     def self.edge(user : User? = nil)
       user = self.user.save! if user.nil?
-      Edge.for_user(user, name: "#{Faker::Address.city}_#{RANDOM.base64(5)}")
+      Edge.for_user(user, name: "#{Faker::Address.city}_#{RANDOM.base64(5)}", authority_id: "spec-authority-id")
     end
 
     def self.encryption_level
@@ -208,6 +212,7 @@ module PlaceOS::Model
     def self.zone
       Zone.new(
         name: RANDOM.base64(10),
+        authority_id: "spec-authority-id",
       )
     end
 
@@ -217,6 +222,7 @@ module PlaceOS::Model
         purchase_date: Time.local,
         identifier: RANDOM.rand(Int32).to_s,
         purchase_price: RANDOM.rand(Int32),
+        authority_id: "spec-authority-id",
       )
     end
 
@@ -322,6 +328,7 @@ module PlaceOS::Model
       Broker.new(
         name: Faker::Name.name,
         host: Faker::Internet.domain_name,
+        authority_id: "spec-authority-id",
       )
     end
 
