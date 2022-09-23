@@ -139,13 +139,6 @@ module PlaceOS::Model
         zone.valid?.should be_false
         zone.errors.first.field.should eq :authority_id
       end
-
-      it "ensure presence of zone's name" do
-        zone = Generator.zone
-        zone.name = ""
-        zone.valid?.should be_false
-        zone.errors.first.field.should eq :name
-      end
     end
   end
 end
