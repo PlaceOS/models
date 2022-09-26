@@ -89,7 +89,7 @@ module PlaceOS::Model
 
       cs.save!
 
-      trigger = Trigger.create!(name: "trigger test")
+      trigger = Trigger.create!(name: "trigger test", authority_id: "spec-authority-id")
 
       # No trigger_instances associated with zone
       zone.trigger_instances.to_a.size.should eq 0

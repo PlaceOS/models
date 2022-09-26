@@ -200,7 +200,7 @@ module PlaceOS::Model
 
         cs.save!
 
-        trigger = Trigger.create!(name: "trigger test")
+        trigger = Trigger.create!(name: "trigger test", authority_id: "spec-authority-id")
         zone = Generator.zone
         trigger_id = trigger.id
         if trigger_id
