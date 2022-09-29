@@ -125,8 +125,8 @@ module PlaceOS::Model
           zone.save!
         end
 
-        Zone.with_tag("0").to_a.compact_map(&.id).sort!.should eq zones.compact_map(&.id).sort!
-        Zone.with_tag("3").to_a.compact_map(&.id).sort!.should eq zones[3..].compact_map(&.id).sort!
+        Zone.with_tag("0", "spec-authority-id").to_a.compact_map(&.id).sort!.should eq zones.compact_map(&.id).sort!
+        Zone.with_tag("3", "spec-authority-id").to_a.compact_map(&.id).sort!.should eq zones[3..].compact_map(&.id).sort!
 
         zones.each &.destroy
       end

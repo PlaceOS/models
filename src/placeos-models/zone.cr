@@ -160,8 +160,8 @@ module PlaceOS::Model
       settings
     end
 
-    def self.with_tag(tag : String)
-      Zone.collection_query &.filter(&.["tags"].contains(tag))
+    def self.with_tag(tag : String, authority_id : String)
+      Zone.collection_query &.filter(&.["tags"].contains(tag)).filter { |t| t.["authority_id"] == authority_id }
     end
 
     # TODO: Implement multiple element `contains` in crystal-rethinkdb
