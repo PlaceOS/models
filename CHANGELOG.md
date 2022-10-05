@@ -1,3 +1,5 @@
+## Unreleased
+
 ## v8.12.0 (2022-08-12)
 
 ### Feat
@@ -355,13 +357,13 @@
 
 ## v5.15.1 (2021-12-03)
 
-### Fix
-
-- **asset_instance**: add missing name attribute ([#133](https://github.com/PlaceOS/models/pull/133))
-
 ### Feat
 
 - add models required for asset manager ([#130](https://github.com/PlaceOS/models/pull/130))
+
+### Fix
+
+- **asset_instance**: add missing name attribute ([#133](https://github.com/PlaceOS/models/pull/133))
 
 ## v5.14.2 (2021-11-25)
 
@@ -377,13 +379,13 @@
 
 ## v5.14.0 (2021-11-03)
 
-### Refactor
-
-- **encryption**: expose the secret in the arguments ([#128](https://github.com/PlaceOS/models/pull/128))
-
 ### Fix
 
 - more detailed log about which secret is unset
+
+### Refactor
+
+- **encryption**: expose the secret in the arguments ([#128](https://github.com/PlaceOS/models/pull/128))
 
 ## v5.13.0 (2021-10-25)
 
@@ -409,10 +411,9 @@
 
 ## v5.12.0 (2021-10-07)
 
-### Refactor
+### Feat
 
-- **user**: add Email struct ([#123](https://github.com/PlaceOS/models/pull/123))
-- **repository**: remove `key`
+- **settings_helper**: add `#settings_hierarchy`
 
 ### Fix
 
@@ -420,9 +421,10 @@
 - **settings**: improve YAML validation
 - **api_key**: set es_types for complex types
 
-### Feat
+### Refactor
 
-- **settings_helper**: add `#settings_hierarchy`
+- **user**: add Email struct ([#123](https://github.com/PlaceOS/models/pull/123))
+- **repository**: remove `key`
 
 ### Perf
 
@@ -430,13 +432,13 @@
 
 ## v5.9.1 (2021-08-16)
 
-### Fix
-
-- **user_jwt**: rename undefined constant
-
 ### Feat
 
 - **user**: perform a case insensitive email lookup
+
+### Fix
+
+- **user_jwt**: rename undefined constant
 
 ## v5.8.1 (2021-08-16)
 
@@ -446,17 +448,17 @@
 
 ## v5.8.0 (2021-07-23)
 
+### Feat
+
+- add helpers for rendering
+- add API key model
+
 ### Fix
 
 - ensure ID is returned in the JSON response
 - edge decrypt method
 - don't double up on authority_id
 - specs and use SHA512 as bcrypt is too slow
-
-### Feat
-
-- add helpers for rendering
-- add API key model
 
 ## v5.7.5 (2021-07-20)
 
@@ -472,14 +474,14 @@
 
 ## v5.7.2 (2021-07-13)
 
-### Fix
-
-- `name` es_type
-
 ### Feat
 
 - **user**: `to_groups_json`
 - **doorkeeper**: ensure uniqueness of name + URL
+
+### Fix
+
+- `name` es_type
 
 ### Refactor
 
@@ -493,13 +495,13 @@
 
 ## v5.5.1 (2021-06-22)
 
-### Fix
-
-- remove focus true
-
 ### Feat
 
 - add UserJWT as type to decrypt for
+
+### Fix
+
+- remove focus true
 
 ## v5.5.0 (2021-06-09)
 
@@ -510,15 +512,15 @@
 
 ## v5.4.0 (2021-06-07)
 
+### Feat
+
+- **version**: add platform_version
+
 ### Fix
 
 - move default args to last
 - **ci/publish**: `crystal tool docs` -> `crystal docs`
 - **version**: use string for date field
-
-### Feat
-
-- **version**: add platform_version
 
 ## v5.3.0 (2021-06-04)
 
@@ -528,6 +530,11 @@
 
 ## v5.2.0 (2021-06-04)
 
+### Feat
+
+- move to using a JSON schema table
+- add support for storing JSON schema
+
 ### Fix
 
 - add the schema generator
@@ -535,11 +542,6 @@
 - move json schema to metadata
 - supply default
 - supply default
-
-### Feat
-
-- move to using a JSON schema table
-- add support for storing JSON schema
 
 ## v5.1.1 (2021-06-02)
 
@@ -577,6 +579,11 @@
 
 ## v4.17.0 (2021-04-24)
 
+### Feat
+
+- **control_system**: log on module removal
+- **error**: add cause
+
 ### Fix
 
 - **user_auth_lookup**: set new_flag in generate_id callback
@@ -592,11 +599,6 @@
 - **control_system**: tidy up accessors
 - **settings_spec**: remove redundant rescues
 - **settings**: reorder file
-
-### Feat
-
-- **control_system**: log on module removal
-- **error**: add cause
 
 ## v4.15.5 (2021-04-14)
 
@@ -637,14 +639,14 @@
 
 ## v4.12.1 (2021-02-10)
 
+### Feat
+
+- **control_system**: add images[] to hold references to image URLs
+
 ### Fix
 
 - **edge**: catch errors from invalid base64
 - **interface**: explicitly set a pull commit
-
-### Feat
-
-- **control_system**: add images[] to hold references to image URLs
 
 ## v4.10.2 (2021-02-02)
 
@@ -654,22 +656,22 @@
 
 ## v4.10.1 (2021-01-28)
 
-### Refactor
+### Feat
 
-- **edge**: deprecate `validate_token` in favour of `validate_token?`
-- **user**: publically expose user's groups
-- **user**: clean up and organisation of methods
-- use has_control? getter that checks presence of association
+- **user**: add a bulk user by email query
+- **user**: selective update for admin managed fields
 
 ### Fix
 
 - **control_system**: conform to new delete interface
 - **user**: prevent mass assignment of privilege
 
-### Feat
+### Refactor
 
-- **user**: add a bulk user by email query
-- **user**: selective update for admin managed fields
+- **edge**: deprecate `validate_token` in favour of `validate_token?`
+- **user**: publically expose user's groups
+- **user**: clean up and organisation of methods
+- use has_control? getter that checks presence of association
 
 ## v4.8.3 (2020-12-15)
 
@@ -685,14 +687,14 @@
 
 ## v4.8.1 (2020-12-04)
 
-### Fix
-
-- **edge**: prevent mass assignment of edge secret
-
 ### Feat
 
 - **edge**: add token validation
 - **edge**: add token generation method
+
+### Fix
+
+- **edge**: prevent mass assignment of edge secret
 
 ## v4.7.1 (2020-12-03)
 
@@ -736,11 +738,6 @@
 
 ## v4.5.1 (2020-10-21)
 
-### Refactor
-
-- **encryption**: move encryption visibility logic to `Level` enum
-- **settings**: use `Encryption.decrypt_for` helper
-
 ### Feat
 
 - **module**: add edge hint to module
@@ -752,26 +749,31 @@
 - **user**: rename clashing field to `misc`
 - **user**: has_many metadatas to not clash with local metadata
 
+### Refactor
+
+- **encryption**: move encryption visibility logic to `Level` enum
+- **settings**: use `Encryption.decrypt_for` helper
+
 ## v4.4.1 (2020-09-22)
+
+### Feat
+
+- **module**: #logic_for query by parent control_system
 
 ### Fix
 
 - typos
 - **jwt**: default to PUBLIC_KEY in decode and PRIVATE_KEY in encode
 
-### Feat
-
-- **module**: #logic_for query by parent control_system
-
 ## v4.2.4 (2020-08-31)
-
-### Fix
-
-- **user-jwt**: initialize scope
 
 ### Feat
 
 - **user-jwt**: add scope field
+
+### Fix
+
+- **user-jwt**: initialize scope
 
 ## v4.2.3 (2020-08-12)
 
@@ -787,10 +789,9 @@
 
 ## v4.2.1 (2020-08-11)
 
-### Refactor
+### Feat
 
-- **metadata**: serialize `Metadata#details` to String
-- use updated rethink-orm
+- **control-system**: add timezone field
 
 ### Fix
 
@@ -798,9 +799,10 @@
 - set subfield keyword for name attributes
 - **user**: protect some attributes related to user roles
 
-### Feat
+### Refactor
 
-- **control-system**: add timezone field
+- **metadata**: serialize `Metadata#details` to String
+- use updated rethink-orm
 
 ## v3.3.0 (2020-07-29)
 
@@ -825,13 +827,13 @@
 
 - **repository**: add `branch` field
 
-### Refactor
-
-- use `case...in` over `case...when` where possible
-
 ### Fix
 
 - **settings**: raise Model::Error on failed parse
+
+### Refactor
+
+- use `case...in` over `case...when` where possible
 
 ## v3.0.5 (2020-07-03)
 
@@ -849,15 +851,15 @@
 
 ## v3.0.2 (2020-07-03)
 
+### Feat
+
+- **metadata**: generic metadata model
+
 ### Fix
 
 - **metadata**: include JSON::Serializable in interface record
 - **metadata**: rename `Response` to `Interface`; set non-nillable fields
 - **user jwt**: admin should be considered support
-
-### Feat
-
-- **metadata**: generic metadata model
 
 ## v2.1.4 (2020-07-01)
 
@@ -910,27 +912,27 @@
 
 ## v1.2.0 (2020-05-21)
 
-### Refactor
-
-- **broker**: use secret rather than a public scope as key for HMAC
-- **broker**: drop lazy enum proc, drop intermediate hash when rendering filter errors
-
 ### Feat
 
 - **broker**: sanitize a string dependent on Broker's filters
 - **broker**: validate filters
 - **broker**: model::Broker base implementation
 
+### Refactor
+
+- **broker**: use secret rather than a public scope as key for HMAC
+- **broker**: drop lazy enum proc, drop intermediate hash when rendering filter errors
+
 ## v1.0.10 (2020-05-18)
-
-### Fix
-
-- **doorkeeper_app**: only set uid if empty
 
 ### Feat
 
 - improve doorkeeper app UID generation
 - **utilities:encryption**: use `PLACE_SERVER_SECRET` env var
+
+### Fix
+
+- **doorkeeper_app**: only set uid if empty
 
 ## v1.0.9 (2020-05-14)
 
@@ -964,14 +966,14 @@
 
 ## v1.0.4 (2020-04-27)
 
+### Feat
+
+- **statistics**: add stats model
+
 ### Fix
 
 - **user**: catch auth cleanup failures
 - **statistics spec**: ensure ttl isn't nil
-
-### Feat
-
-- **statistics**: add stats model
 
 ## v1.0.3 (2020-04-22)
 
@@ -1035,16 +1037,16 @@
 - **module**: ensure name and role are configured correctly
 - **user**: don't allow mass assignment of digests
 
-### Perf
-
-- use `reverse!` where appropriate
-- **settings**: optimise `Settings.master_settings_query`
-
 ### Refactor
 
 - **module**: extract hierarchy from generation of merged_settings
 - add explicit imports to improve single model imports
 - **settings_helper**: remove macro hack
+
+### Perf
+
+- use `reverse!` where appropriate
+- **settings**: optimise `Settings.master_settings_query`
 
 ## v0.5.2 (2020-03-17)
 
@@ -1060,20 +1062,36 @@
 
 ## v0.4.1 (2020-03-02)
 
-### Refactor
+### Feat
 
-- **driver**: remove `version` field in favour of commit hash
+- **authentication**: add models used for specifying auth sources
 
 ### Fix
 
 - **user_spec**: apply `JSON.parse` to json string rather than NamedTuple
 - **subset_json**: remove call to `to_json`
 
-### Feat
+### Refactor
 
-- **authentication**: add models used for specifying auth sources
+- **driver**: remove `version` field in favour of commit hash
 
 ## v0.3.0 (2020-01-21)
+
+### Feat
+
+- **doorkeeper**: add doorkeeper application model to crystal
+- **user**: add bcrypt password support
+- update driver roles to include websocket
+- add exec_enabled attribute
+- **settings**: `is_encrypted?` helper
+- **settings**: `get_setting_for?`
+- **settings**: implement various queries
+- **module**: updated `merge_settings`
+- **settings**: settings helpers
+- **settings**: implement base of Settings model
+- **module**: driver's `module_name` in Module as `name`
+- **driver**: repository required on driver
+- seperate models from api
 
 ### Fix
 
@@ -1091,22 +1109,6 @@
 - **module**: boolean defaults for udp and tls
 - correct imports
 - fix imports, move encryption
-
-### Feat
-
-- **doorkeeper**: add doorkeeper application model to crystal
-- **user**: add bcrypt password support
-- update driver roles to include websocket
-- add exec_enabled attribute
-- **settings**: `is_encrypted?` helper
-- **settings**: `get_setting_for?`
-- **settings**: implement various queries
-- **module**: updated `merge_settings`
-- **settings**: settings helpers
-- **settings**: implement base of Settings model
-- **module**: driver's `module_name` in Module as `name`
-- **driver**: repository required on driver
-- seperate models from api
 
 ### Refactor
 
