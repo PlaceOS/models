@@ -6,7 +6,7 @@ module PlaceOS::Model
     forward_missing_to address
 
     def initialize(address : String)
-      @address = address.strip
+      @address = address.strip.downcase
     end
 
     def initialize(json : JSON::PullParser)
@@ -26,7 +26,11 @@ module PlaceOS::Model
     end
 
     def digest
-      Digest::MD5.hexdigest(@address.strip.downcase)
+      Digest::MD5.hexdigest(@address.downcase)
+    end
+
+    def self.json_schema(_openapi : Bool? = nil)
+      { type: "string", format: "email" }
     end
   end
 end
