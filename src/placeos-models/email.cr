@@ -29,6 +29,7 @@ module PlaceOS::Model
       Digest::MD5.hexdigest(@address.downcase)
     end
 
+    # for proper documentation, otherwise this will hinted as an object
     def self.json_schema(_openapi : Bool? = nil)
       {type: "string", format: "email"}
     end
