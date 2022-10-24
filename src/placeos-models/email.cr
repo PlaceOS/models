@@ -30,7 +30,7 @@ module PlaceOS::Model
     end
 
     def self.json_schema(_openapi : Bool? = nil)
-      { type: "string", format: "email" }
+      {type: "string", format: "email"}
     end
   end
 end
