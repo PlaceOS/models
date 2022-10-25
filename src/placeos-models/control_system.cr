@@ -7,6 +7,7 @@ require "./converter/time_location"
 
 require "./base/model"
 require "./settings"
+require "./email"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
 
@@ -24,7 +25,7 @@ module PlaceOS::Model
     # Room search meta-data
     # Building + Level are both filtered using zones
     attribute features : Set(String) = ->{ Set(String).new }
-    attribute email : String?
+    attribute email : Email?
     attribute bookable : Bool = false
     attribute display_name : String?
     attribute code : String?
