@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Fix
+
+- **email**: store emails downcased for simplified querying ([#186](https://github.com/PlaceOS/models/pull/186))
+
 ## v8.12.0 (2022-08-12)
 
 ### Feat
