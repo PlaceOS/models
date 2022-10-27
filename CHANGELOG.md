@@ -1,4 +1,10 @@
-## Unreleased
+## v8.12.2 (2022-10-27)
+
+### Fix
+
+- docker-compose file entry for shard.yml.input ([#187](https://github.com/PlaceOS/models/pull/187))
+
+## v8.12.1 (2022-10-25)
 
 ### Fix
 
