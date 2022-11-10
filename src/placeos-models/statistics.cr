@@ -1,10 +1,9 @@
-require "rethinkdb-orm"
 require "time"
 require "./base/model"
 
 module PlaceOS::Model
   class Statistics < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
 
     table :stats
 

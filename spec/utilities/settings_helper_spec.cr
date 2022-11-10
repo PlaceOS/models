@@ -23,7 +23,7 @@ module PlaceOS::Model
 
             model.destroy
             # Testing the destruction methods
-            Settings.find(settings.id.as(String)).should be_nil
+            Settings.find?(settings.id.as(String)).should be_nil
           end
         end
       end

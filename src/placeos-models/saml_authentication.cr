@@ -5,7 +5,7 @@ require "./base/model"
 module PlaceOS::Model
   # See: https://github.com/omniauth/omniauth-saml
   class SamlAuthentication < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
 
     table :adfs_strat
 
@@ -54,7 +54,7 @@ module PlaceOS::Model
       {name: "name", name_format: "urn:oasis:names:tc:SAML:2.0:attrname-format:basic", friendly_name: "Full name"},
       {name: "first_name", name_format: "urn:oasis:names:tc:SAML:2.0:attrname-format:basic", friendly_name: "Given name"},
       {name: "last_name", name_format: "urn:oasis:names:tc:SAML:2.0:attrname-format:basic", friendly_name: "Family name"},
-    ]
+    ], converter: PlaceOS::Model::DBArrConverter(NamedTuple(name: String, name_format: String, friendly_name: String))
 
     # The URL to which the single logout request and response should be sent
     attribute idp_slo_target_url : String?

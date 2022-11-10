@@ -1,16 +1,3 @@
-require "rethinkdb-orm"
-
-# TODO: Add `RethinkDB::StreamTerm#slice` to `crystal-rethinkdb`
-class RethinkDB::StreamTerm
-  def slice(start)
-    StreamTerm.new(TermType::SLICE, [self, start])
-  end
-
-  def slice(start, size)
-    StreamTerm.new(TermType::SLICE, [self, start, size])
-  end
-end
-
 # Adds version history to a `PlaceOS::Model`
 module PlaceOS::Model::Utilities::Versions
   # Number of version models to retain
@@ -25,9 +12,8 @@ module PlaceOS::Model::Utilities::Versions
 
     # Associate with main version
     attribute {{ parent_id }} : String?
-    secondary_index {{ parent_id.symbolize }}
+    #secondary_index {{ parent_id.symbolize }}
 
-    # {{ @type }} self-referential entity relationship acts as a 2-level tree
     has_many(
       child_class: {{ @type }},
       collection_name: {{ klass_name.stringify }},
@@ -57,6 +43,7 @@ module PlaceOS::Model::Utilities::Versions
 
       version = self.dup
       version.id = nil
+      version.new_record = true
       version.{{ parent_id }} = self.id
       create_version(version).save!
 
@@ -66,12 +53,11 @@ module PlaceOS::Model::Utilities::Versions
 
     private def cleanup_history
       return if is_version?
-
-      {{ @type }}.table_query do |q|
-        associated_version_query(q, &.itself)
-          .slice(MAX_VERSIONS)
-          .delete
-      end
+      query = {{@type}}.all
+      ids = associated_version_query(query, &.itself)
+        .offset(MAX_VERSIONS)
+        .pluck(:id)
+      {{@type}}.where(id: ids).delete_all unless ids.empty?
     end
 
     # Queries
@@ -81,11 +67,10 @@ module PlaceOS::Model::Utilities::Versions
     #
     # Versions are in descending order of creation
     def history(offset : Int32 = 0, limit : Int32 = 10, &)
-      {{ @type }}.raw_query do |r|
-        associated_version_query(r.table({{ @type }}.table_name)) do |query_builder|
-          (yield query_builder).slice(offset, offset + limit)
-        end
-      end
+      query = {{@type}}.all
+      associated_version_query(query) do |query_builder|
+        (yield query_builder).offset(offset).limit(limit)
+      end.to_a
     end
 
     # :ditto:
@@ -93,53 +78,51 @@ module PlaceOS::Model::Utilities::Versions
       history(offset, limit, &.itself)
     end
 
-    # Return the number of versions for the main document.
+    # Return the number of versions for the main record.
     #
-    # If the document is a version, this is always 0.
+    # If the record is a version, this is always 0.
     def history_count
       return 0 if is_version?
-      {{ @type }}.table_query do |q|
-        associated_version_query(q, &.itself).count
-      end.as_i
+      query = {{@type}}.all
+      associated_version_query(query, &.itself).unscope(:order).count
     end
 
     private def associated_version_query(query_builder)
       query_builder = query_builder
-        .get_all([id.as(String)], index: {{ parent_id.symbolize }})
+        .where({{parent_id}}: id)
       query_builder = yield query_builder
-      query_builder.order_by(r.desc(:created_at))
+      query_builder.order(created_at: :desc)
     end
 
-    # Query on main {{ klass_name }} documents
+    # Query on main {{ klass_name }} records
     #
-    # Gets documents where the {{ parent_id }} does not exist, i.e. is the main
+    # Gets records where the {{ parent_id }} does not exist, i.e. is the main
     def self.master_{{ klass_name }}_query(offset : Int32 = 0, limit : Int32 = 100)
-      raw_query do |q|
-        (yield q.table(table_name))
-          .filter(&.has_fields({{ parent_id.symbolize }}).not)
-          .slice(offset, offset + limit)
-      end.to_a
+      query = {{@type}}.all
+      query = yield query
+      query = query.where({{parent_id}}: nil)
+        .limit(limit)
+        .offset(offset)
+        .to_a
     end
 
-    # Query on main {{ klass_name }} documents
+    # Query on main {{ klass_name }} records
     #
-    # Gets documents where the {{ parent_id }} does not exist, i.e. is the main
+    # Gets records where the {{ parent_id }} does not exist, i.e. is the main
     def self.master_{{ klass_name }}_raw_query(count : Bool = false)
-      ::RethinkORM::Connection.raw do |q|
-        (yield q.table(table_name))
-          .filter(&.has_fields({{ parent_id.symbolize }}).not)
-      end
+      query = {{@type}}.all
+      query = yield query
+      query = query.where({{parent_id}}: nil)
     end
 
-    # Count of documents returned by query on main {{ klass_name }} documents
+    # Count of records returned by query on main {{ klass_name }} records
     #
-    # Gets documents where the {{ parent_id }} does not exist, i.e. is the main
+    # Gets records where the {{ parent_id }} does not exist, i.e. is the main
     def self.master_{{ klass_name }}_query_count
-      ::RethinkORM::Connection.raw do |q|
-        (yield q.table(table_name))
-          .filter(&.has_fields({{ parent_id.symbolize }}).not)
-          .count
-      end.as_i
+      query = {{@type}}.all
+      query = yield query
+      query = query.where({{parent_id}}: nil)
+        .count
     end
   end
 end

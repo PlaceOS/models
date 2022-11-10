@@ -3,7 +3,7 @@ require "./user"
 
 module PlaceOS::Model
   class AssetInstance < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
 
     enum Tracking
       InStorage

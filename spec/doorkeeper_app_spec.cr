@@ -10,7 +10,7 @@ module PlaceOS::Model
 
       begin
         app.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
+      rescue e : PgORM::Error::RecordInvalid
         inspect_error(e)
         raise e
       end
@@ -20,7 +20,7 @@ module PlaceOS::Model
     end
 
     it "no duplicate app uris" do
-      expect_raises(RethinkORM::Error::DocumentInvalid) do
+      expect_raises(PgORM::Error::RecordInvalid) do
         uri = "appuri://test.redirect.com.au/#{RANDOM.hex(3)}"
         app1 = DoorkeeperApplication.new
         app1.name = RANDOM.hex(10)
@@ -36,7 +36,7 @@ module PlaceOS::Model
     end
 
     it "no duplicate app names" do
-      expect_raises(RethinkORM::Error::DocumentInvalid) do
+      expect_raises(PgORM::Error::RecordInvalid) do
         name = RANDOM.hex(3)
         app1 = DoorkeeperApplication.new
         app1.name = name
@@ -59,7 +59,7 @@ module PlaceOS::Model
 
       begin
         app.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
+      rescue e : PgORM::Error::RecordInvalid
         inspect_error(e)
         raise e
       end
@@ -77,7 +77,7 @@ module PlaceOS::Model
 
       begin
         app.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
+      rescue e : PgORM::Error::RecordInvalid
         inspect_error(e)
         raise e
       end

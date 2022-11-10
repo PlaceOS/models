@@ -7,7 +7,7 @@ require "digest/md5"
 
 module PlaceOS::Model
   class DoorkeeperApplication < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
 
     table :doorkeeper_app
 
@@ -25,7 +25,7 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
-    ensure_unique :uid, create_index: true
+    ensure_unique :uid
 
     ensure_unique :redirect_uri do |redirect_uri|
       redirect_uri.strip
@@ -59,7 +59,7 @@ module PlaceOS::Model
         current_id = @id
         if current_id.nil?
           # Ensure document is treated as unpersisted
-          self._new_flag = true
+          self.new_record = true
           @id = self.uid
         end
       end

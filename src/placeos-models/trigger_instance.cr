@@ -1,12 +1,11 @@
 require "random"
-require "rethinkdb-orm"
 require "time"
 
 require "./base/model"
 
 module PlaceOS::Model
   class TriggerInstance < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
 
     table :trig
 
@@ -88,11 +87,8 @@ module PlaceOS::Model
     # Increment the `trigger_count` of a `TriggerInstance` in place.
     #
     def self.increment_trigger_count(id : String)
-      TriggerInstance.table_query do |q|
-        q.get(id).update do |doc|
-          doc.merge({"trigger_count" => doc["trigger_count"].add(1)})
-        end
-      end
+      inst = TriggerInstance.find(id)
+      inst.update(trigger_count: inst.trigger_count + 1)
     end
 
     # Proxied `Trigger` attributes

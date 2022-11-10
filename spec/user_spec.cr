@@ -144,8 +144,8 @@ module PlaceOS::Model
     end
 
     describe "#assign_admin_attributes_from_json" do
-      {% for field in PlaceOS::Model::User::AdminAttributes.instance_vars %}
-        it "assigns {{ field.name }} attribute if present" do
+      {% for field in %w(sys_admin support login_name staff_id card_number groups) %}
+        it "assigns {{ field.id }} attribute if present" do
           support, updated_support = false, true
           sys_admin, updated_sys_admin = false, true
           login_name, updated_login_name = "fake", "even faker"
@@ -154,16 +154,16 @@ module PlaceOS::Model
           groups, updated_groups = ["public"], ["private"]
           user = Model::User.new(
             support: support,
-            admin: admin,
+            sys_admin: sys_admin,
             login_name: login_name,
             staff_id: staff_id,
             card_number: card_number,
             groups: groups,
           )
-
-          user.assign_admin_attributes_from_json({ email: "shouldn't change", {{field.name}}: {{field.name.id}}_updated }.to_json)
+          user.clear_changes_information
+          user.assign_admin_attributes_from_json({ email: "shouldn't change", {{field.id}}: updated_{{field.id}} }.to_json)
           user.email_changed?.should be_false
-          user.{{field.id}}.should eq {{field.id}}_updated
+          user.{{field.id}}.should eq updated_{{field.id}}
         end
       {% end %}
     end

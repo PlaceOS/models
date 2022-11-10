@@ -1,9 +1,6 @@
 require "CrystalEmail"
 require "crypto/bcrypt/password"
 require "digest/md5"
-require "rethinkdb-orm"
-require "rethinkdb-orm/lock"
-
 require "./base/model"
 require "./api_key"
 require "./metadata"
@@ -12,7 +9,7 @@ require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class User < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
     include Utilities::MetadataHelper
 
     table :user
@@ -53,8 +50,6 @@ module PlaceOS::Model
 
     # Association
     ################################################################################################
-
-    secondary_index :authority_id
 
     belongs_to Authority
 
@@ -119,8 +114,8 @@ module PlaceOS::Model
     before_save :build_name
     before_save :write_email_fields
 
-    private getter admin_destroy_lock : RethinkORM::Lock do
-      RethinkORM::Lock.new("admin_destroy_lock")
+    private getter admin_destroy_lock : PgORM::PgAdvisoryLock do
+      PgORM::PgAdvisoryLock.new("admin_destroy_lock")
     end
 
     # :inherit:
@@ -134,7 +129,7 @@ module PlaceOS::Model
     protected def ensure_admin_remains
       return unless self.sys_admin
 
-      if User.count(sys_admin: true) == 1
+      if User.where({sys_admin: true}).count == 1
         raise Model::Error.new("At least one admin must remain")
       end
     end
@@ -144,23 +139,15 @@ module PlaceOS::Model
       user_id = self.id
 
       begin
-        ::RethinkORM::Connection.raw do |r|
-          r.table("doorkeeper_grant").filter { |grant|
-            grant["resource_owner_id"].eq(user_id)
-          }.delete
-        end
+        PgORM::Database.exec_sql("delete from \"doorkeeper_grant\" where resource_owner_id = $1", user_id)
       rescue error
         Log.warn(exception: error) { "failed to remove User<#{user_id}> auth grants" }
       end
 
       begin
-        ::RethinkORM::Connection.raw do |r|
-          r.table("doorkeeper_token").filter { |token|
-            token["resource_owner_id"].eq(user_id)
-          }.delete
-        end
+        PgORM::Database.exec_sql("delete from \"doorkeeper_token\" where resource_owner_id = $1", user_id)
       rescue error
-        Log.warn(exception: error) { "failed to remove User<#{user_id}> auth tokens" }
+        Log.warn(exception: error) { "failed to remove User<#{user_id}> auth token" }
       end
     end
 
@@ -177,10 +164,8 @@ module PlaceOS::Model
     ###############################################################################################
 
     def by_authority_id(auth_id : String)
-      User.find_all([auth_id], index: :authority_id)
+      User.where(auth_id: auth_id)
     end
-
-    secondary_index :email_digest
 
     def self.find_by_email(authority_id : String, email : PlaceOS::Model::Email | String)
       find_by_emails(authority_id, [email]).first?
@@ -194,45 +179,27 @@ module PlaceOS::Model
         email.digest
       end
 
-      User.collection_query do |table|
-        table
-          .get_all(digests, index: :email_digest)
-          .filter({authority_id: authority_id})
-      end
+      User.where(email_digest: digests, authority_id: authority_id)
     end
 
-    secondary_index :login_name
-
     def self.find_by_login_name(login_name : String)
-      User.find_all([login_name], index: :login_name).first?
+      User.where(login_name: login_name).first?
     end
 
     def self.find_by_login_name(authority_id : String, login_name : String)
-      User.collection_query do |table|
-        table
-          .get_all(login_name, index: :login_name)
-          .filter({authority_id: authority_id})
-      end.first?
+      User.where({login_name: login_name, authority_id: authority_id}).first?
     end
 
-    secondary_index :staff_id
-
     def self.find_by_staff_id(staff_id : String)
-      User.find_all([staff_id], index: :staff_id).first?
+      User.where(staff_id: staff_id).first?
     end
 
     def self.find_by_staff_id(authority_id : String, staff_id : String)
-      User.collection_query do |table|
-        table
-          .get_all(staff_id, index: :staff_id)
-          .filter({authority_id: authority_id})
-      end.first?
+      User.where(staff_id: staff_id, authority_id: authority_id).first?
     end
 
-    secondary_index :sys_admin
-
     def self.find_sys_admins
-      User.find_all([true], index: :sys_admin)
+      User.where(sys_admin: true)
     end
 
     # Access Control

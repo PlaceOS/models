@@ -2,8 +2,8 @@ require "json"
 require "json-merge-patch/ext"
 require "openapi-generator/serializable"
 require "pars"
-require "rethinkdb"
-require "rethinkdb-orm"
+
+require "pg-orm"
 require "time"
 
 require "./utilities/last_modified"
@@ -15,7 +15,7 @@ require "./zone"
 
 module PlaceOS::Model
   class Metadata < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
     include Utilities::LastModified
     include Utilities::Versions
 
@@ -32,10 +32,8 @@ module PlaceOS::Model
     # Association
     ###############################################################################################
 
-    secondary_index :parent_id
-    secondary_index :name
-
     # Models that `Metadata` is attached to
+
     belongs_to Zone, foreign_key: "parent_id", association_name: "zone"
     belongs_to ControlSystem, foreign_key: "parent_id", association_name: "control_system"
     belongs_to User, foreign_key: "parent_id", association_name: "user"
@@ -70,14 +68,18 @@ module PlaceOS::Model
 
     def self.validate_parent_exists(metadata : Metadata)
       # Skip validation if `Metadata` has been created
-      return unless metadata.id.nil?
+      return unless metadata.new_record?
       # `parent_id` presence is already enforced
       return if metadata.parent_id.nil?
 
       table_name = metadata.parent_id.as(String).partition('-').first
-      if RethinkORM::Connection.raw(&.table(table_name).get(metadata.parent_id)).raw.nil?
-        metadata.validation_error(:parent_id, "must reference an existing model")
+
+      found = PgORM::Database.connection do |db|
+        db.scalar(<<-SQL, metadata.parent_id).as(Int64) > 0
+          select count(*) from "#{table_name}" where id = $1
+        SQL
       end
+      metadata.validation_error(:parent_id, "must reference an existing model") unless found
     end
 
     def self.validate_unique_name(metadata : Metadata)
@@ -109,8 +111,8 @@ module PlaceOS::Model
                   end
 
       master_metadata_query do |q|
-        q = q.get_all(parent_id, index: :parent_id)
-        q = q.filter({name: name}) if name && !name.empty?
+        q = q.where(parent_id: parent_id)
+        q = q.where(name: name) if name && !name.empty?
         q
       end
     end

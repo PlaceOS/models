@@ -1,4 +1,3 @@
-require "rethinkdb-orm"
 require "time"
 
 require "./base/model"
@@ -8,7 +7,7 @@ require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class Zone < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
     include Utilities::SettingsHelper
     include Utilities::MetadataHelper
 
@@ -41,7 +40,6 @@ module PlaceOS::Model
 
     # Association
     ###############################################################################################
-
     belongs_to Zone, foreign_key: "parent_id", association_name: "parent"
 
     has_many(
@@ -154,7 +152,7 @@ module PlaceOS::Model
     end
 
     def self.with_tag(tag : String)
-      Zone.collection_query &.filter(&.["tags"].contains(tag))
+      Zone.where("$1 = Any(tags)", tag)
     end
 
     # TODO: Implement multiple element `contains` in crystal-rethinkdb

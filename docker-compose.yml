@@ -1,12 +1,4 @@
 version: "3.7"
-
-# YAML Anchors
-
-x-rethinkdb-client-env: &rethinkdb-client-env
-  RETHINKDB_HOST: ${RETHINKDB_HOST:-rethink}
-  RETHINKDB_PORT: ${RETHINKDB_PORT:-28015}
-  RETHINKDB_DB: ${RETHINKDB_DB:-place_development}
-
 services:
   test:
     image: placeos/service-spec-runner:latest
@@ -18,12 +10,37 @@ services:
       - ${PWD}/shard.yml:/app/shard.yml.input
       - ${PWD}/coverage:/app/coverage
     depends_on:
-      - rethink
+      - migrator
+      - postgres
     environment:
       GITHUB_ACTION: ${GITHUB_ACTION:-}
-      <<: *rethinkdb-client-env
+      PG_DATABASE_URL: ${PG_DATABASE_URL:-postgresql://postgres:password@postgres:5432/model_dev}
 
-  rethink:
-    image: rethinkdb:${RETHINKDB_VERSION:-2.4}
-    restart: always
-    hostname: rethink
+  postgres:
+    hostname: postgres
+    image: postgres:13-alpine
+    container_name: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: model_dev
+    # volumes:
+    #   - ${PWD}/models_init.sql:/docker-entrypoint-initdb.d/models_init.sql
+    ports:
+      - "5432:5432"
+
+  migrator:
+    build:
+      context: ${PWD}/migration
+    container_name: migrator
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      GITHUB_ACTION: ${GITHUB_ACTION:-}
+      PG_DATABASE_URL: ${PG_DATABASE_URL:-postgresql://postgres:password@postgres:5432/model_dev}

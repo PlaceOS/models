@@ -1,5 +1,4 @@
 require "json"
-require "rethinkdb-orm"
 require "time"
 
 require "./base/model"
@@ -7,7 +6,7 @@ require "./trigger/*"
 
 module PlaceOS::Model
   class Trigger < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
 
     table :trigger
 

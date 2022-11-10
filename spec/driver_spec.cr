@@ -47,7 +47,7 @@ module PlaceOS::Model
 
         Module.by_driver_id(driver.id.as(String)).first.id.should eq mod.id
         driver.destroy
-        Module.find(mod.id.as(String)).should be_nil
+        Module.find?(mod.id.as(String)).should be_nil
       end
 
       it "#update_modules updates dependent modules' driver metadata" do

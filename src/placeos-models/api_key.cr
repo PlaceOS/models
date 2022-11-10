@@ -6,14 +6,14 @@ require "./user_jwt"
 
 module PlaceOS::Model
   class ApiKey < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
 
     table :api_key
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
 
-    attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope::PUBLIC], es_type: "keyword"
+    attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope::PUBLIC], converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::UserJWT::Scope), es_type: "keyword"
 
     # when nil it defaults to the users permissions
     attribute permissions : UserJWT::Permissions? = nil, es_type: "keyword"
@@ -22,8 +22,6 @@ module PlaceOS::Model
 
     belongs_to User
     belongs_to Authority
-
-    secondary_index :authority_id
 
     macro finished
       def user=(user)
@@ -62,7 +60,7 @@ module PlaceOS::Model
     before_create :hash!
 
     protected def safe_id
-      self._new_flag = true
+      self.new_record = true
       @id ||= Random.new.hex(16)
     end
 
@@ -92,7 +90,7 @@ module PlaceOS::Model
 
       # Same error as being unable to find the model
       if model.secret != OpenSSL::HMAC.hexdigest(:sha512, secret, id)
-        raise RethinkORM::Error::DocumentNotFound.new("Key not present: #{id}")
+        raise PgORM::Error::RecordNotFound.new("Key not present: #{id}")
       end
 
       model
@@ -134,7 +132,7 @@ module PlaceOS::Model
       user_id = user.id.as(String)
       saas_scope = UserJWT::Scope::SAAS.to_s
       public_scope = UserJWT::Scope::PUBLIC.to_s
-      existing_key = Model::ApiKey.where(authority_id: authority_id, user_id: user_id, scopes: [saas_scope, public_scope]).first?
+      existing_key = Model::ApiKey.where(authority_id: authority_id, user_id: user_id, scopes: [saas_scope, public_scope].to_json).first?
       if existing_key.nil?
         key = Model::ApiKey.new(
           name: "Portal SaaS Key",

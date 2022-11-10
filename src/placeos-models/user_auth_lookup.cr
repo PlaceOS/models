@@ -1,11 +1,10 @@
-require "rethinkdb-orm"
 require "./base/model"
 require "./authority"
 require "./user"
 
 module PlaceOS::Model
   class UserAuthLookup < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
 
     table :authentication
 
@@ -14,6 +13,8 @@ module PlaceOS::Model
 
     # Association
     ###############################################################################################
+    attribute user_id : String?
+    attribute authority_id : String?
 
     belongs_to User
     belongs_to Authority
@@ -24,7 +25,7 @@ module PlaceOS::Model
     before_create :generate_id
 
     protected def generate_id
-      self._new_flag = true
+      self.new_record = true
       self.id = "auth-#{self.authority_id}-#{self.provider}-#{self.uid}"
     end
   end

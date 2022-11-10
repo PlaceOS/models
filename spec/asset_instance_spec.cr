@@ -13,7 +13,7 @@ module PlaceOS::Model
     end
 
     it "prevents an AssetInstance from ending before it starts" do
-      expect_raises(RethinkORM::Error::DocumentInvalid) do
+      expect_raises(PgORM::Error::RecordInvalid) do
         inst = Generator.asset_instance.save!
         inst.usage_end = Time.local - 1.hour
         inst.save!

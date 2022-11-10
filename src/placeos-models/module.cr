@@ -1,4 +1,3 @@
-require "rethinkdb-orm"
 require "future"
 require "uri"
 
@@ -10,7 +9,7 @@ require "./utilities/settings_helper"
 
 module PlaceOS::Model
   class Module < ModelBase
-    include RethinkORM::Timestamps
+    include PgORM::Timestamps
     include Utilities::SettingsHelper
 
     table :mod
@@ -152,45 +151,25 @@ module PlaceOS::Model
     # Find `Module`s allocated to an `Edge`
     #
     def self.on_edge(edge_id : String)
-      Module.find_all([edge_id], index: :edge_id)
+      Module.where(edge_id: [edge_id])
     end
 
     # Fetch `Module`s who have a direct parent `ControlSystem`
     #
     def self.logic_for(control_system_id : String)
-      Module.find_all([control_system_id], index: :control_system_id)
+      Module.where(control_system_id: [control_system_id])
     end
 
     def self.in_control_system(control_system_id : String)
-      Module.raw_query do |q|
-        q
-          .table(PlaceOS::Model::ControlSystem.table_name)
-          # Find the control system
-          .get(control_system_id)["modules"]
-          # Find the module ids for the control systems
-          .map { |id| q.table(PlaceOS::Model::Module.table_name).get(id) }
-          # Return all modules located
-          .filter(&.has_fields("id"))
-          # Unique module ids
-          .distinct
-      end
+      Module.find_all_by_sql(<<-SQL, args: [control_system_id])
+        select distinct * from "#{Module.table_name}" where id in (select unnest(modules) from "#{ControlSystem.table_name}" where id = $1)
+      SQL
     end
 
     def self.in_zone(zone_id : String)
-      Module.raw_query do |q|
-        q
-          .table(PlaceOS::Model::ControlSystem.table_name)
-          # Find control systems that have the zone
-          .filter(&.["zones"].contains(zone_id))
-          # Find the module ids for the control systems
-          .concat_map { |sys|
-            sys["modules"].map { |id| q.table(PlaceOS::Model::Module.table_name).get(id) }
-          }
-          # Return all modules located
-          .filter(&.has_fields("id"))
-          # Unique module ids
-          .distinct
-      end
+      Module.find_all_by_sql(<<-SQL, args: [zone_id])
+        select distinct * from "#{Module.table_name}" where id in (select unnest(modules) from "#{ControlSystem.table_name}" where $1 = ANY(zones))
+      SQL
     end
 
     # Collect Settings ordered by hierarchy
@@ -248,6 +227,7 @@ module PlaceOS::Model
     protected def add_logic_module
       return unless (cs = self.control_system)
 
+      cs.modules_will_change!
       cs.modules = cs.modules << self.id.as(String)
       cs.version = cs.version + 1
       cs.save!
@@ -258,15 +238,11 @@ module PlaceOS::Model
     protected def remove_module
       mod_id = self.id.as(String)
 
-      ControlSystem
-        .raw_query(&.table(ControlSystem.table_name).filter(&.["modules"].contains(mod_id)))
+      ControlSystem.where("$1 = ANY(modules)", mod_id)
         .map do |sys|
           sys.remove_module(mod_id)
-          # The `ControlSystem` will regenerate `features`
-          future {
-            sys.save!
-          }
-        end.each &.get
+          sys.save!
+        end
     end
 
     # Set the name/role from the associated Driver
@@ -283,8 +259,8 @@ module PlaceOS::Model
 
     protected def set_edge_hint
       if on_edge?
-        self._new_flag = true
-        @id = RethinkORM::IdGenerator.next(self) + EDGE_HINT
+        self.new_record = true
+        @id = Utilities::IdGenerator.next(self) + EDGE_HINT
       end
     end
 

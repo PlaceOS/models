@@ -8,7 +8,7 @@ module PlaceOS::Model
 
       begin
         stats.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
+      rescue e : PgORM::Error::RecordInvalid
         inspect_error(e)
         raise e
       end

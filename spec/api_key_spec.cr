@@ -1,6 +1,9 @@
 require "./helper"
 
 module PlaceOS::Model
+  Spec.before_each do
+    Authority.clear
+  end
   describe ApiKey do
     test_round_trip(ApiKey)
 
@@ -73,7 +76,7 @@ module PlaceOS::Model
       found = ApiKey.find_key! api_key
       found.id.should eq(key.id)
 
-      expect_raises(RethinkORM::Error::DocumentNotFound) do
+      expect_raises(PgORM::Error::RecordNotFound) do
         fake_id = "#{key.id}.notamatch"
         ApiKey.find_key! fake_id
       end
@@ -123,7 +126,7 @@ module PlaceOS::Model
       ApiKey.find!(id).id.should eq key.id
 
       key.user.not_nil!.destroy
-      ApiKey.find(id).should be_nil
+      ApiKey.find?(id).should be_nil
     end
   end
 end

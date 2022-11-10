@@ -16,17 +16,14 @@ We use [RethinkDB](https://rethinkdb.com) to unify our database and event bus, g
 | Key                       | Description                                    | Default     |
 | ------------------------- | ---------------------------------------------- | ----------- |
 | `PLACE_MAX_VERSIONS`      | Number of versions to keep of versioned models | 20          |
-| `RETHINKDB_HOST`          | RethinkDB host                                 | "localhost" |
-| `RETHINKDB_PORT`          | RethinkDB port                                 | 28015       |
-| `RETHINKDB_DB`            | Database name                                  | "test"      |
-| `RETHINKDB_USER`          | Database user                                  | "admin"     |
-| `RETHINKDB_PASSWORD`      | Database password                              | ""          |
-| `RETHINKDB_TIMEOUT`       | Retry interval in seconds                      | 2           |
-| `RETHINKDB_RETRIES`       | Times to reattempt failed driver operations    | 10          |
-| `RETHINKDB_QUERY_RETRIES` | Times to reattempt failed queries              | 10          |
-| `RETHINKDB_LOCK_EXPIRE`   | Expiry on locks in seconds                     | 30          |
-| `RETHINKDB_LOCK_TIMEOUT`  | Timeout on retrying a lock in seconds          | 5           |
-
+| `PG_HOST`                 | Postgresql host                                | "localhost" |
+| `PG_PORT`                 | Postgresql port                                | 5432        |
+| `PG_DB`                   | Database name  or `PG_DATABASE`                | "test"      |
+| `PG_USER`                 | Database user                                  | "postgres"  |
+| `PG_PASSWORD`             | Database password                              | ""          |
+| `PG_QUERY`                | Query string, that can be used to configure pooling | ""     |
+| `PG_LOCK_TIMEOUT`         | Timeout on retrying Advisory lock in seconds   | 5           |
+| `PG_DATABASE_URL`         | Or provide a Database DSN                      |             |
 ## Contributing
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
