@@ -89,6 +89,31 @@ module PlaceOS::Model
       value.to_json(builder)
     end
   end
+
+  # :nodoc:
+  module EnumConverter(T)
+    def self.from_rs(rs : ::DB::ResultSet)
+      val = rs.read(Int32)
+      T.from_value(val)
+    end
+
+    def self.from_json(pull : JSON::PullParser) : T
+      str = pull.read_raw
+      if (val = str.to_i?)
+        T.from_value?(val) || pull.raise "Unknown enum #{T} value: #{str}"
+      else
+        T.parse?(str) || pull.raise "Uknown enum #{T} value: #{str}"
+      end
+    end
+
+    def self.to_json(val : T | Nil)
+      val.value.to_s
+    end
+
+    def self.to_json(val : T | Nil, builder)
+      val.try &.value.to_json(builder)
+    end
+  end
 end
 
 # :nodoc:

@@ -39,7 +39,7 @@ module PlaceOS::Model
       end
     end
 
-    attribute repo_type : Type = Type::Driver, es_type: "text"
+    attribute repo_type : Type = Type::Driver, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Repository::Type), es_type: "text"
 
     # Association
     ###############################################################################################
