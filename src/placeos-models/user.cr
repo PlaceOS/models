@@ -16,7 +16,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute nickname : String = ""
-    attribute email : Email = Email.new(""), es_type: "text"
+    attribute email : Email = Email.new(""), converter: PlaceOS::Model::EmailConverter, es_type: "text"
     attribute phone : String = ""
     attribute country : String = ""
     attribute image : String = ""

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "user"(
    updated_at TIMESTAMPTZ NOT NULL,
    name TEXT NOT NULL,
    nickname TEXT NOT NULL,
-   email JSONB NOT NULL,
+   email TEXT NOT NULL,
    phone TEXT NOT NULL,
    country TEXT NOT NULL,
    image TEXT NOT NULL,

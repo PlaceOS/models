@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS "sys"(
    name TEXT NOT NULL,
    description TEXT NOT NULL,
    features TEXT[] NOT NULL,
-   email JSONB,
+   email TEXT,
    bookable BOOLEAN NOT NULL,
    display_name TEXT,
    code TEXT,

@@ -24,7 +24,7 @@ module PlaceOS::Model
     # Room search meta-data
     # Building + Level are both filtered using zones
     attribute features : Set(String) = ->{ Set(String).new }
-    attribute email : Email?
+    attribute email : Email?, converter: PlaceOS::Model::EmailConverter
     attribute bookable : Bool = false
     attribute display_name : String?
     attribute code : String?

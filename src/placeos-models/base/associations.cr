@@ -27,7 +27,7 @@ module PlaceOS::Model
 
       return parent if parent
 
-      self.{{ assoc_var }} = key ? {{ parent_class }}.find(key) : nil
+      self.{{ assoc_var }} = key ? {{ parent_class }}.find?(key) : nil
     end
 
     def {{ parent_name.id }}! : {{ parent_class }}
@@ -81,7 +81,7 @@ module PlaceOS::Model
       child = @{{ assoc_var }}
       return child unless child.nil?
 
-      self.{{ assoc_var }} = key && !key.empty? ? {{ child_class }}.find(key)
+      self.{{ assoc_var }} = key && !key.empty? ? {{ child_class }}.find?(key)
                                                 : nil
     end
 
