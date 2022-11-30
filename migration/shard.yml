@@ -11,5 +11,6 @@ targets:
 dependencies:
   micrate:
     github: amberframework/micrate
+    version: "0.12.0"
   pg:
     github: will/crystal-pg
