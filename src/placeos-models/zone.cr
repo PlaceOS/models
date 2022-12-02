@@ -5,6 +5,7 @@ require "./base/model"
 require "./settings"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
+require "./converter/time_location"
 
 module PlaceOS::Model
   class Zone < ModelBase
@@ -35,6 +36,8 @@ module PlaceOS::Model
     attribute capacity : Int32 = 0
     # Map identifier, could be a URL or id
     attribute map_id : String?
+    # Timezone
+    attribute timezone : Time::Location?, converter: Time::Location::Converter, es_type: "text"
     # =============================
 
     attribute triggers : Array(String) = [] of String
