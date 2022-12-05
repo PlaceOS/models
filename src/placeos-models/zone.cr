@@ -46,6 +46,10 @@ module PlaceOS::Model
     # Association
     ###############################################################################################
 
+    secondary_index :authority_id
+
+    belongs_to Authority
+
     belongs_to Zone, foreign_key: "parent_id", association_name: "parent"
 
     has_many(
@@ -81,9 +85,12 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
+    validates :authority_id, presence: true
     validates :name, presence: true
-    ensure_unique :name do |name|
-      name.strip
+
+    # Ensure unique name under authority scope
+    ensure_unique :name, scope: [:authority_id, :name] do |authority_id, name|
+      {authority_id, name.strip}
     end
 
     # Callbacks
@@ -157,8 +164,8 @@ module PlaceOS::Model
       settings
     end
 
-    def self.with_tag(tag : String)
-      Zone.collection_query &.filter(&.["tags"].contains(tag))
+    def self.with_tag(tag : String, authority_id : String)
+      Zone.collection_query &.filter(&.["tags"].contains(tag)).filter { |t| t.["authority_id"] == authority_id }
     end
 
     # TODO: Implement multiple element `contains` in crystal-rethinkdb

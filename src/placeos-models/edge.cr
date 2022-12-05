@@ -70,6 +70,10 @@ module PlaceOS::Model
     # Association
     ###############################################################################################
 
+    secondary_index :authority_id
+
+    belongs_to Authority
+
     # Modules allocated to this Edge
     has_many(
       child_class: Module,
@@ -128,8 +132,11 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
-    ensure_unique :name do |name|
-      name.strip
+    validates :authority_id, presence: true
+
+    # Ensure unique name under authority scope
+    ensure_unique :name, scope: [:authority_id, :name] do |authority_id, name|
+      {authority_id, name.strip}
     end
   end
 end

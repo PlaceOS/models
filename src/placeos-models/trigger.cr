@@ -30,6 +30,10 @@ module PlaceOS::Model
     # Association
     ###############################################################################################
 
+    secondary_index :authority_id
+
+    belongs_to Authority
+
     has_many(
       child_class: TriggerInstance,
       dependent: :destroy,
@@ -42,6 +46,8 @@ module PlaceOS::Model
 
     # Validation
     ###############################################################################################
+
+    validates :authority_id, presence: true
 
     # Validate `supported_methods`
     validate ->(this : Trigger) do

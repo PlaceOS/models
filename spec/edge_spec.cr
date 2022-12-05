@@ -15,5 +15,14 @@ module PlaceOS::Model
       edge = Generator.edge.save!
       Edge.jwt_edge_id?(edge.api_key.not_nil!.build_jwt).should eq(edge.id)
     end
+
+    describe "validations" do
+      it "ensure associated authority" do
+        edge = Generator.edge
+        edge.authority_id = ""
+        edge.valid?.should be_false
+        edge.errors.first.field.should eq :authority_id
+      end
+    end
   end
 end

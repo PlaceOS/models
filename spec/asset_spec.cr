@@ -22,6 +22,13 @@ module PlaceOS::Model
           asset.save!
         end
       end
+
+      it "ensure associated authority" do
+        asset = Generator.asset
+        asset.authority_id = ""
+        asset.valid?.should be_false
+        asset.errors.first.field.should eq :authority_id
+      end
     end
 
     describe "#consumable_assets" do

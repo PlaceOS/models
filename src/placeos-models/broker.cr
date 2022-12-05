@@ -34,14 +34,25 @@ module PlaceOS::Model
     # Matches will be replaced with a hmac_256(secret, match).
     attribute filters : Array(String) = ->{ [] of String }
 
+    # Association
+    ###############################################################################################
+
+    secondary_index :authority_id
+
+    belongs_to Authority
+
     # Validation
     ###############################################################################################
 
+    validates :authority_id, presence: true
     validates :name, presence: true
     validates :host, presence: true
     validates :secret, presence: true
 
-    ensure_unique :name
+    # Ensure unique name under authority scope
+    ensure_unique :name, scope: [:authority_id, :name] do |authority_id, name|
+      {authority_id, name}
+    end
 
     validate ->Broker.validate_filters(Broker)
 

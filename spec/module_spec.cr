@@ -322,5 +322,14 @@ module PlaceOS::Model
         end
       end
     end
+
+    describe "validations" do
+      it "ensure associated authority" do
+        mod = Generator.module
+        mod.authority_id = ""
+        mod.valid?.should be_false
+        mod.errors.first.field.should eq :authority_id
+      end
+    end
   end
 end

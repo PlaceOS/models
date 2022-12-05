@@ -54,6 +54,10 @@ module PlaceOS::Model
     # Associations
     ###############################################################################################
 
+    secondary_index :authority_id
+
+    belongs_to Authority
+
     # Encrypted yaml settings, with metadata
     has_many(
       child_class: Settings,
@@ -84,12 +88,15 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
+    validates :authority_id, presence: true
+
     # Zones and settings are only required for confident coding
     validates :name, presence: true
 
     # TODO: Ensure unique regardless of casing
-    ensure_unique :name do |name|
-      name.strip
+    # Ensure unique name under authority scope
+    ensure_unique :name, scope: [:authority_id, :name] do |authority_id, name|
+      {authority_id, name.strip}
     end
 
     # Validate support URI

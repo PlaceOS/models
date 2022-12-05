@@ -88,11 +88,18 @@ module PlaceOS::Model
       end
     end
 
-    describe "validation" do
+    describe "validations" do
       it "rejects invalid support URI" do
         sys = Generator.control_system
         sys.support_url = "string"
         sys.valid?.should be_false
+      end
+
+      it "ensure associated authority" do
+        control_system = Generator.control_system
+        control_system.authority_id = ""
+        control_system.valid?.should be_false
+        control_system.errors.first.field.should eq :authority_id
       end
     end
 
@@ -193,7 +200,7 @@ module PlaceOS::Model
 
         cs.save!
 
-        trigger = Trigger.create!(name: "trigger test")
+        trigger = Trigger.create!(name: "trigger test", authority_id: "spec-authority-id")
         zone = Generator.zone
         trigger_id = trigger.id
         if trigger_id

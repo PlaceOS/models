@@ -89,7 +89,7 @@ module PlaceOS::Model
 
       cs.save!
 
-      trigger = Trigger.create!(name: "trigger test")
+      trigger = Trigger.create!(name: "trigger test", authority_id: "spec-authority-id")
 
       # No trigger_instances associated with zone
       zone.trigger_instances.to_a.size.should eq 0
@@ -125,10 +125,19 @@ module PlaceOS::Model
           zone.save!
         end
 
-        Zone.with_tag("0").to_a.compact_map(&.id).sort!.should eq zones.compact_map(&.id).sort!
-        Zone.with_tag("3").to_a.compact_map(&.id).sort!.should eq zones[3..].compact_map(&.id).sort!
+        Zone.with_tag("0", "spec-authority-id").to_a.compact_map(&.id).sort!.should eq zones.compact_map(&.id).sort!
+        Zone.with_tag("3", "spec-authority-id").to_a.compact_map(&.id).sort!.should eq zones[3..].compact_map(&.id).sort!
 
         zones.each &.destroy
+      end
+    end
+
+    describe "validations" do
+      it "ensure associated authority" do
+        zone = Generator.zone
+        zone.authority_id = ""
+        zone.valid?.should be_false
+        zone.errors.first.field.should eq :authority_id
       end
     end
   end

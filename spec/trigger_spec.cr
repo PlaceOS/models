@@ -9,16 +9,25 @@ module PlaceOS::Model
       Trigger.find!(inst.id.as(String)).id.should eq inst.id
     end
 
-    it "validates webhook methods" do
-      invalid_model = Generator.trigger
-      invalid_model.supported_methods = ["NUGGET", "GET"]
-      valid_model = Generator.trigger
-      valid_model.supported_methods = ["POST", "GET"]
+    describe "validations" do
+      it "validates webhook methods" do
+        invalid_model = Generator.trigger
+        invalid_model.supported_methods = ["NUGGET", "GET"]
+        valid_model = Generator.trigger
+        valid_model.supported_methods = ["POST", "GET"]
 
-      valid_model.valid?.should be_true
-      invalid_model.valid?.should be_false
-      invalid_model.errors.size.should eq 1
-      invalid_model.errors.first.to_s.should end_with "supported_methods contains invalid methods: NUGGET"
+        valid_model.valid?.should be_true
+        invalid_model.valid?.should be_false
+        invalid_model.errors.size.should eq 1
+        invalid_model.errors.first.to_s.should end_with "supported_methods contains invalid methods: NUGGET"
+      end
+
+      it "ensure associated authority" do
+        trigger = Generator.trigger
+        trigger.authority_id = ""
+        trigger.valid?.should be_false
+        trigger.errors.first.field.should eq :authority_id
+      end
     end
 
     describe Trigger::Actions do
