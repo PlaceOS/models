@@ -1,3 +1,10 @@
+## v8.13.0 (2022-12-05)
+
+### Feat
+
+- **zone**: add images ([#192](https://github.com/PlaceOS/models/pull/192))
+- **zone**: add timezone ([#191](https://github.com/PlaceOS/models/pull/191))
+
 ## v8.12.2 (2022-10-27)
 
 ### Fix
