@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS "zone"(
    count INTEGER NOT NULL,
    capacity INTEGER NOT NULL,
    map_id TEXT,
+   timezone TEXT,
    triggers TEXT[] NOT NULL,
+   images TEXT[] NOT NULL,
    parent_id TEXT,
    id TEXT NOT NULL PRIMARY KEY
 );
