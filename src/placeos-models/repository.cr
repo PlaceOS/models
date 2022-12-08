@@ -7,7 +7,7 @@ module PlaceOS::Model
   # Pins engine's driver sources to a specific repository state.
   # Enables external driver management from a VCS.
   class Repository < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :repo
 

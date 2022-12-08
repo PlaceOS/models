@@ -4,7 +4,7 @@ require "./user"
 
 module PlaceOS::Model
   class UserAuthLookup < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :authentication
 

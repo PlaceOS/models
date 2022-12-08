@@ -9,7 +9,7 @@ require "./user"
 
 module PlaceOS::Model
   class Authority < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :authority
 

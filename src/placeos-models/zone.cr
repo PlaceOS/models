@@ -8,7 +8,7 @@ require "./converter/time_location"
 
 module PlaceOS::Model
   class Zone < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
     include Utilities::MetadataHelper
 

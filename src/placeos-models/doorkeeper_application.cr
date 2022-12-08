@@ -7,7 +7,7 @@ require "digest/md5"
 
 module PlaceOS::Model
   class DoorkeeperApplication < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :doorkeeper_app
 

@@ -5,7 +5,7 @@ require "./base/model"
 module PlaceOS::Model
   # See: https://github.com/omniauth/omniauth-saml
   class SamlAuthentication < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :adfs_strat
 

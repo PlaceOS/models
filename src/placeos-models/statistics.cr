@@ -3,7 +3,7 @@ require "./base/model"
 
 module PlaceOS::Model
   class Statistics < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :stats
 

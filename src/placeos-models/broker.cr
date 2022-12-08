@@ -5,7 +5,7 @@ require "./base/model"
 
 module PlaceOS::Model
   class Broker < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :broker
 

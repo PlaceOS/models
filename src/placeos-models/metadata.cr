@@ -15,7 +15,7 @@ require "./zone"
 
 module PlaceOS::Model
   class Metadata < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
     include Utilities::LastModified
     include Utilities::Versions
 

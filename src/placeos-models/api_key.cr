@@ -6,7 +6,7 @@ require "./user_jwt"
 
 module PlaceOS::Model
   class ApiKey < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :api_key
 

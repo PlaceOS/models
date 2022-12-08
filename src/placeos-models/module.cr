@@ -9,7 +9,7 @@ require "./utilities/settings_helper"
 
 module PlaceOS::Model
   class Module < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
 
     table :mod

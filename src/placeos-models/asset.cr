@@ -2,7 +2,7 @@ require "./base/model"
 
 module PlaceOS::Model
   class Asset < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :asset
 

@@ -6,7 +6,7 @@ require "./base/model"
 module PlaceOS::Model
   # See: https://github.com/omniauth/omniauth-oauth2
   class OAuthAuthentication < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :oauth_strat
 

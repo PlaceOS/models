@@ -9,7 +9,7 @@ require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class User < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
     include Utilities::MetadataHelper
 
     table :user

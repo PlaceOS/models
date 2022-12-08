@@ -4,7 +4,7 @@ require "./api_key"
 
 module PlaceOS::Model
   class Edge < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :edge
 

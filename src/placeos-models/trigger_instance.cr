@@ -5,7 +5,7 @@ require "./base/model"
 
 module PlaceOS::Model
   class TriggerInstance < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :trig
 

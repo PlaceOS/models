@@ -3,13 +3,13 @@ require "./converter/json_string"
 
 module PlaceOS::Model
   class JsonSchema < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :json_schema
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
-    attribute schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "text"
+    attribute schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter
 
     has_many(
       child_class: Metadata,

@@ -12,7 +12,7 @@ require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class ControlSystem < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
     include Utilities::MetadataHelper
 

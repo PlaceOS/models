@@ -12,6 +12,7 @@ require "../utilities/encryption"
 require "../utilities/validation"
 require "../utilities/id_generator"
 require "./associations"
+require "./timestamps"
 
 module PlaceOS::Model
   # Base class for all Engine models

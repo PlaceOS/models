@@ -7,14 +7,14 @@ require "./settings"
 
 module PlaceOS::Model
   class Driver < ModelBase
-    include PgORM::Timestamps
+    include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
 
     table :driver
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
-    attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "text"
+    attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter
 
     attribute default_uri : String?
     attribute default_port : Int32?
