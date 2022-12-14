@@ -22,8 +22,8 @@ module PlaceOS::Model
     attribute requester_id : String?
     attribute zone_id : String?
 
-    attribute usage_start : Time
-    attribute usage_end : Time
+    attribute usage_start : Time, converter: Time::EpochConverter
+    attribute usage_end : Time, converter: Time::EpochConverter
 
     # Association
     ################################################################################################
