@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fix
+
+- **asset**: time fields should be unix epochs at the API level ([#194](https://github.com/PlaceOS/models/pull/194))
+
 ## v8.13.0 (2022-12-05)
 
 ### Feat
