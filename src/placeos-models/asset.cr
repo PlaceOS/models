@@ -10,8 +10,8 @@ module PlaceOS::Model
     attribute category : String = ""
     attribute description : String = ""
 
-    attribute purchase_date : Time
-    attribute good_until_date : Time?
+    attribute purchase_date : Time, converter: PlaceOS::Model::Timestamps::EpochConverter
+    attribute good_until_date : Time?, converter: Time::EpochConverter
 
     attribute identifier : String?
     attribute brand : String = ""
