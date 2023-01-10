@@ -4,7 +4,7 @@ require "time"
 require "random/secure"
 require "./base/model"
 require "digest/md5"
- 
+
 module PlaceOS::Model
   class DoorkeeperApplication < PgORM::Base
     include Neuroplastic
