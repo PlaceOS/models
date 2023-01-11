@@ -18,6 +18,7 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute secret : String
     attribute scopes : String = "public"
+    attribute owner_id : String, es_type: "keyword"
     attribute redirect_uri : String
     attribute confidential : Bool = false
 
