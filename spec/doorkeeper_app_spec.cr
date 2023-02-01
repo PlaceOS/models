@@ -30,7 +30,7 @@ module PlaceOS::Model
         app2 = DoorkeeperApplication.new
         app2.name = RANDOM.hex(10)
         app2.redirect_uri = uri
-        app2.owner_id = RANDOM.hex(10)
+        app2.owner_id = app1.owner_id
         app2.save!
       end
     end
@@ -46,7 +46,7 @@ module PlaceOS::Model
         app2 = DoorkeeperApplication.new
         app2.name = name
         app2.redirect_uri = "appuri://test.redirect.com.au/#{RANDOM.hex(3)}"
-        app2.owner_id = RANDOM.hex(10)
+        app2.owner_id = app1.owner_id
         app2.save!
       end
     end

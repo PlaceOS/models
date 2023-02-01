@@ -103,8 +103,8 @@ module PlaceOS::Model
       {authority_id, email_digest}
     end
 
-    ensure_unique :login_name
-    ensure_unique :staff_id
+    ensure_unique :login_name, scope: [:authority_id]
+    ensure_unique :staff_id, scope: [:authority_id]
 
     # Callbacks
     ###############################################################################################

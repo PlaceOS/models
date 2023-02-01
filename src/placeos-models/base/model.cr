@@ -103,7 +103,7 @@ module PlaceOS::Model
       if (val = str.to_i?)
         T.from_value?(val) || pull.raise "Unknown enum #{T} value: #{str}"
       else
-        T.parse?(str) || pull.raise "Uknown enum #{T} value: #{str}"
+        T.parse?(str.strip('"')) || pull.raise "Uknown enum #{T} value: #{str}"
       end
     end
 

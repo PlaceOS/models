@@ -27,14 +27,14 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
-    ensure_unique :uid
+    ensure_unique :uid, scope: [:owner_id]
 
-    ensure_unique :redirect_uri do |redirect_uri|
-      redirect_uri.strip
+    ensure_unique :redirect_uri, scope: [:owner_id, :redirect_uri] do |owner_id, redirect_uri|
+      {owner_id, redirect_uri.strip}
     end
 
-    ensure_unique :name do |name|
-      name.strip
+    ensure_unique :name, scope: [:owner_id, :name] do |owner_id, name|
+      {owner_id, name.strip}
     end
 
     validates :name, presence: true

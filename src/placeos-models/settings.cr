@@ -45,7 +45,7 @@ module PlaceOS::Model
       end
     end
 
-    attribute parent_type : ParentType, converter: Enum::ValueConverter(PlaceOS::Model::Settings::ParentType), es_type: "keyword"
+    attribute parent_type : ParentType, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Settings::ParentType), es_type: "keyword"
 
     # Association
     ###############################################################################################

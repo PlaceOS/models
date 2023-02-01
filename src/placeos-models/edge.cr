@@ -82,7 +82,7 @@ module PlaceOS::Model
       child_class: ApiKey,
       dependent: :destroy,
       association_name: "api_key",
-      presence: true,
+      presence: false,
     )
 
     # Callbacks
