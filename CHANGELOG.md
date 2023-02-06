@@ -1,5 +1,11 @@
 ## Unreleased
 
+### Feat
+
+- **user**: expose email and phone number ([#195](https://github.com/PlaceOS/models/pull/195))
+
+## v8.13.1 (2022-12-14)
+
 ### Fix
 
 - **asset**: time fields should be unix epochs at the API level ([#194](https://github.com/PlaceOS/models/pull/194))
