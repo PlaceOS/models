@@ -69,6 +69,7 @@ module PlaceOS::Model
     end
 
     it "saves an app with a specified UID" do
+      DoorkeeperApplication.clear
       app = DoorkeeperApplication.new
       app.name = RANDOM.hex(10)
       app.redirect_uri = "http://test.redirect.com.au/#{RANDOM.hex(3)}"
