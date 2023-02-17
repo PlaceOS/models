@@ -71,7 +71,7 @@ module PlaceOS::Model
     def self.from_json(pull : JSON::PullParser)
       arr = Array(T).new
       pull.read_array do
-        if T == UserJWT::Scope
+        if T <= UserJWT::Scope
           arr << T.new(pull)
         else
           arr << T.from_json(pull.read_string)
