@@ -4,7 +4,7 @@ require "yaml"
 # :nodoc:
 module JSON::Any::StringConverter
   def self.from_json(value : JSON::PullParser) : JSON::Any
-    JSON::Any.new(value)
+    JSON.parse(value.read_string)
   end
 
   def self.to_json(value : JSON::Any, json : JSON::Builder)
