@@ -2,3 +2,5 @@ Lint/NotNil:
   Enabled: false
 Style/PredicateName:
   Enabled: false
+Style/ParenthesesAroundCondition:
+  Enabled: false

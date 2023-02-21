@@ -6,7 +6,11 @@ module JSON::Any::StringConverter
   def self.from_json(value : JSON::PullParser) : JSON::Any
     v = value.read_raw
     if v.is_a?(String)
-      JSON.parse(v)
+      if v.strip('"') == "{}"
+        JSON::Any.new({} of String => JSON::Any)
+      else
+        JSON.parse(v.to_s)
+      end
     else
       JSON::Any.new(v)
     end
