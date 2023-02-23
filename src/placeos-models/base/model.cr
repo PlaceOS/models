@@ -108,11 +108,11 @@ module PlaceOS::Model
     end
 
     def self.to_json(val : T | Nil)
-      val.value.to_s
+      val.to_s
     end
 
     def self.to_json(val : T | Nil, builder)
-      val.try &.value.to_json(builder)
+      val.try &.to_json(builder)
     end
   end
 end
