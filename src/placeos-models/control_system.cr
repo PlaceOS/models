@@ -27,6 +27,7 @@ module PlaceOS::Model
     attribute features : Set(String) = ->{ Set(String).new }
     attribute email : Email?
     attribute bookable : Bool = false
+    attribute public : Bool = false
     attribute display_name : String?
     attribute code : String?
     attribute type : String?
