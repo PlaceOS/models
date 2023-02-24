@@ -2,6 +2,12 @@
 
 ### Feat
 
+- **control_system**: add public flag ([#196](https://github.com/PlaceOS/models/pull/196))
+
+## v8.13.2 (2023-02-06)
+
+### Feat
+
 - **user**: expose email and phone number ([#195](https://github.com/PlaceOS/models/pull/195))
 
 ## v8.13.1 (2022-12-14)
