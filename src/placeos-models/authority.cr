@@ -23,7 +23,7 @@ module PlaceOS::Model
 
     attribute internals : Hash(String, JSON::Any) = {} of String => JSON::Any
     attribute config : Hash(String, JSON::Any) = {
-      "default_app" => JSON::Any.new("/backoffice/")
+      "default_app" => JSON::Any.new("/backoffice/"),
     }
 
     macro finished
