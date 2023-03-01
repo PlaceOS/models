@@ -22,7 +22,9 @@ module PlaceOS::Model
     attribute logout_url : String = "/auth/logout"
 
     attribute internals : Hash(String, JSON::Any) = {} of String => JSON::Any
-    attribute config : Hash(String, JSON::Any) = {} of String => JSON::Any
+    attribute config : Hash(String, JSON::Any) = {
+      "default_app" => JSON::Any.new("/backoffice/")
+    }
 
     macro finished
       # Ensure only the host is saved.
