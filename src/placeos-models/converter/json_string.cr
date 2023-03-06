@@ -17,7 +17,11 @@ module JSON::Any::StringConverter
   end
 
   def self.to_json(value : JSON::Any, json : JSON::Builder)
-    value.to_json(json)
+    if h = value.as_h?
+      JSON::Any.new(h.to_json).to_json(json)
+    else
+      value.to_json(json)
+    end
   end
 
   def self.from_yaml(ctx : YAML::ParseContext, node : YAML::Nodes::Node) : JSON::Any
