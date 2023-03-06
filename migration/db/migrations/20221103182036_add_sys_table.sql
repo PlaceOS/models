@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS "sys"(
    features TEXT[] NOT NULL,
    email TEXT,
    bookable BOOLEAN NOT NULL,
-   public BOOLEAN NOT NULL,
    display_name TEXT,
    code TEXT,
    type TEXT,

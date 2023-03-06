@@ -14,7 +14,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
-    attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter
+    attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "text"
 
     attribute default_uri : String?
     attribute default_port : Int32?

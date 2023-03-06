@@ -9,7 +9,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
-    attribute schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter
+    attribute schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "text"
 
     has_many(
       child_class: Metadata,
