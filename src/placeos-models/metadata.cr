@@ -142,9 +142,9 @@ module PlaceOS::Model
       include JSON::Serializable
       extend OpenAPI::Generator::Serializable
 
-      @[JSON::Field(converter: Time::EpochConverter)]
+      @[JSON::Field(converter: Time::EpochConverter, type: "integer", format: "Int64")]
       @updated_at : Time
-      @[JSON::Field(converter: Time::EpochConverter)]
+      @[JSON::Field(converter: Time::EpochConverter, type: "integer", format: "Int64")]
       @created_at : Time
     end
 
