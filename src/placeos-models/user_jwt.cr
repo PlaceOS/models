@@ -7,10 +7,10 @@ module PlaceOS::Model
 
     getter iss : String
 
-    @[JSON::Field(converter: Time::EpochConverter)]
+    @[JSON::Field(converter: Time::EpochConverter, type: "integer", format: "Int64")]
     getter iat : Time
 
-    @[JSON::Field(converter: Time::EpochConverter)]
+    @[JSON::Field(converter: Time::EpochConverter, type: "integer", format: "Int64")]
     getter exp : Time
 
     @[JSON::Field(key: "aud")]

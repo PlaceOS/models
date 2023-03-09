@@ -12,9 +12,9 @@ module PlaceOS::Model
 
     attribute description : String = ""
 
-    attribute api_key_id : String, presence: true, mass_assignment: false
+    attribute api_key_id : String, mass_assignment: false
 
-    attribute user_id : String, presence: true, mass_assignment: false
+    attribute user_id : String, mass_assignment: false
 
     @[JSON::Field(ignore: true)]
     getter x_api_key : String do

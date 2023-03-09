@@ -18,7 +18,7 @@ module PlaceOS::Model
     attribute redirect_uri : String
     attribute skip_authorization : Bool = true
     attribute confidential : Bool = false
-    attribute revoked_at : Time?, converter: Time::EpochConverter
+    attribute revoked_at : Time?, converter: Time::EpochConverter, type: "integer", format: "Int64"
 
     attribute uid : String, mass_assignment: false
 
