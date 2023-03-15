@@ -1,4 +1,12 @@
-## Unreleased
+## v8.14.0 (2023-03-15)
+
+### Refactor
+
+- migrate models to postgres via pg-orm ([#188](https://github.com/PlaceOS/models/pull/188))
+
+## v8.13.4 (2023-03-09)
+
+## v8.13.3 (2023-02-24)
 
 ### Feat
 
