@@ -22,8 +22,8 @@ module PlaceOS::Model
     attribute requester_id : String?
     attribute zone_id : String?
 
-    attribute usage_start : Time, converter: Time::EpochConverter, type: "integer", format: "Int64"
-    attribute usage_end : Time, converter: Time::EpochConverter, type: "integer", format: "Int64"
+    attribute usage_start : Time, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64"
+    attribute usage_end : Time, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64"
 
     # Association
     ################################################################################################
