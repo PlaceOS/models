@@ -2,7 +2,7 @@ name: CI
 on:
   push:
   schedule:
-    - cron: "0 0 * * 0" # Every Sunday at midnight 
+    - cron: '0 0 * * 0' # Every Sunday at midnight 
 
 jobs:
   style:

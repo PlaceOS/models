@@ -1,3 +1,28 @@
+## Unreleased
+
+### Feat
+
+- **control_system**: add public flag ([#196](https://github.com/PlaceOS/models/pull/196))
+
+## v8.13.2 (2023-02-06)
+
+### Feat
+
+- **user**: expose email and phone number ([#195](https://github.com/PlaceOS/models/pull/195))
+
+## v8.13.1 (2022-12-14)
+
+### Fix
+
+- **asset**: time fields should be unix epochs at the API level ([#194](https://github.com/PlaceOS/models/pull/194))
+
+## v8.13.0 (2022-12-05)
+
+### Feat
+
+- **zone**: add images ([#192](https://github.com/PlaceOS/models/pull/192))
+- **zone**: add timezone ([#191](https://github.com/PlaceOS/models/pull/191))
+
 ## v8.12.2 (2022-10-27)
 
 ### Fix

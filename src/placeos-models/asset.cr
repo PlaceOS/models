@@ -10,7 +10,7 @@ module PlaceOS::Model
     attribute category : String = ""
     attribute description : String = ""
 
-    attribute purchase_date : Time, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64"
+    attribute purchase_date : Time, converter: Time::EpochConverter, type: "integer", format: "Int64"
     attribute good_until_date : Time?, converter: Time::EpochConverter, type: "integer", format: "Int64"
 
     attribute identifier : String?
