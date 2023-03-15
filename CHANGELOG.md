@@ -1,3 +1,9 @@
+## v8.14.1 (2023-03-15)
+
+### Fix
+
+- merge commit fb436e breaks asset and asset_instance ([#198](https://github.com/PlaceOS/models/pull/198))
+
 ## v8.14.0 (2023-03-15)
 
 ### Refactor
