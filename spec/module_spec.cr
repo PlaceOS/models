@@ -11,7 +11,7 @@ module PlaceOS::Model
           mod = Generator.module(driver: driver)
           begin
             mod.save!
-          rescue error : RethinkORM::Error::DocumentInvalid
+          rescue error : PgORM::Error::RecordInvalid
             inspect_error(error)
           end
           mod.persisted?.should be_true
@@ -125,7 +125,7 @@ module PlaceOS::Model
         control_system = Generator.control_system.save!
         begin
           zone = Generator.zone.save!
-        rescue e : RethinkORM::Error::DocumentInvalid
+        rescue e : PgORM::Error::RecordInvalid
           inspect_error(e)
           raise e
         end
@@ -208,7 +208,7 @@ module PlaceOS::Model
         driver_settings_string = %(value: 0\nscreen: 0\nfrangos: 0\nchop: 0)
         begin
           Generator.settings(driver: driver, settings_string: driver_settings_string).save!
-        rescue e : RethinkORM::Error::DocumentInvalid
+        rescue e : PgORM::Error::RecordInvalid
           inspect_error(e)
           raise e
         end
@@ -279,7 +279,7 @@ module PlaceOS::Model
         # Reset the parent association reference through `reload!`
         {driver, zone, control_system, mod.reload!}.each &.destroy
         {control_system_settings, driver_settings, module_settings, zone_settings}.each do |setting|
-          Settings.find(setting.id.as(String)).should be_nil
+          Settings.find?(setting.id.as(String)).should be_nil
         end
       end
 
@@ -318,7 +318,7 @@ module PlaceOS::Model
         # Reset the parent association reference through `reload!`
         {driver, zone, control_system, mod.reload!}.each &.destroy
         {control_system_settings, driver_settings, module_settings, zone_settings}.each do |setting|
-          Settings.find(setting.id.as(String)).should be_nil
+          Settings.find?(setting.id.as(String)).should be_nil
         end
       end
     end

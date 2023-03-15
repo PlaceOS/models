@@ -8,7 +8,7 @@ module PlaceOS::Model
       cs = Generator.control_system
       begin
         cs.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
+      rescue e : PgORM::Error::RecordInvalid
         inspect_error(e)
         raise e
       end
@@ -20,7 +20,7 @@ module PlaceOS::Model
     end
 
     it "no duplicate control system names" do
-      expect_raises(RethinkORM::Error::DocumentInvalid) do
+      expect_raises(PgORM::Error::RecordInvalid) do
         name = RANDOM.base64(10)
         cs1 = ControlSystem.new(
           name: name,
@@ -44,7 +44,7 @@ module PlaceOS::Model
       control_system = ControlSystem.find!(control_system.id.as(String))
       control_system.destroy
 
-      Module.find(mod.id.as(String)).should be_nil
+      Module.find?(mod.id.as(String)).should be_nil
       driver.destroy
     end
 
@@ -201,7 +201,7 @@ module PlaceOS::Model
         end
         zone.save!
         zone_id = zone.id
-      rescue e : RethinkORM::Error::DocumentInvalid
+      rescue e : PgORM::Error::RecordInvalid
         inspect_error(e)
         raise e
       end

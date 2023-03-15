@@ -1,8 +1,8 @@
 dependencies:
   neuroplastic:
     github: place-labs/neuroplastic
+    commit: 29b6a363e101ebdc88e28755f872a200a4c800e8
   retriable:
     github: Sija/retriable.cr
-  rethinkdb-orm:
-    github: spider-gazelle/rethinkdb-orm
-    version: ">= 6.0"
+  pg-orm:
+    github: spider-gazelle/pg-orm

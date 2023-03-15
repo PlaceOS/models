@@ -3,7 +3,7 @@ require "./converter/json_string"
 
 module PlaceOS::Model
   class JsonSchema < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :json_schema
 

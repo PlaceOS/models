@@ -6,28 +6,19 @@ require "placeos-log-backend"
 
 require "spec"
 require "random"
-require "rethinkdb-orm"
+require "pg-orm"
 require "timecop"
 
 # Generators for Engine models
 require "./generator"
 
-# Configure DB
-db_name = "test"
-
-Spec.before_suite do
-  RethinkORM.configure do |settings|
-    settings.db = db_name
-  end
-end
+PgORM::Database.parse(ENV["PG_DATABASE_URL"])
 
 # Clear test tables on exit
 Spec.after_suite do
-  RethinkORM::Connection.raw do |q|
-    q.db(db_name).table_list.for_each do |t|
-      q.db(db_name).table(t).delete
-    end
-  end
+  {% for model in PlaceOS::Model::ModelBase.subclasses %}
+    {{model.id}}.clear
+  {% end %}
 end
 
 # Spec Macros
@@ -48,7 +39,7 @@ end
 #################################################################
 
 # Pretty prints document errors
-def inspect_error(error : RethinkORM::Error::DocumentInvalid)
+def inspect_error(error : PgORM::Error::RecordInvalid)
   message = error.model.errors.join('\n') do |e|
     "#{e.field} #{e.message}"
   end

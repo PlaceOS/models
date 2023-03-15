@@ -14,7 +14,7 @@ module PlaceOS::Model
 
     describe "validations" do
       it "in_use <= quantity" do
-        expect_raises(RethinkORM::Error::DocumentInvalid) do
+        expect_raises(PgORM::Error::RecordInvalid) do
           asset = Generator.asset
           asset.quantity = 20
           asset.save!

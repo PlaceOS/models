@@ -1,5 +1,3 @@
-require "rethinkdb-orm"
-
 require "../settings"
 
 module PlaceOS::Model::Utilities

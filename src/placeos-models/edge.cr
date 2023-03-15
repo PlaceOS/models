@@ -4,7 +4,7 @@ require "./api_key"
 
 module PlaceOS::Model
   class Edge < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :edge
 
@@ -51,7 +51,7 @@ module PlaceOS::Model
 
     def save!(**options)
       super(**options)
-    rescue error : RethinkORM::Error
+    rescue error : PgORM::Error
       # Ensure api_key is cleaned up
       self.api_key.try(&.destroy)
       raise error
@@ -81,9 +81,8 @@ module PlaceOS::Model
     has_one(
       child_class: ApiKey,
       dependent: :destroy,
-      create_index: true,
       association_name: "api_key",
-      presence: true,
+      presence: false,
     )
 
     # Callbacks
@@ -95,8 +94,8 @@ module PlaceOS::Model
     # Generate ID before document is created
     protected def set_id
       if @id.nil?
-        self._new_flag = true
-        @id = RethinkORM::IdGenerator.next(self)
+        self.new_record = true
+        @id = Utilities::IdGenerator.next(self)
       end
     end
 

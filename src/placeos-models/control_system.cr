@@ -1,4 +1,3 @@
-require "rethinkdb-orm"
 require "time"
 require "uri"
 require "future"
@@ -13,7 +12,7 @@ require "./utilities/metadata_helper"
 
 module PlaceOS::Model
   class ControlSystem < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
     include Utilities::MetadataHelper
 
@@ -25,7 +24,7 @@ module PlaceOS::Model
     # Room search meta-data
     # Building + Level are both filtered using zones
     attribute features : Set(String) = ->{ Set(String).new }
-    attribute email : Email?
+    attribute email : Email?, converter: PlaceOS::Model::EmailConverter
     attribute bookable : Bool = false
     attribute public : Bool = false
     attribute display_name : String?
@@ -79,9 +78,6 @@ module PlaceOS::Model
       foreign_key: "control_system_id"
     )
 
-    # Provide a email lookup helpers
-    secondary_index :email
-
     # Validation
     ###############################################################################################
 
@@ -103,11 +99,7 @@ module PlaceOS::Model
     ###############################################################################################
 
     def self.by_zone_id(id)
-      ControlSystem.raw_query do |q|
-        q.table(ControlSystem.table_name).filter do |doc|
-          doc["zones"].contains(id)
-        end
-      end
+      ControlSystem.where("$1 = Any(zones)", id)
     end
 
     @[Deprecated("Use `by_zone_id`")]
@@ -116,11 +108,7 @@ module PlaceOS::Model
     end
 
     def self.by_module_id(id)
-      ControlSystem.raw_query do |q|
-        q.table(ControlSystem.table_name).filter do |doc|
-          doc["modules"].contains(id)
-        end
-      end
+      ControlSystem.where("$1 = Any(modules)", id)
     end
 
     @[Deprecated("Use `by_module_id`")]
@@ -214,14 +202,18 @@ module PlaceOS::Model
       return if self.modules.empty?
 
       # Locate modules that have no other associated ControlSystems
-      lonesome_modules = Module.raw_query do |r|
-        r.table(Module.table_name).get_all(self.modules).filter do |mod|
-          # Find the control systems that have the module
-          r.table(ControlSystem.table_name).filter do |sys|
-            sys["modules"].contains(mod["id"])
-          end.count.eq(1)
-        end
+      args = [] of String
+      query = ""
+
+      self.modules.each_with_index do |v, i|
+        args << v
+        query += ", " unless i == 0
+        query += "$#{i + 1}"
       end
+
+      lonesome_modules = Module.find_all_by_sql(<<-SQL, args: args)
+        select m.* from "#{Module.table_name}" m, "#{ControlSystem.table_name}" s where m.id in (#{query}) and m.id = ANY(s.modules)
+      SQL
 
       # Asynchronously remove the modules
       lonesome_modules.map do |m|
@@ -291,60 +283,52 @@ module PlaceOS::Model
     def add_module(module_id : String)
       if !self.modules.includes?(module_id) && ControlSystem.add_module(id.as(String), module_id)
         self.modules << module_id
-        self.version = ControlSystem.table_query(&.get(id.as(String))["version"]).as_i
+        self.version = ControlSystem.find(id).version
       end
     end
 
     def self.add_module(control_system_id : String, module_id : String)
-      response = Model::ControlSystem.table_query do |q|
-        q
-          .get(control_system_id)
-          .update { |sys|
-            {
-              "modules" => sys["modules"].set_insert(module_id),
-              "version" => sys["version"] + 1,
-            }
-          }
+      response = PgORM::Database.connection do |db|
+        db.exec(<<-SQL, control_system_id, [module_id])
+          update #{ControlSystem.table_name} set modules = modules || $2, version = version + 1 where id = $1
+        SQL
       end
 
-      {"replaced", "updated"}.any? { |k| response[k].try(&.as_i) || 0 > 0 }
+      response.rows_affected > 0
     end
 
     # Removes the module from the system and deletes it if not used elsewhere
     #
     def remove_module(module_id : String)
-      mod = Module.find(module_id)
+      mod = Module.find?(module_id)
       if self.modules.includes?(module_id) && ControlSystem.remove_module(id.as(String), module_id)
+        self.modules_will_change!
         self.modules.delete(module_id)
         unless mod.nil?
           # Remove the module from the control system's features
+          self.features_will_change!
           self.features.delete(mod.resolved_name)
           self.features.delete(mod.name)
         end
-        self.version = ControlSystem.table_query(&.get(id.as(String))["version"]).as_i
+        self.version = ControlSystem.find(id).version
       end
     end
 
     def self.remove_module(control_system_id : String, module_id : String)
-      response = ControlSystem.table_query do |q|
-        q
-          .get(control_system_id)
-          .update { |sys|
-            {
-              "modules" => sys["modules"].set_difference([module_id]),
-              "version" => sys["version"] + 1,
-            }
-          }
+      response = PgORM::Database.connection do |db|
+        db.exec(<<-SQL, control_system_id, [module_id])
+          update #{ControlSystem.table_name} set modules=(select array(select unnest(modules) except select unnest($2::text[]))), version = version + 1 where id = $1
+        SQL
       end
 
-      return false unless {"replaced", "updated"}.any? { |k| response[k].try(&.as_i) || 0 > 0 }
+      return false unless response.rows_affected > 0
 
       # Keep if any other ControlSystem is using the module
       still_in_use = ControlSystem.by_module_id(module_id).any? do |sys|
         sys.id != control_system_id
       end
 
-      Module.find(module_id).try(&.destroy) if !still_in_use
+      Module.find?(module_id).try(&.destroy) unless still_in_use
 
       Log.debug { {
         message:           "module removed from system #{still_in_use ? "still in use" : "deleted as not in any other systems"}",

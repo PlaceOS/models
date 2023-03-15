@@ -1,4 +1,3 @@
-require "rethinkdb-orm"
 require "time"
 
 require "./base/model"
@@ -14,7 +13,7 @@ require "./zone"
 
 module PlaceOS::Model
   class Settings < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
     include Utilities::LastModified
     include Utilities::Versions
 
@@ -46,16 +45,13 @@ module PlaceOS::Model
       end
     end
 
-    attribute parent_type : ParentType, es_type: "keyword"
+    attribute parent_type : ParentType, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Settings::ParentType), es_type: "keyword"
 
     # Association
     ###############################################################################################
 
     attribute parent_id : String?, es_type: "keyword"
     attribute settings_id : String? = nil
-
-    secondary_index :parent_id
-    secondary_index :settings_id
 
     belongs_to ControlSystem, foreign_key: "parent_id"
     belongs_to Driver, foreign_key: "parent_id"
@@ -151,7 +147,7 @@ module PlaceOS::Model
     #
     def self.for_parent(parent_ids : String | Array(String), &) : Array(self)
       master_settings_query do |q|
-        yield (q.get_all(parent_ids, index: :parent_id))
+        q.where({parent_id: parent_ids})
       end.sort_by! do |setting|
         # Reversed
         -1 * setting.encryption_level.value
@@ -166,10 +162,7 @@ module PlaceOS::Model
     # Query all settings under `parent_id`
     #
     def self.query(ids : String | Array(String))
-      ids = ids.is_a?(Array) ? ids : [ids]
-      Settings.raw_query do |q|
-        yield q.table(Settings.table_name).get_all(ids, index: :parent_id)
-      end
+      Settings.find_all(ids.is_a?(Array) ? ids : [ids])
     end
 
     # Locate the modules that will be affected by the change of this setting

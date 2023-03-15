@@ -1,5 +1,3 @@
-require "rethinkdb-orm"
-
 require "../metadata"
 
 module PlaceOS::Model::Utilities

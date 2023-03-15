@@ -1,5 +1,3 @@
-require "rethinkdb"
-require "rethinkdb-orm"
 require "time"
 
 require "./base/model"
@@ -9,7 +7,7 @@ module PlaceOS::Model
   # Pins engine's driver sources to a specific repository state.
   # Enables external driver management from a VCS.
   class Repository < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :repo
 
@@ -41,7 +39,7 @@ module PlaceOS::Model
       end
     end
 
-    attribute repo_type : Type = Type::Driver, es_type: "text"
+    attribute repo_type : Type = Type::Driver, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Repository::Type), es_type: "text"
 
     # Association
     ###############################################################################################
@@ -78,8 +76,8 @@ module PlaceOS::Model
 
     # Generate ID before document is created
     protected def set_id
-      self._new_flag = true
-      @id = RethinkORM::IdGenerator.next(self)
+      self.new_record = true
+      @id = Utilities::IdGenerator.next(self)
     end
 
     # Encrypt sensitive fields

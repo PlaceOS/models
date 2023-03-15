@@ -7,7 +7,7 @@ require "./settings"
 
 module PlaceOS::Model
   class Driver < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
 
     table :driver
@@ -51,7 +51,6 @@ module PlaceOS::Model
 
     # Association
     ###############################################################################################
-
     belongs_to Repository, foreign_key: "repository_id", presence: true
 
     # Encrypted yaml settings

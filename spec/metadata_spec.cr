@@ -116,7 +116,7 @@ module PlaceOS::Model
         original, duplicate = Array(Metadata).new(2) { Generator.metadata(name: name, parent: parent_id) }
         original.save!
 
-        expect_raises(RethinkORM::Error::DocumentInvalid, /`name` must be unique beneath 'parent_id'/) do
+        expect_raises(PgORM::Error::RecordInvalid, /`name` must be unique beneath 'parent_id'/) do
           duplicate.save!
         end
       end
@@ -125,7 +125,7 @@ module PlaceOS::Model
         parent_id = "zone-doesnotexist"
         metadata = Generator.metadata(parent: parent_id)
 
-        expect_raises(RethinkORM::Error::DocumentInvalid, /`parent_id` must reference an existing model/) do
+        expect_raises(PgORM::Error::RecordInvalid, /`parent_id` must reference an existing model/) do
           metadata.save!
         end
       end

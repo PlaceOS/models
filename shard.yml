@@ -1,5 +1,5 @@
 name: placeos-models
-version: 8.13.4
+version: 8.13.2
 crystal: ~> 1.4
 
 dependencies:
@@ -47,10 +47,9 @@ dependencies:
     github: place-labs/log-backend
     version: ">= 0.11.0"
 
-  # ORM for RethinkDB built on active-model
-  rethinkdb-orm:
-    github: spider-gazelle/rethinkdb-orm
-    version: ~> 6.0
+  # ORM for Postgres built on active-model
+  pg-orm:
+    github: spider-gazelle/pg-orm
 
 development_dependencies:
   ameba:

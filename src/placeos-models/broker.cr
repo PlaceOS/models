@@ -1,12 +1,11 @@
 require "openssl"
 require "random"
-require "rethinkdb-orm"
 
 require "./base/model"
 
 module PlaceOS::Model
   class Broker < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :broker
 

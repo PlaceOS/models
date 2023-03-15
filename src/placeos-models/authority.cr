@@ -9,7 +9,7 @@ require "./user"
 
 module PlaceOS::Model
   class Authority < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :authority
 
@@ -59,7 +59,7 @@ module PlaceOS::Model
     validates :domain, presence: true
     validates :name, presence: true
 
-    ensure_unique :domain, create_index: true
+    ensure_unique :domain
 
     # Queries
     ###########################################################################
@@ -68,7 +68,7 @@ module PlaceOS::Model
     #
     def self.find_by_domain(domain : String) : Authority?
       host = URI.parse(domain).host || domain
-      Authority.find_all([host], index: :domain).first?
+      Authority.where(domain: host).first?
     end
   end
 end

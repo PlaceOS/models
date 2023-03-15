@@ -1,5 +1,3 @@
-require "rethinkdb-orm"
-
 require "../user"
 
 # Adds modification data to a `PlaceOS::Model`

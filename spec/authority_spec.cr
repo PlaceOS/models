@@ -34,28 +34,28 @@ module PlaceOS::Model
         auth = Generator.authority.save!
         strat = Generator.adfs_strat(authority: auth).save!
         auth.destroy
-        SamlAuthentication.find(strat.id.as(String)).should be_nil
+        SamlAuthentication.find?(strat.id.as(String)).should be_nil
       end
 
       it "removes dependent ldap authentications" do
         auth = Generator.authority.save!
         strat = Generator.ldap_strat(authority: auth).save!
         auth.destroy
-        LdapAuthentication.find(strat.id.as(String)).should be_nil
+        LdapAuthentication.find?(strat.id.as(String)).should be_nil
       end
 
       it "removes dependent oauth authentications" do
         auth = Generator.authority.save!
         strat = Generator.oauth_strat(authority: auth).save!
         auth.destroy
-        OAuthAuthentication.find(strat.id.as(String)).should be_nil
+        OAuthAuthentication.find?(strat.id.as(String)).should be_nil
       end
 
       it "removes dependent users" do
         auth = Generator.authority.save!
         user = Generator.user(authority: auth, admin: false).save!
         auth.destroy
-        User.find(user.id.as(String)).should be_nil
+        User.find?(user.id.as(String)).should be_nil
       end
 
       it "fails if it will destroy the only remaining admin user" do

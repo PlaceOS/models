@@ -5,7 +5,7 @@ require "./base/model"
 module PlaceOS::Model
   # see: https://github.com/omniauth/omniauth-ldap
   class LdapAuthentication < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :ldap_strat
 

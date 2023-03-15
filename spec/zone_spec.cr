@@ -9,7 +9,7 @@ module PlaceOS::Model
 
       begin
         zone.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
+      rescue e : PgORM::Error::RecordInvalid
         inspect_error(e)
         raise e
       end
@@ -21,7 +21,7 @@ module PlaceOS::Model
     end
 
     it "no duplicate zone names" do
-      expect_raises(RethinkORM::Error::DocumentInvalid) do
+      expect_raises(PgORM::Error::RecordInvalid) do
         name = RANDOM.base64(10)
         zone1 = Zone.new(
           name: name,
@@ -48,7 +48,7 @@ module PlaceOS::Model
 
       begin
         zone.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
+      rescue e : PgORM::Error::RecordInvalid
         inspect_error(e)
         raise e
       end
@@ -62,7 +62,7 @@ module PlaceOS::Model
       zone2.parent_id = id
       begin
         zone2.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
+      rescue e : PgORM::Error::RecordInvalid
         inspect_error(e)
         raise e
       end
@@ -76,7 +76,7 @@ module PlaceOS::Model
       # show that deleting the parent deletes the children
       Zone.find!(id2.as(String)).id.should eq id2
       zone.destroy
-      Zone.find(id2.as(String)).should be_nil
+      Zone.find?(id2.as(String)).should be_nil
     end
 
     it "should create triggers when added and removed from a zone" do
@@ -113,7 +113,6 @@ module PlaceOS::Model
 
       zone = Zone.find!(zone.id.as(String))
       zone.trigger_instances.to_a.size.should eq 0
-
       {cs, zone, trigger}.each &.destroy
     end
 

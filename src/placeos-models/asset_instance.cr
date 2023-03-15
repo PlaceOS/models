@@ -3,7 +3,7 @@ require "./user"
 
 module PlaceOS::Model
   class AssetInstance < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     enum Tracking
       InStorage
@@ -15,7 +15,7 @@ module PlaceOS::Model
     table :ass
 
     attribute name : String, es_subfield: "keyword"
-    attribute tracking : Tracking = Tracking::InStorage
+    attribute tracking : Tracking = Tracking::InStorage, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::AssetInstance::Tracking)
     attribute approval : Bool = false
 
     attribute asset_id : String

@@ -2,7 +2,7 @@ require "./base/model"
 
 module PlaceOS::Model
   class Asset < ModelBase
-    include RethinkORM::Timestamps
+    include PlaceOS::Model::Timestamps
 
     table :asset
 
