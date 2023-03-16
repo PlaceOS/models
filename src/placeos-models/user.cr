@@ -15,13 +15,13 @@ module PlaceOS::Model
     table :user
 
     attribute name : String, es_subfield: "keyword"
-    attribute nickname : String = ""
+    attribute nickname : String?
     attribute email : Email = Email.new(""), converter: PlaceOS::Model::EmailConverter, es_type: "text"
-    attribute phone : String = ""
-    attribute country : String = ""
-    attribute image : String = ""
-    attribute ui_theme : String = "light"
-    attribute misc : String = ""
+    attribute phone : String?
+    attribute country : String?
+    attribute image : String?
+    attribute ui_theme : String? = "light"
+    attribute misc : String?
 
     attribute login_name : String?, mass_assignment: false
     attribute staff_id : String?, mass_assignment: false
