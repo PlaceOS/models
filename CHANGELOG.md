@@ -1,4 +1,10 @@
-## Unreleased
+## v9.0.2 (2023-03-21)
+
+### Fix
+
+- **base/jwt**: generate public key from private ([#199](https://github.com/PlaceOS/models/pull/199))
+
+## v9.0.1 (2023-03-17)
 
 ### Fix
 
