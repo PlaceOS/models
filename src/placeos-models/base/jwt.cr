@@ -18,6 +18,9 @@ module PlaceOS::Model
       encoded_key = ENC_PUBLIC_KEY
       if encoded_key && encoded_key.presence
         String.new(Base64.decode(encoded_key))
+      elsif ENC_PRIVATE_KEY.try &.presence
+        key = OpenSSL::PKey::RSA.new(private_key)
+        key.public_key.to_pem
       else
         Log.warn { "used default JWT public key" }
         <<-KEY
