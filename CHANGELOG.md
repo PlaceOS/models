@@ -1,3 +1,10 @@
+## v9.0.3 (2023-04-17)
+
+### Feat
+
+- **base/model**: added to_rs method
+- **converter/json_string**: added support for dealing with nilable value
+  
 ## v9.0.2 (2023-03-21)
 
 ### Fix

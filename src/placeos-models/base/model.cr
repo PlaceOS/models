@@ -114,6 +114,10 @@ module PlaceOS::Model
     def self.to_json(val : T | Nil, builder)
       val.try &.to_json(builder)
     end
+
+    def self.to_rs(val : T | Nil)
+      val.try &.value
+    end
   end
 end
 
