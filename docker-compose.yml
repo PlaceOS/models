@@ -17,9 +17,7 @@ services:
       PG_DATABASE_URL: ${PG_DATABASE_URL:-postgresql://postgres:password@postgres:5432/model_dev}
 
   postgres:
-    hostname: postgres
     image: postgres:13-alpine
-    container_name: postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 30s
@@ -29,10 +27,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: model_dev
-    # volumes:
-    #   - ${PWD}/models_init.sql:/docker-entrypoint-initdb.d/models_init.sql
-    ports:
-      - "5432:5432"
+
 
   migrator:
     build:
