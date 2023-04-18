@@ -1,10 +1,9 @@
-## v9.0.3 (2023-04-17)
+## Unreleased
 
 ### Feat
 
-- **base/model**: added to_rs method
-- **converter/json_string**: added support for dealing with nilable value
-  
+- added to_rs method and support for dealing with nilable value in EnumConverter ([#200](https://github.com/PlaceOS/models/pull/200))
+
 ## v9.0.2 (2023-03-21)
 
 ### Fix
