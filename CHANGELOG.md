@@ -2,6 +2,12 @@
 
 ### Feat
 
+- **user_jwt**: always ensure email is downcased
+
+## v9.0.3 (2023-04-18)
+
+### Feat
+
 - added to_rs method and support for dealing with nilable value in EnumConverter ([#200](https://github.com/PlaceOS/models/pull/200))
 
 ## v9.0.2 (2023-03-21)
