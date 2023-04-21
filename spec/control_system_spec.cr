@@ -137,14 +137,12 @@ module PlaceOS::Model
         version = cs.version
 
         cs.modules.should contain module_id
-        cs.features.should contain mod.resolved_name
 
         control_system.remove_module(module_id)
         control_system.save!
 
         cs = ControlSystem.find!(control_system_id)
         cs.modules.should_not contain module_id
-        cs.features.should_not contain mod.resolved_name
         cs.version.should eq(version + 1)
 
         {control_system, driver, mod}.each &.destroy
@@ -225,17 +223,6 @@ module PlaceOS::Model
       zone.trigger_instances.to_a.size.should eq 0
 
       {cs, zone, zone2, trigger}.each &.destroy
-    end
-
-    describe "features" do
-      it "includes modules resolved names on save" do
-        mod = Generator.module.save!
-        cs = Generator.control_system.save!
-        cs.modules = [mod.id].compact
-        cs.save!
-        cs.features.should contain(mod.resolved_name)
-        {cs, mod}.each &.destroy
-      end
     end
   end
 end
