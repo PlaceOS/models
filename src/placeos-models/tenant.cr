@@ -47,10 +47,7 @@ module PlaceOS::Model
     before_save :encrypt!
 
     validate ->(this : Tenant) {
-      # this.validation_error(:domain, "must be defined") unless this.domain.presence
-      # this.validation_error(:platform, "must be defined") unless this.platform.presence
       this.validation_error(:platform, "must be a valid platform name") unless VALID_PLATFORMS.includes?(this.platform)
-      # this.validation_error(:credentials, "must be defined") unless this.credentials.presence
 
       # Try parsing the JSON for the relevant platform to make sure it works
       begin

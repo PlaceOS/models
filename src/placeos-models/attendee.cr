@@ -26,6 +26,8 @@ module PlaceOS::Model
 
     getter event : PlaceCalendar::Event? = nil
 
+    before_save :survey_trigger
+
     scope :by_tenant do |tenant_id|
       where(tenant_id: tenant_id)
     end
@@ -36,6 +38,28 @@ module PlaceOS::Model
         SELECT a.* from attendees a inner join bookings on bookings.id = a.booking_id
         inner join guests on guests.id = a.guest_id where a.tenant_id = $1 and a.booking_id in (#{clause})
       SQL
+    end
+
+    def survey_trigger
+      return unless checked_in_changed?
+      state = checked_in ? Survey::TriggerType::VISITOR_CHECKEDIN : Survey::TriggerType::VISITOR_CHECKEDOUT
+
+      query = Survey.select("id").where(trigger: PlaceOS::Model::PGEnumConverter.to_json(state))
+
+      if (b = booking) && (zones = b.zones) && !zones.empty?
+        query = query.where({:zone_id => zones, :building_id => zones})
+      end
+
+      email = guest.not_nil!.email
+      unless email.empty?
+        surveys = query.to_a
+        surveys.each do |survey|
+          Survey::Invitation.create!(
+            survey_id: survey.id,
+            email: email,
+          )
+        end
+      end
     end
 
     def to_h(is_parent_metadata : Bool?, meeting_details : PlaceCalendar::Event?)

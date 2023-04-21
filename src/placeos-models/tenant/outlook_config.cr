@@ -94,7 +94,7 @@ module PlaceOS::Model
 
       property domain : String
       property user_agent : String = "PlaceOS"
-      property conference_type : String? = PlaceCalendar::Google::DEFAULT_CONFERENCE
+      property conference_type : String? # = PlaceCalendar::Google::DEFAULT_CONFERENCE
 
       def params
         {
@@ -108,7 +108,7 @@ module PlaceOS::Model
     struct Office365DelegatedConfig
       include JSON::Serializable
 
-      property conference_type : String? = PlaceCalendar::Office365::DEFAULT_CONFERENCE
+      property conference_type : String? # = PlaceCalendar::Office365::DEFAULT_CONFERENCE
 
       def params
         {
