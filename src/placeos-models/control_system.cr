@@ -174,8 +174,6 @@ module PlaceOS::Model
     # Callbacks
     ###############################################################################################
 
-    before_save :update_features
-
     before_destroy :cleanup_modules
 
     before_save :check_zones
@@ -184,17 +182,6 @@ module PlaceOS::Model
 
     # Internal modules
     private IGNORED_MODULES = ["__Triggers__"]
-
-    # Adds modules to the features field,
-    # Extends features with extra_features field in settings if present
-    protected def update_features
-      module_names = Module
-        .find_all(self.modules)
-        .map(&.resolved_name)
-        .select(&.in?(IGNORED_MODULES).!)
-        .to_set
-      self.features = self.features + module_names
-    end
 
     # Remove Modules not associated with any other systems
     # NOTE: Includes compulsory associated Logic Modules
