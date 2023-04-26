@@ -28,7 +28,7 @@ module PlaceOS::Model
     attribute booking_end : Int64
     attribute timezone : String?
     attribute asset_id : String
-    attribute user_id : String
+    attribute user_id : String?
     attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter
     attribute user_name : String
     attribute zones : Array(String) = ->{ [] of String }
