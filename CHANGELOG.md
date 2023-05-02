@@ -1,3 +1,9 @@
+## v9.2.0 (2023-05-03)
+
+### Refactor
+
+- added models for staff-api ([#201](https://github.com/PlaceOS/models/pull/201))
+
 ## v9.1.0 (2023-04-21)
 
 ### Feat
@@ -330,6 +336,9 @@
 
 ## v7.0.0 (2022-03-09)
 
+
+- update active-model and rethinkdb-orm ([#152](https://github.com/PlaceOS/models/pull/152))
+
 ## v6.7.0 (2022-03-08)
 
 ### Feat
@@ -564,6 +573,9 @@
 
 - use `define_to_json`
 
+
+- `name` es_type"
+
 ## v5.5.2 (2021-06-28)
 
 ### Fix
@@ -586,6 +598,9 @@
 
 - **repository**: encryption for `password`, `token`
 - **models**: correct es types
+
+
+- "chore: remove docs key from .gitignore"
 
 ## v5.4.0 (2021-06-07)
 
