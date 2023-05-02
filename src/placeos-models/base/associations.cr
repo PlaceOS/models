@@ -1,11 +1,12 @@
 module PlaceOS::Model
   module Associations
     # Defines getter and setter for parent relationship
-    macro belongs_to(parent_class, dependent = :none, association_name = nil, foreign_key = nil, presence = false)
+    macro belongs_to(parent_class, dependent = :none, association_name = nil, foreign_key = nil, presence = false, pk_type = nil, serialize = false)
     {% parent_name = association_name || parent_class.id.stringify.underscore.downcase.gsub(/::/, "_") %}
     {% foreign_key = (foreign_key || "#{parent_name.id}_id").id %}
     {% association_method = parent_name.id.symbolize %}
     {% assoc_var = "__#{parent_name.id}".id %}
+    {% pktype = (pk_type || String) %}
 
     # Prevent association from being serialised
     @[JSON::Field(ignore: true)]
@@ -16,7 +17,8 @@ module PlaceOS::Model
     @[YAML::Field(ignore: true)]
     property {{ assoc_var }} : {{ parent_class }}?
 
-    attribute {{ foreign_key.id }} : String {% unless presence %} | Nil {% end %}, parent: {{ parent_class.id.stringify }}, es_type: "keyword"
+    attribute {{ foreign_key.id }} : {{pktype}} {% unless presence %} | Nil {% end %}, parent: {{ parent_class.id.stringify }}, es_type: "keyword",
+              ignore_serialize: {{!serialize}}
 
     destroy_callback({{ association_method }}, {{dependent}})
 
@@ -43,7 +45,7 @@ module PlaceOS::Model
     # Sets the parent relationship
     def {{ parent_name.id }}=(parent : {{ parent_class }})
       self.{{ assoc_var }} = parent
-      self.{{ foreign_key.id }} = parent.id.as(String)
+      self.{{ foreign_key.id }} = parent.id.not_nil!.as({{pktype}})
     end
 
     def reset_associations

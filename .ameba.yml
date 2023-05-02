@@ -4,3 +4,5 @@ Style/PredicateName:
   Enabled: false
 Style/ParenthesesAroundCondition:
   Enabled: false
+Style/QueryBoolMethods:
+  Enabled: false
