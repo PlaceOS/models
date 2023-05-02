@@ -1,4 +1,16 @@
-## Unreleased
+## v9.1.0 (2023-04-21)
+
+### Feat
+
+- **control_system**: remove feature auto-population PPT-392 ([#202](https://github.com/PlaceOS/models/pull/202))
+
+## v9.0.4 (2023-04-19)
+
+### Feat
+
+- **user_jwt**: always ensure email is downcased
+
+## v9.0.3 (2023-04-18)
 
 ### Feat
 

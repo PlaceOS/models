@@ -142,13 +142,17 @@ module PlaceOS::Model
       @[JSON::Field(key: "n")]
       getter name : String
       @[JSON::Field(key: "e")]
-      getter email : String
+      @mail : String
       @[JSON::Field(key: "p", converter: Enum::ValueConverter(PlaceOS::Model::UserJWT::Permissions))]
       getter permissions : Permissions
       @[JSON::Field(key: "r")]
       getter roles : Array(String)
 
-      def initialize(@name, @email, @permissions = Permissions::User, @roles = [] of String)
+      @[JSON::Field(ignore: true)]
+      getter email : String { @mail.downcase }
+
+      def initialize(@name, email : String, @permissions = Permissions::User, @roles = [] of String)
+        @email = @mail = email.downcase
       end
     end
   end
