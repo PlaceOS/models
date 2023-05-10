@@ -1,7 +1,7 @@
 module PlaceOS::Model
   module Associations
     # Defines getter and setter for parent relationship
-    macro belongs_to(parent_class, dependent = :none, association_name = nil, foreign_key = nil, presence = false, pk_type = nil, serialize = false)
+    macro belongs_to(parent_class, dependent = :none, association_name = nil, foreign_key = nil, presence = false, pk_type = nil, serialize = true)
     {% parent_name = association_name || parent_class.id.stringify.underscore.downcase.gsub(/::/, "_") %}
     {% foreign_key = (foreign_key || "#{parent_name.id}_id").id %}
     {% association_method = parent_name.id.symbolize %}
