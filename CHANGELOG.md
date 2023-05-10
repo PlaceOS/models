@@ -1,3 +1,9 @@
+## v9.3.0 (2023-05-10)
+
+### Feat
+
+- **migrations**: add db level constraints to trig table ([#203](https://github.com/PlaceOS/models/pull/203))
+
 ## v9.2.0 (2023-05-03)
 
 ### Refactor
