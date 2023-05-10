@@ -1,3 +1,9 @@
+## v9.4.0 (2023-05-10)
+
+### Feat
+
+- **migrations**: Sync migrations from init
+
 ## v9.3.1 (2023-05-10)
 
 ### Fix
