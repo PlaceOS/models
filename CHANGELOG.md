@@ -1,3 +1,9 @@
+## v9.3.1 (2023-05-10)
+
+### Fix
+
+- **associations**: serialize should default to true
+
 ## v9.3.0 (2023-05-10)
 
 ### Feat
