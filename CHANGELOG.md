@@ -1,3 +1,9 @@
+## v9.4.1 (2023-05-16)
+
+### Fix
+
+- **migrations**: incorrect trigger table name
+
 ## v9.4.0 (2023-05-10)
 
 ### Feat
