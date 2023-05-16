@@ -11,7 +11,7 @@ ON DELETE CASCADE,
 
 ADD CONSTRAINT fk_trigger
 FOREIGN KEY (trigger_id)
-REFERENCES triggers(id)
+REFERENCES trigger(id)
 ON DELETE CASCADE;
 
 -- +micrate Down
