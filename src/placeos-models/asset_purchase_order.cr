@@ -9,9 +9,7 @@ module PlaceOS::Model
 
     attribute purchase_order_number : String
     attribute invoice_number : String?
-    attribute purchase_date : Time
-    attribute depreciation_start_date : Time?
-    attribute depreciation_end_date : Time?
+    attribute purchase_date : Time?
 
     has_many(
       child_class: Asset,
