@@ -64,6 +64,11 @@ module PlaceOS::Model
     attribute booked_by_email_digest : String?, ignore_deserialize: true
     attribute created : Int64?, ignore_deserialize: true
 
+    attribute parent_id : Int64?
+
+    @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
+    getter(children : Array(Booking)?) { get_children }
+
     @[JSON::Field(key: "attendees", ignore_serialize: true)]
     property req_attendees : Array(PlaceCalendar::Event::Attendee)? = nil
 
@@ -351,7 +356,27 @@ module PlaceOS::Model
 
     def to_json(json : ::JSON::Builder)
       @current_state = booking_current_state
+      @children = get_children
       super
+    end
+
+    def parent?
+      parent_id.nil?
+    end
+
+    before_update do
+      if parent?
+        if booking_start_changed? || booking_end_changed?
+          Booking.where(parent_id: id).update_all({:booking_start => booking_start, :booking_end => booking_end})
+        elsif deleted_changed? || deleted_at_changed?
+          Booking.where(parent_id: id).update_all({:deleted => deleted, :deleted_at => deleted_at})
+        end
+      end
+    end
+
+    private def get_children
+      return nil unless parent?
+      Booking.where(parent_id: id).to_a
     end
   end
 end
