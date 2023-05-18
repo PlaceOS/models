@@ -3,7 +3,7 @@ require "./asset_type"
 require "./asset_purchase_order"
 
 module PlaceOS::Model
-  class Asset < ModelBase
+  class Asset < ModelWithAutoKey
     include PlaceOS::Model::Timestamps
 
     table :asset

@@ -2,7 +2,7 @@ require "./base/model"
 require "./asset_category"
 
 module PlaceOS::Model
-  class AssetType < ModelBase
+  class AssetType < ModelWithAutoKey
     include PlaceOS::Model::Timestamps
 
     table :asset_type
