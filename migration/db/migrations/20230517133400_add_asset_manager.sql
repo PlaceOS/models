@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS "asset_type" (
     brand text,
     description text,
     model_number text,
+    images text[],
     category_id bigint NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL 
@@ -46,7 +47,6 @@ CREATE TABLE IF NOT EXISTS "asset" (
     identifier text NOT NULL,
     serial_number text,
     other_data jsonb DEFAULT '{}'::jsonb,
-    images text[],
     asset_type_id bigint NOT NULL,
     purchase_order_id bigint,
     created_at TIMESTAMPTZ NOT NULL,

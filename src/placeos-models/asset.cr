@@ -11,7 +11,6 @@ module PlaceOS::Model
     attribute identifier : String
     attribute serial_number : String?
     attribute other_data : JSON::Any?
-    attribute images : Array(String)?
 
     belongs_to AssetType, foreign_key: "asset_type_id", association_name: "asset_type"
     belongs_to AssetPurchaseOrder, foreign_key: "purchase_order_id", association_name: "purchase_order"
