@@ -75,13 +75,6 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
-    has_many(
-      child_class: AssetInstance,
-      collection_name: "asset_instances",
-      foreign_key: "requester_id",
-      dependent: :destroy
-    )
-
     # Validation
     ###############################################################################################
 
