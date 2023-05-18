@@ -13,7 +13,7 @@ module PlaceOS::Model
 
       asset_purchase_order.should_not be_nil
       asset_purchase_order.persisted?.should be_true
-      AssetPurchaseOrder.find!(asset_purchase_order.id.as(String)).id.should eq asset_purchase_order.id
+      AssetPurchaseOrder.find!(asset_purchase_order.id).id.should eq asset_purchase_order.id
     end
   end
 end

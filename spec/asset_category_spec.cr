@@ -13,7 +13,7 @@ module PlaceOS::Model
 
       asset_category.should_not be_nil
       asset_category.persisted?.should be_true
-      AssetCategory.find!(asset_category.id.as(String)).id.should eq asset_category.id
+      AssetCategory.find!(asset_category.id).id.should eq asset_category.id
     end
   end
 end

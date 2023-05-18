@@ -13,7 +13,7 @@ module PlaceOS::Model
 
       asset.should_not be_nil
       asset.persisted?.should be_true
-      Asset.find!(asset.id.as(String)).id.should eq asset.id
+      Asset.find!(asset.id).id.should eq asset.id
     end
   end
 end

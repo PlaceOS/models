@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS "asset";
 
 -- New asset manager tables/indexes
 CREATE TABLE IF NOT EXISTS "asset_category" (
-    id bigint PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     name text NOT NULL,
     description text,
     parent_category_id bigint,
@@ -28,7 +28,7 @@ ALTER TABLE ONLY "asset_category"
     ADD CONSTRAINT asset_category_parent_category_id_fkey FOREIGN KEY (parent_category_id) REFERENCES "asset_category"(id) ON DELETE CASCADE; 
 
 CREATE TABLE IF NOT EXISTS "asset_type" (
-    id bigint PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     name text NOT NULL,
     brand text,
     description text,
@@ -48,7 +48,7 @@ ALTER TABLE ONLY "asset_type"
     ADD CONSTRAINT asset_type_category_id_fkey FOREIGN KEY (category_id) REFERENCES "asset_category"(id) ON DELETE CASCADE; 
 
 CREATE TABLE IF NOT EXISTS "asset_purchase_order" (
-    id bigint PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     purchase_order_number text NOT NULL,
     invoice_number text,
     supplier_details jsonb DEFAULT '{}'::jsonb,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS "asset_purchase_order" (
 );
 
 CREATE TABLE IF NOT EXISTS "asset" (
-    id bigint PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     identifier text,
     serial_number text,
     other_data jsonb DEFAULT '{}'::jsonb,

@@ -217,17 +217,18 @@ module PlaceOS::Model
       )
     end
 
-    def self.asset_type(category = Generator.asset_category)
+    def self.asset_type(category = Generator.asset_category.save!)
       AssetType.new(
         name: Faker::Hacker.noun,
         brand: Faker::Hacker.noun,
-        category_id: category.id
+        category_id: category.id,
       )
     end
 
-    def self.asset(asset_type = Generator.asset_type)
+    def self.asset(asset_type = Generator.asset_type.save!, purchase_order = Generator.asset_purchase_order.save!)
       Asset.new(
         asset_type_id: asset_type.id,
+        purchase_order_id: purchase_order.id,
       )
     end
 
