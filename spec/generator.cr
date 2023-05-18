@@ -211,24 +211,30 @@ module PlaceOS::Model
       )
     end
 
-    def self.asset
-      Asset.new(
+    def self.asset_category
+      AssetCategory.new(
         name: Faker::Hacker.noun,
-        purchase_date: Time.local,
-        identifier: RANDOM.rand(Int32).to_s,
-        purchase_price: RANDOM.rand(Int32),
       )
     end
 
-    def self.asset_instance(asset = nil, zone = nil)
-      AssetInstance.new(
+    def self.asset_type(category = Generator.asset_category)
+      AssetType.new(
         name: Faker::Hacker.noun,
-        usage_start: Time.local,
-        usage_end: Time.local + 1.hour
-      ).tap do |instance|
-        instance.asset = asset || self.asset.save!
-        instance.zone = zone if zone
-      end
+        brand: Faker::Hacker.noun,
+        category_id: category.id
+      )
+    end
+
+    def self.asset(asset_type = Generator.asset_type)
+      Asset.new(
+        asset_type_id: asset_type.id,
+      )
+    end
+
+    def self.asset_purchase_order
+      AssetPurchaseOrder.new(
+        purchase_order_number: Faker::Hacker.noun,
+      )
     end
 
     def self.authority(domain : String = "http://localhost")
