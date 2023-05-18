@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS "asset"
 CREATE TABLE IF NOT EXISTS "asset_category" (
     id bigint PRIMARY KEY,
     name text NOT NULL,
+    description text,
     parent_category_id bigint,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL  
@@ -27,7 +28,9 @@ CREATE TABLE IF NOT EXISTS "asset_type" (
     id bigint PRIMARY KEY,
     brand text NOT NULL,
     name text NOT NULL,
+    brand text,
     description text,
+    model_number text,
     category_id bigint NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL 
@@ -40,15 +43,10 @@ ALTER TABLE ONLY "asset_type"
 
 CREATE TABLE IF NOT EXISTS "asset" (
     id bigint PRIMARY KEY,
-    model_number text NOT NULL,
-    serial_number text NOT NULL,
-    identifier text,
+    identifier text NOT NULL,
+    serial_number text,
     other_data jsonb DEFAULT '{}'::jsonb,
     images text[],
-    purchase_price_in_cents bigint,
-    salvage_value_in_cents bigint,
-    expected_service_start_date bigint,
-    expected_service_start_date bigint,
     asset_type_id bigint NOT NULL,
     purchase_order_id bigint,
     created_at TIMESTAMPTZ NOT NULL,
@@ -68,9 +66,13 @@ CREATE TABLE IF NOT EXISTS "asset_purchase_order" (
     id bigint PRIMARY KEY,
     purchase_order_number text NOT NULL,
     invoice_number text,
+    supplier_details jsonb DEFAULT '{}'::jsonb,
     purchase_date bigint,
+    unit_price bigint,
+    expected_service_start_date bigint,
+    expected_service_start_date bigint,
     created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL 
+    updated_at TIMESTAMPTZ NOT NULL
 );
 
 -- +micrate Down

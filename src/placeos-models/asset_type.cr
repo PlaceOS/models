@@ -7,9 +7,10 @@ module PlaceOS::Model
 
     table :asset_type
 
-    attribute brand : String
     attribute name : String
+    attribute brand : String
     attribute description : String?
+    attribute model_number : String?
 
     belongs_to AssetCategory, foreign_key: "category_id", association_name: "category"
 

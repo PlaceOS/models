@@ -7,7 +7,9 @@ module PlaceOS::Model
 
     table :asset_category
 
+    # i.e. a tablet
     attribute name : String
+    attribute description : String?
 
     belongs_to AssetCategory, foreign_key: "parent_category_id", association_name: "parent_category"
 
