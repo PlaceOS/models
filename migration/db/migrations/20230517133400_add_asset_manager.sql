@@ -44,7 +44,7 @@ ALTER TABLE ONLY "asset_type"
 
 CREATE TABLE IF NOT EXISTS "asset" (
     id bigint PRIMARY KEY,
-    identifier text NOT NULL,
+    identifier text,
     serial_number text,
     other_data jsonb DEFAULT '{}'::jsonb,
     asset_type_id bigint NOT NULL,
