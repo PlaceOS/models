@@ -3,6 +3,7 @@ require "./base/model"
 require "./attendee"
 require "./tenant"
 require "./utilities/jsonb_query_helper"
+require "./email"
 
 module PlaceOS::Model
   class Booking < ModelWithAutoKey
