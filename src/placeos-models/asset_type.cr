@@ -7,7 +7,7 @@ module PlaceOS::Model
 
     table :asset_type
 
-    attribute name : String
+    attribute name : String, es_type: "keyword"
     attribute brand : String
     attribute description : String?
     attribute model_number : String?

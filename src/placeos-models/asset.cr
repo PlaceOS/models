@@ -8,7 +8,7 @@ module PlaceOS::Model
 
     table :asset
 
-    attribute identifier : String?
+    attribute identifier : String?, es_type: "keyword"
     attribute serial_number : String?
     attribute other_data : JSON::Any?
 
