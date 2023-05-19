@@ -1,3 +1,9 @@
+## v9.6.0 (2023-05-19)
+
+### Feat
+
+- **staff-api**: PPT-387 staff api implement linked bookings child parent relationship ([#205](https://github.com/PlaceOS/models/pull/205))
+
 ## v9.5.0 (2023-05-19)
 
 ### Feat
