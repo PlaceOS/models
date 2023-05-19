@@ -1,3 +1,9 @@
+## v9.5.0 (2023-05-19)
+
+### Feat
+
+- **asset**: new asset manager models ([#204](https://github.com/PlaceOS/models/pull/204))
+
 ## v9.4.1 (2023-05-16)
 
 ### Fix
