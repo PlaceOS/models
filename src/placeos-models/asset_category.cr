@@ -8,7 +8,7 @@ module PlaceOS::Model
     table :asset_category
 
     # i.e. a tablet
-    attribute name : String
+    attribute name : String, es_type: "keyword"
     attribute description : String?
     # attribute parent_category_id : Int64?
 

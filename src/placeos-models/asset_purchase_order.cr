@@ -7,7 +7,7 @@ module PlaceOS::Model
 
     table :asset_purchase_order
 
-    attribute purchase_order_number : String
+    attribute purchase_order_number : String, es_type: "keyword"
     attribute invoice_number : String?
     attribute supplier_details : JSON::Any?
     attribute purchase_date : Time?
