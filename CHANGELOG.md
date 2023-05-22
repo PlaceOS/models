@@ -1,3 +1,9 @@
+## v9.7.0 (2023-05-22)
+
+### Feat
+
+- **asset**: [PPT-334] elastic search index ([#207](https://github.com/PlaceOS/models/pull/207))
+
 ## v9.6.0 (2023-05-19)
 
 ### Feat
