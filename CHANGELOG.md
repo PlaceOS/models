@@ -1,3 +1,9 @@
+## v9.7.1 (2023-05-23)
+
+### Fix
+
+- **user**: update cleanup_auth_tokens with updated relations name
+
 ## v9.7.0 (2023-05-22)
 
 ### Feat
