@@ -132,13 +132,13 @@ module PlaceOS::Model
       user_id = self.id
 
       begin
-        PgORM::Database.exec_sql("delete from \"doorkeeper_grant\" where resource_owner_id = $1", user_id)
+        PgORM::Database.exec_sql("delete from \"oauth_access_grants\" where resource_owner_id = $1", user_id)
       rescue error
         Log.warn(exception: error) { "failed to remove User<#{user_id}> auth grants" }
       end
 
       begin
-        PgORM::Database.exec_sql("delete from \"doorkeeper_token\" where resource_owner_id = $1", user_id)
+        PgORM::Database.exec_sql("delete from \"oauth_access_tokens\" where resource_owner_id = $1", user_id)
       rescue error
         Log.warn(exception: error) { "failed to remove User<#{user_id}> auth token" }
       end
