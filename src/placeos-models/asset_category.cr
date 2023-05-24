@@ -2,7 +2,7 @@ require "./base/model"
 require "./asset_type"
 
 module PlaceOS::Model
-  class AssetCategory < ModelWithAutoKey
+  class AssetCategory < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :asset_category
@@ -10,9 +10,8 @@ module PlaceOS::Model
     # i.e. a tablet
     attribute name : String, es_subfield: "keyword"
     attribute description : String?
-    # attribute parent_category_id : Int64?
 
-    belongs_to AssetCategory, foreign_key: "parent_category_id", association_name: "parent_category", pk_type: Int64
+    belongs_to AssetCategory, foreign_key: "parent_category_id", association_name: "parent_category", pk_type: String
 
     has_many(
       child_class: AssetCategory,
@@ -25,5 +24,10 @@ module PlaceOS::Model
       foreign_key: "category_id",
       collection_name: :asset_types
     )
+
+    # Validation
+    ###############################################################################################
+
+    validates :name, presence: true
   end
 end

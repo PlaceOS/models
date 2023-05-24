@@ -2,7 +2,7 @@ require "./base/model"
 require "./asset"
 
 module PlaceOS::Model
-  class AssetPurchaseOrder < ModelWithAutoKey
+  class AssetPurchaseOrder < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :asset_purchase_order
@@ -21,5 +21,10 @@ module PlaceOS::Model
       foreign_key: "purchase_order_id",
       collection_name: :assets
     )
+
+    # Validation
+    ###############################################################################################
+
+    validates :purchase_order_number, presence: true
   end
 end
