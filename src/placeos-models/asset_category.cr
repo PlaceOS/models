@@ -11,7 +11,7 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String?
 
-    belongs_to AssetCategory, foreign_key: "parent_category_id", association_name: "parent_category", pk_type: String
+    belongs_to AssetCategory, foreign_key: "parent_category_id", association_name: "parent_category"
 
     has_many(
       child_class: AssetCategory,

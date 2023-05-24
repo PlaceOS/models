@@ -14,7 +14,7 @@ module PlaceOS::Model
     attribute model_number : String?
     attribute images : Array(String) = [] of String
 
-    belongs_to AssetCategory, foreign_key: "category_id", association_name: "category", pk_type: String
+    belongs_to AssetCategory, foreign_key: "category_id", association_name: "category"
 
     has_many(
       child_class: Asset,

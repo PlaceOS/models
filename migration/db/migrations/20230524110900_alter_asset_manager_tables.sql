@@ -2,10 +2,10 @@
 -- SQL in section 'Up' is executed when this migration is applied
 
 -- Drop Constraints
-ALTER TABLE "asset" DROP CONSTRAINT asset_asset_type_id_fkey;
-ALTER TABLE "asset" DROP CONSTRAINT asset_purchase_order_id_fkey;
-ALTER TABLE "asset_type" DROP CONSTRAINT asset_type_category_id_fkey;
-ALTER TABLE "asset_category" DROP CONSTRAINT asset_category_parent_category_id_fkey;
+ALTER TABLE "asset" DROP CONSTRAINT IF EXISTS asset_asset_type_id_fkey;
+ALTER TABLE "asset" DROP CONSTRAINT IF EXISTS asset_purchase_order_id_fkey;
+ALTER TABLE "asset_type" DROP CONSTRAINT IF EXISTS asset_type_category_id_fkey;
+ALTER TABLE "asset_category" DROP CONSTRAINT IF EXISTS asset_category_parent_category_id_fkey;
 
 -- Change Column Type with Data Conversion
 ALTER TABLE "asset_category" ALTER COLUMN id TYPE text USING id::text;
@@ -34,19 +34,19 @@ ALTER TABLE "asset_purchase_order" ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE "asset" ALTER COLUMN id DROP DEFAULT;
 
 -- Drop Sequences
-DROP SEQUENCE asset_category_id_seq;
-DROP SEQUENCE asset_type_id_seq;
-DROP SEQUENCE asset_purchase_order_id_seq;
-DROP SEQUENCE asset_id_seq;
+DROP SEQUENCE IF EXISTS asset_category_id_seq;
+DROP SEQUENCE IF EXISTS asset_type_id_seq;
+DROP SEQUENCE IF EXISTS asset_purchase_order_id_seq;
+DROP SEQUENCE IF EXISTS asset_id_seq;
 
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
 
 -- Drop Constraints
-ALTER TABLE "asset" DROP CONSTRAINT asset_asset_type_id_fkey;
-ALTER TABLE "asset" DROP CONSTRAINT asset_purchase_order_id_fkey;
-ALTER TABLE "asset_type" DROP CONSTRAINT asset_type_category_id_fkey;
-ALTER TABLE "asset_category" DROP CONSTRAINT asset_category_parent_category_id_fkey;
+ALTER TABLE "asset" DROP CONSTRAINT IF EXISTS asset_asset_type_id_fkey;
+ALTER TABLE "asset" DROP CONSTRAINT IF EXISTS asset_purchase_order_id_fkey;
+ALTER TABLE "asset_type" DROP CONSTRAINT IF EXISTS asset_type_category_id_fkey;
+ALTER TABLE "asset_category" DROP CONSTRAINT IF EXISTS asset_category_parent_category_id_fkey;
 
 -- Change Column Type with Data Conversion
 ALTER TABLE "asset_category" ALTER COLUMN id TYPE bigint USING id::bigint;
