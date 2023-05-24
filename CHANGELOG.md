@@ -1,3 +1,9 @@
+## v9.8.0 (2023-05-24)
+
+### Feat
+
+- **asset_manager**: change ids to strings ([#208](https://github.com/PlaceOS/models/pull/208))
+
 ## v9.7.1 (2023-05-23)
 
 ### Fix
