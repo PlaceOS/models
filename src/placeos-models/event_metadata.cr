@@ -27,6 +27,13 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    has_many(
+      child_class: Booking,
+      collection_name: "bookings",
+      foreign_key: "event_id",
+      dependent: :destroy
+    )
+
     def set_ext_data(meta : JSON::Any)
       @ext_data = meta
       @ext_data_changed = true

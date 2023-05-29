@@ -44,7 +44,6 @@ module PlaceOS::Model
     attribute approver_name : String?
     attribute approver_email : String?, format: "email"
     attribute department : String?
-    attribute event_id : String?, description: "provided if this booking is associated with a calendar event"
     attribute title : String?
     attribute checked_in : Bool = false
     attribute checked_in_at : Int64?
@@ -66,6 +65,10 @@ module PlaceOS::Model
     attribute created : Int64?, ignore_deserialize: true
 
     attribute parent_id : Int64?
+    attribute event_id : Int64?, description: "provided if this booking is associated with a calendar event"
+
+    @[JSON::Field(key: "linked_event", ignore_deserialize: true)]
+    getter(linked_event : EventMetadata?) { get_event_metadata }
 
     @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
     getter(children : Array(Booking)?) { get_children }
@@ -358,8 +361,13 @@ module PlaceOS::Model
     def to_json(json : ::JSON::Builder)
       @current_state = booking_current_state
       @children = get_children
+      @linked_event = get_event_metadata
       super
     end
+
+    # ===
+    # Child-parent relationship
+    # ===
 
     def parent?
       parent_id.nil?
@@ -378,6 +386,30 @@ module PlaceOS::Model
     private def get_children
       return nil unless parent?
       Booking.where(parent_id: id).to_a
+    end
+
+    # ===
+    # booking to event relationship
+    # ===
+
+    def linked?
+      event_id.nil?
+    end
+
+    before_update do
+      if linked?
+        if booking_start_changed? || booking_end_changed?
+          meta = linked_event.not_nil!
+          self.booking_start = meta.event_start
+          self.booking_end = meta.event_end
+        end
+      end
+    end
+
+    private def get_event_metadata
+      if meta_id = self.event_id
+        EventMetadata.find(meta_id)
+      end
     end
   end
 end
