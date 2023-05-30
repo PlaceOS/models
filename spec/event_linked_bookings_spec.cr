@@ -47,6 +47,30 @@ module PlaceOS::Model
       end
 
       it "should reject a booking if the event is cancelled" do
+        tenant = get_tenant
+        event_start = 5.minutes.from_now
+        event_end = 10.minutes.from_now
+        asset_id = "tablet"
+
+        event = Generator.event_metadata(tenant.id, event_start, event_end)
+        event.save!
+        booking = Generator.booking(tenant.id, asset_id, event_start, event_end, event_id: event.id)
+        booking.save!
+
+        # ensure the linking is working
+        event.bookings.first?.try(&.id).should eq booking.id
+
+        # check that bookings reject when a meeting is cancelled
+        event.cancelled = true
+        event.save
+        booking.reload!
+        booking.rejected.should eq true
+
+        # check bookings are deleted if metadata is destroyed
+        event.destroy
+        expect_raises(PgORM::Error::RecordNotFound) do
+          Booking.find_key! booking.id
+        end
       end
     end
   end
