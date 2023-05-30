@@ -36,7 +36,8 @@ module PlaceOS::Model
         booked_by_name: user_name,
         tenant_id: tenant_id,
         parent_id: parent_id,
-        event_id: event_id
+        event_id: event_id,
+        booked_by_id: "user-1234",
       )
     end
 
