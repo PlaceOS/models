@@ -72,6 +72,32 @@ module PlaceOS::Model
           Booking.find booking.id
         end
       end
+
+      it "should render linked data" do
+        tenant = get_tenant
+        event_start = 5.minutes.from_now
+        event_end = 10.minutes.from_now
+        asset_id = "tablet"
+
+        event = Generator.event_metadata(tenant.id, event_start, event_end)
+        event.set_ext_data JSON.parse(%({"secret": true}))
+        event.save!
+        booking = Generator.booking(tenant.id, asset_id, event_start, event_end, event_id: event.id)
+        booking.save!
+
+        # ensure the linking is working
+        event.bookings.first?.try(&.id).should eq booking.id
+
+        # check that bookings render the linked event metadata
+        booking.reload!
+        event.ext_data = nil
+        JSON.parse(booking.to_json)["linked_event"].should eq JSON.parse(event.to_json)
+
+        # check the event renders the bookings
+        event.reload!
+        booking.render_event = false
+        JSON.parse(event.to_json)["linked_bookings"].should eq [JSON.parse(booking.to_json)]
+      end
     end
   end
 end

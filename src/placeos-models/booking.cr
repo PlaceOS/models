@@ -67,6 +67,9 @@ module PlaceOS::Model
     attribute parent_id : Int64?
     attribute event_id : Int64?, description: "provided if this booking is associated with a calendar event"
 
+    @[JSON::Field(ignore: true)]
+    property render_event : Bool = true
+
     @[JSON::Field(key: "linked_event", ignore_deserialize: true)]
     getter(linked_event : EventMetadata?) { get_event_metadata }
 
@@ -376,7 +379,12 @@ module PlaceOS::Model
     def to_json(json : ::JSON::Builder)
       @current_state = booking_current_state
       @children = get_children
-      @linked_event = get_event_metadata
+      if render_event && (meta = get_event_metadata)
+        meta.ext_data = nil
+        @linked_event = meta
+      else
+        @linked_event = nil
+      end
       super
     end
 

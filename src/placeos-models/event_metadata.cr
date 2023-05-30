@@ -39,7 +39,7 @@ module PlaceOS::Model
     getter(linked_bookings : Array(Booking)?) { bookings }
 
     def to_json(json : ::JSON::Builder)
-      @linked_bookings = bookings
+      @linked_bookings = bookings.each(&.render_event=(false))
       super
     end
 
