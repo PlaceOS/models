@@ -3,8 +3,8 @@
 
 ALTER TABLE bookings DROP COLUMN event_id;
 ALTER TABLE bookings ADD COLUMN event_id BIGINT DEFAULT NULL;
-ALTER TABLE bookings ADD COLUMN cancelled BOOLEAN DEFAULT FALSE;
-UPDATE bookings SET cancelled = FALSE WHERE cancelled IS NULL;
+ALTER TABLE event_metadatas ADD COLUMN cancelled BOOLEAN DEFAULT FALSE;
+UPDATE event_metadatas SET cancelled = FALSE WHERE cancelled IS NULL;
 ALTER TABLE bookings ADD CONSTRAINT fk_event_metadatas
     FOREIGN KEY (event_id) 
     REFERENCES event_metadatas(id);
@@ -20,6 +20,6 @@ ALTER TABLE event_metadatas
   DROP CONSTRAINT fk_event_metadatas;
 
 ALTER TABLE bookings DROP COLUMN event_id;
-ALTER TABLE bookings DROP COLUMN cancelled;
+ALTER TABLE event_metadatas DROP COLUMN cancelled;
 
 ALTER TABLE bookings ADD COLUMN event_id TEXT DEFAULT NULL;
