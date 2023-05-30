@@ -353,6 +353,21 @@ module PlaceOS::Model
       end
     end
 
+    def clashing?
+      starting = self.booking_start
+      ending = self.booking_end
+  
+      # gets all the clashing bookings
+      query = Booking
+        .by_tenant(tenant_id)
+        .where(
+          "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_id = ? AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
+          ending, starting, booking_type, asset_id
+        )
+      query = query.where("id != ?", id) unless id.nil?
+      query.count > 0
+    end
+
     def as_h(include_attendees : Bool = true)
       @resp_attendees = include_attendees ? attendees.to_a : nil
       self

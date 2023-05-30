@@ -71,6 +71,27 @@ module PlaceOS::Model
       end
     end
 
+    # keep bookings in sync
+    before_update do
+      if event_start_changed? || event_end_changed?
+        linked_bookings = self.bookings
+
+        if linked_bookings.size > 0
+          clashing = linked_bookings.select do |booking|
+            booking.booking_start = event_start
+            booking.booking_end = event_end
+            booking.clashing?
+          end
+
+          # reject clashing bookings
+          Booking.where("id IN (#{clashing.map(&.id).join(", ")})").update_all({:rejected => true, :rejected_at => Time.utc.to_unix})
+
+          # ensure the booking times are in sync
+          Booking.where(event_id: id).update_all({:booking_start => event_start, :booking_end => event_end})
+        end
+      end
+    end
+
     def self.migrate_recurring_metadata(system_id : String, recurrance : PlaceCalendar::Event, parent_metadata : EventMetadata)
       metadata = EventMetadata.new
 
