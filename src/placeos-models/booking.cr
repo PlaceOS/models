@@ -431,7 +431,7 @@ module PlaceOS::Model
 
     private def get_event_metadata
       if meta_id = self.event_id
-        EventMetadata.find(meta_id)
+        EventMetadata.find?(meta_id)
       end
     end
   end
