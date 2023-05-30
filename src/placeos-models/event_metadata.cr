@@ -93,7 +93,7 @@ module PlaceOS::Model
           end
 
           # reject clashing bookings
-          Booking.where("id IN (#{clashing.map(&.id).join(", ")})").update_all({:rejected => true, :rejected_at => Time.utc.to_unix})
+          Booking.where("id IN (#{clashing.map(&.id).join(", ")})").update_all({:rejected => true, :rejected_at => Time.utc.to_unix}) unless clashing.empty?
 
           # ensure the booking times are in sync
           Booking.where(event_id: id).update_all({:booking_start => event_start, :booking_end => event_end})
