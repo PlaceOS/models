@@ -15,6 +15,7 @@ module PlaceOS::Model
     attribute resource_calendar : String
     attribute event_start : Int64
     attribute event_end : Int64
+    attribute cancelled : Bool = false
 
     attribute ext_data : JSON::Any?
 
@@ -97,6 +98,10 @@ module PlaceOS::Model
           # ensure the booking times are in sync
           Booking.where(event_id: id).update_all({:booking_start => event_start, :booking_end => event_end})
         end
+      end
+
+      if cancelled_changed? && cancelled
+        Booking.where(event_id: id).update_all({:rejected => true, :rejected_at => Time.utc.to_unix})
       end
     end
 

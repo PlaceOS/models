@@ -26,7 +26,7 @@ module PlaceOS::Model
 
         booking.reload!
         booking.booking_start.should eq event_start
-        booking.event_end.should eq event_end
+        booking.booking_end.should eq event_end
 
         # create a clashing booking in the future and
         # check this booking is rejected
@@ -42,8 +42,11 @@ module PlaceOS::Model
         # check that the old booking is now rejected
         booking.reload!
         booking.booking_start.should eq event_start
-        booking.event_end.should eq event_end
+        booking.booking_end.should eq event_end
         booking.rejected.should eq true
+      end
+
+      it "should reject a booking if the event is cancelled" do
       end
     end
   end
