@@ -69,7 +69,7 @@ module PlaceOS::Model
         # check bookings are deleted if metadata is destroyed
         event.destroy
         expect_raises(PgORM::Error::RecordNotFound) do
-          Booking.find_key! booking.id
+          Booking.find booking.id
         end
       end
     end
