@@ -30,19 +30,19 @@ module PlaceOS::Model
 
         # create a clashing booking in the future and
         # check this booking is rejected
-        event_start = 60.minutes.from_now.to_unix
-        event_end = 70.minutes.from_now.to_unix
+        event_start = 60.minutes.from_now
+        event_end = 70.minutes.from_now
         new_booking = Generator.booking(tenant.id, asset_id, event_start, event_end)
         new_booking.save!
 
-        event.event_start = event_start
-        event.event_end = event_end
+        event.event_start = event_start.to_unix
+        event.event_end = event_end.to_unix
         event.save
 
         # check that the old booking is now rejected
         booking.reload!
-        booking.booking_start.should eq event_start
-        booking.booking_end.should eq event_end
+        booking.booking_start.should eq event_start.to_unix
+        booking.booking_end.should eq event_end.to_unix
         booking.rejected.should eq true
       end
 
