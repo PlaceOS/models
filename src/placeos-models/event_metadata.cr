@@ -34,6 +34,14 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
+    getter(linked_bookings : Array(Booking)?) { bookings }
+
+    def to_json(json : ::JSON::Builder)
+      @linked_bookings = bookings
+      super
+    end
+
     def set_ext_data(meta : JSON::Any)
       @ext_data = meta
       @ext_data_changed = true
