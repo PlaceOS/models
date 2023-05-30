@@ -39,7 +39,7 @@ module PlaceOS::Model
     getter(linked_bookings : Array(Booking)?) { bookings }
 
     def to_json(json : ::JSON::Builder)
-      @linked_bookings = bookings.tap &.each(&.render_event=(false))
+      @linked_bookings = bookings.to_a.tap &.each(&.render_event=(false))
       super
     end
 
