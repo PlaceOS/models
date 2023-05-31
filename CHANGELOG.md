@@ -1,3 +1,9 @@
+## v9.9.1 (2023-05-31)
+
+### Fix
+
+- **booking**: add is_booking_type scope
+
 ## v9.9.0 (2023-05-31)
 
 ### Feat
