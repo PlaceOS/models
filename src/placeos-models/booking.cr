@@ -209,8 +209,8 @@ module PlaceOS::Model
       time ? where("last_changed > ?", time.not_nil!.to_i64) : self
     end
 
-    scope :is_event_id do |event_id|
-      event_id ? where(event_id: event_id) : self
+    scope :is_booking_type do |booking_type|
+      booking_type ? where(booking_type: booking_type) : self
     end
 
     def self.booked_between(tenant_id, period_start, period_end)
