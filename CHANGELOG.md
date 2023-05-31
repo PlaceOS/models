@@ -1,3 +1,9 @@
+## v9.9.0 (2023-05-31)
+
+### Feat
+
+- link bookings to events ([#209](https://github.com/PlaceOS/models/pull/209))
+
 ## v9.8.0 (2023-05-24)
 
 ### Feat
