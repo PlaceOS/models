@@ -15,6 +15,7 @@ module PlaceOS::Model
     attribute resource_calendar : String
     attribute event_start : Int64
     attribute event_end : Int64
+    attribute cancelled : Bool = false
 
     attribute ext_data : JSON::Any?
 
@@ -26,6 +27,21 @@ module PlaceOS::Model
       foreign_key: "event_id",
       dependent: :destroy
     )
+
+    has_many(
+      child_class: Booking,
+      collection_name: "bookings",
+      foreign_key: "event_id",
+      dependent: :destroy
+    )
+
+    @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
+    getter(linked_bookings : Array(Booking)?) { bookings }
+
+    def to_json(json : ::JSON::Builder)
+      @linked_bookings = bookings.to_a.tap &.each(&.render_event=(false))
+      super
+    end
 
     def set_ext_data(meta : JSON::Any)
       @ext_data = meta
@@ -61,6 +77,31 @@ module PlaceOS::Model
         # for google the event_id is the same across all instances of an event
         # UID is as per the standard for google
         event_id == event.id
+      end
+    end
+
+    # keep bookings in sync
+    before_update do
+      if event_start_changed? || event_end_changed?
+        linked_bookings = self.bookings
+
+        if linked_bookings.size > 0
+          clashing = linked_bookings.select do |booking|
+            booking.booking_start = event_start
+            booking.booking_end = event_end
+            booking.clashing?
+          end
+
+          # reject clashing bookings
+          Booking.where({:id => clashing.map(&.id)}).update_all({:rejected => true, :rejected_at => Time.utc.to_unix}) unless clashing.empty?
+
+          # ensure the booking times are in sync
+          Booking.where(event_id: id).update_all({:booking_start => event_start, :booking_end => event_end})
+        end
+      end
+
+      if cancelled_changed? && cancelled
+        Booking.where(event_id: id).update_all({:rejected => true, :rejected_at => Time.utc.to_unix})
       end
     end
 

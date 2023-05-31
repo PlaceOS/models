@@ -44,7 +44,6 @@ module PlaceOS::Model
     attribute approver_name : String?
     attribute approver_email : String?, format: "email"
     attribute department : String?
-    attribute event_id : String?, description: "provided if this booking is associated with a calendar event"
     attribute title : String?
     attribute checked_in : Bool = false
     attribute checked_in_at : Int64?
@@ -58,7 +57,7 @@ module PlaceOS::Model
     # (kiosk, mobile, swipe etc)
     attribute booked_from : String?
     attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new)
-    attribute history : Array(History), converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
+    attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
     attribute email_digest : String?, ignore_deserialize: true
     attribute booked_by_id : String, ignore_deserialize: true
@@ -66,6 +65,13 @@ module PlaceOS::Model
     attribute created : Int64?, ignore_deserialize: true
 
     attribute parent_id : Int64?
+    attribute event_id : Int64?, description: "provided if this booking is associated with a calendar event"
+
+    @[JSON::Field(ignore: true)]
+    property render_event : Bool = true
+
+    @[JSON::Field(key: "linked_event", ignore_deserialize: true)]
+    getter(linked_event : EventMetadata?) { get_event_metadata }
 
     @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
     getter(children : Array(Booking)?) { get_children }
@@ -350,6 +356,21 @@ module PlaceOS::Model
       end
     end
 
+    def clashing?
+      starting = self.booking_start
+      ending = self.booking_end
+
+      # gets all the clashing bookings
+      query = Booking
+        .by_tenant(tenant_id)
+        .where(
+          "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_id = ? AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
+          ending, starting, booking_type, asset_id
+        )
+      query = query.where("id != ?", id) unless id.nil?
+      query.count > 0
+    end
+
     def as_h(include_attendees : Bool = true)
       @resp_attendees = include_attendees ? attendees.to_a : nil
       self
@@ -358,8 +379,18 @@ module PlaceOS::Model
     def to_json(json : ::JSON::Builder)
       @current_state = booking_current_state
       @children = get_children
+      if render_event && (meta = get_event_metadata)
+        meta.ext_data = nil
+        @linked_event = meta
+      else
+        @linked_event = nil
+      end
       super
     end
+
+    # ===
+    # Child-parent relationship
+    # ===
 
     def parent?
       parent_id.nil?
@@ -378,6 +409,30 @@ module PlaceOS::Model
     private def get_children
       return nil unless parent?
       Booking.where(parent_id: id).to_a
+    end
+
+    # ===
+    # booking to event relationship
+    # ===
+
+    def linked?
+      event_id.nil?
+    end
+
+    before_update do
+      if linked?
+        if booking_start_changed? || booking_end_changed?
+          meta = linked_event.not_nil!
+          self.booking_start = meta.event_start
+          self.booking_end = meta.event_end
+        end
+      end
+    end
+
+    private def get_event_metadata
+      if meta_id = self.event_id
+        EventMetadata.find?(meta_id)
+      end
     end
   end
 end
