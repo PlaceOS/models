@@ -13,6 +13,7 @@ module PlaceOS::Model
         event.save!
         booking = Generator.booking(tenant.id, asset_id, event_start, event_end, event_id: event.id)
         booking.save!
+        booking.linked?.should be_true
 
         # ensure the linking is working
         event.bookings.first?.try(&.id).should eq booking.id
@@ -34,6 +35,7 @@ module PlaceOS::Model
         event_end = 70.minutes.from_now
         new_booking = Generator.booking(tenant.id, asset_id, event_start, event_end)
         new_booking.save!
+        new_booking.linked?.should be_false
 
         event.event_start = event_start.to_unix
         event.event_end = event_end.to_unix

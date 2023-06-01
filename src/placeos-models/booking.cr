@@ -416,7 +416,7 @@ module PlaceOS::Model
     # ===
 
     def linked?
-      event_id.nil?
+      !event_id.nil?
     end
 
     before_update do
