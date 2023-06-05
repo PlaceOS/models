@@ -94,6 +94,7 @@ module PlaceOS::Model
         booking.reload!
         event.ext_data = nil
         event.linked_bookings = nil
+        event.render_linked_bookings = false
         JSON.parse(booking.to_json)["linked_event"].should eq JSON.parse(event.to_json)
 
         # check the event renders the bookings
