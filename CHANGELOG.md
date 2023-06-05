@@ -1,3 +1,9 @@
+## v9.10.1 (2023-06-05)
+
+### Fix
+
+- **event_metadata**: add flag for rendering linked bookings
+
 ## v9.10.0 (2023-06-05)
 
 ### Feat
