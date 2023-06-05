@@ -258,13 +258,13 @@ module PlaceOS::Model
       )
     end
 
-    class_getter asset_zone : Zone { self.zone }
+    class_getter asset_zone : Zone { self.zone.save! }
 
     def self.asset(asset_type = Generator.asset_type.save!, purchase_order = Generator.asset_purchase_order.save!)
       Asset.new(
         asset_type_id: asset_type.id,
         purchase_order_id: purchase_order.id,
-        zone_id: asset_zone.id
+        zone_id: asset_zone.id,
       )
     end
 
