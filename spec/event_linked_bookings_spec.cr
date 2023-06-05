@@ -98,6 +98,7 @@ module PlaceOS::Model
         JSON.parse(booking.to_json)["linked_event"].should eq JSON.parse(event.to_json)
 
         # check the event renders the bookings
+        event.render_linked_bookings = true
         event.reload!
         booking.render_event = false
         JSON.parse(event.to_json)["linked_bookings"].should eq [JSON.parse(booking.to_json)]
