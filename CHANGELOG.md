@@ -1,3 +1,9 @@
+## v9.10.2 (2023-06-05)
+
+### Fix
+
+- **event_metadata**: linked bookings spec
+
 ## v9.10.1 (2023-06-05)
 
 ### Fix
