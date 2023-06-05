@@ -26,7 +26,7 @@ module PlaceOS::Model
       tenant = get_tenant
       event_start = 5.minutes.from_now
       event_end = 10.minutes.from_now
-      asset_id = asset.id
+      asset_id = asset.id.as(String)
       booking = Generator.booking(tenant.id, asset_id, event_start, event_end)
       booking.save!
 
