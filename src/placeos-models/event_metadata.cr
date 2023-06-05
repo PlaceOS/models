@@ -38,8 +38,11 @@ module PlaceOS::Model
     @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
     getter(linked_bookings : Array(Booking)?) { bookings }
 
+    @[JSON::Field(ignore: true)]
+    property? render_linked_bookings : Bool = true
+
     def to_json(json : ::JSON::Builder)
-      @linked_bookings = bookings.to_a.tap &.each(&.render_event=(false))
+      @linked_bookings = bookings.to_a.tap(&.each(&.render_event=(false))) if render_linked_bookings?
       super
     end
 

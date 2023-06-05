@@ -381,6 +381,7 @@ module PlaceOS::Model
       @children = get_children
       if render_event && (meta = get_event_metadata)
         meta.ext_data = nil
+        meta.render_linked_bookings = false
         @linked_event = meta
       else
         @linked_event = nil
