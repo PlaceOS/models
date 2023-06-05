@@ -57,8 +57,6 @@ module PlaceOS::Model
     # (kiosk, mobile, swipe etc)
     attribute booked_from : String?
     attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new)
-
-    @[JSON::Field(ignore_deserialize: true)]
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
     attribute email_digest : String?, ignore_deserialize: true
