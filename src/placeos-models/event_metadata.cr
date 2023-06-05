@@ -42,7 +42,11 @@ module PlaceOS::Model
     property? render_linked_bookings : Bool = true
 
     def to_json(json : ::JSON::Builder)
-      @linked_bookings = bookings.to_a.tap(&.each(&.render_event=(false))) if render_linked_bookings?
+      if render_linked_bookings?
+        @linked_bookings = bookings.to_a.tap(&.each(&.render_event=(false)))
+      else
+        @linked_bookings = nil
+      end
       super
     end
 
