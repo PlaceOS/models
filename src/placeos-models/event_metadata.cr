@@ -36,7 +36,7 @@ module PlaceOS::Model
     )
 
     @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
-    getter(linked_bookings : Array(Booking)?) { bookings }
+    property linked_bookings : Array(Booking)? { bookings }
 
     @[JSON::Field(ignore: true)]
     property? render_linked_bookings : Bool = true
