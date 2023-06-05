@@ -65,7 +65,7 @@ module PlaceOS::Model
     end
 
     scope :by_event_ids do |event_ids|
-      where("event_id IN (?) OR ical_uid IN (?)", event_ids.join(","), event_ids.join(","))
+      (event_ids && !event_ids.empty?) ? where("event_id IN (?) OR ical_uid IN (?)", event_ids.join(","), event_ids.join(",")) : self
     end
 
     def for_event_instance?(event, client_id)
