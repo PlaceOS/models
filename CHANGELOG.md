@@ -1,3 +1,9 @@
+## v9.10.0 (2023-06-05)
+
+### Feat
+
+- link assets to zones and clean up bookings ([#210](https://github.com/PlaceOS/models/pull/210))
+
 ## v9.9.2 (2023-06-01)
 
 ### Fix
