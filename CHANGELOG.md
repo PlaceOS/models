@@ -1,3 +1,9 @@
+## v9.11.1 (2023-06-13)
+
+### Fix
+
+- **module**: edge_id lookup query
+
 ## v9.11.0 (2023-06-13)
 
 ### Feat
