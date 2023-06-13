@@ -151,7 +151,7 @@ module PlaceOS::Model
     # Find `Module`s allocated to an `Edge`
     #
     def self.on_edge(edge_id : String)
-      Module.where(edge_id: [edge_id])
+      Module.where(edge_id: edge_id)
     end
 
     # Fetch `Module`s who have a direct parent `ControlSystem`
