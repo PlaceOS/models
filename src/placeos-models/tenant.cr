@@ -58,7 +58,7 @@ module PlaceOS::Model
                   Tenant.where(domain: dom, email_domain: mail).count
                 end
 
-      this.validation_error(:domain, "must be unique") if matches > 0
+      this.validation_error(:domain, "should be unique") if matches > 0
     }
 
     before_save :set_delegated
