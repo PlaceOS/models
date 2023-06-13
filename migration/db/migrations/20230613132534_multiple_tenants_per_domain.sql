@@ -2,21 +2,7 @@
 -- SQL in section 'Up' is executed when this migration is applied
 
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS email_domain TEXT;
-
-DO $$
-DECLARE 
-    constraint_name VARCHAR;
-BEGIN
-    SELECT conname INTO constraint_name
-    FROM pg_constraint 
-    INNER JOIN pg_class ON conrelid=pg_class.oid 
-    INNER JOIN pg_attribute ON pg_attribute.attnum=conkey[1] 
-    WHERE relname='tenants' AND attname='domain';
-
-    IF constraint_name IS NOT NULL THEN
-        EXECUTE format('ALTER TABLE tenants DROP CONSTRAINT %I', constraint_name);
-    END IF;
-END $$;
+ALTER TABLE tenants DROP CONSTRAINT tenants_domain_key
  
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
