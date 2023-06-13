@@ -1,3 +1,10 @@
+## v9.11.0 (2023-06-13)
+
+### Feat
+
+- **tenant**: add multi-tenant per domain support ([#213](https://github.com/PlaceOS/models/pull/213))
+- **migrations**: PPT-431, 432 additional indices ([#211](https://github.com/PlaceOS/models/pull/211))
+
 ## v9.10.2 (2023-06-05)
 
 ### Fix
