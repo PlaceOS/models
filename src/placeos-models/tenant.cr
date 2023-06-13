@@ -115,7 +115,7 @@ module PlaceOS::Model
       getter booking_limits : JSON::Any? = nil
       getter outlook_config : OutlookConfig? = nil
 
-      def initialize(@id, @name, @domain, @email_domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil)
+      def initialize(@id, @name, @domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil, @email_domain = nil)
       end
 
       def to_tenant(update : Bool = false)
