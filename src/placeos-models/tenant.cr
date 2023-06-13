@@ -11,6 +11,7 @@ module PlaceOS::Model
 
     attribute name : String?
     attribute domain : String
+    attribute email_domain : String? = nil
     attribute platform : String
     attribute credentials : String
     attribute booking_limits : JSON::Any = JSON::Any.new({} of String => JSON::Any)
@@ -41,7 +42,24 @@ module PlaceOS::Model
     )
 
     validates :domain, :platform, :credentials, presence: true
-    ensure_unique :domain
+
+    # ensure_unique :domain
+    validate ->(this : Tenant) {
+      this.domain = dom = this.domain.strip.downcase
+      this.email_domain = mail = this.email_domain.try(&.strip.downcase.presence)
+
+      matches = if this.persisted?
+                  if mail
+                    Tenant.where("domain = ? AND email_domain = ? AND id != ?", dom, mail, this.id).count
+                  else
+                    Tenant.where("domain = ? AND email_domain IS NULL AND id != ?", dom, this.id).count
+                  end
+                else
+                  Tenant.where(domain: dom, email_domain: mail).count
+                end
+
+      this.validation_error(:domain, "should be unique") if matches > 0
+    }
 
     before_save :set_delegated
     before_save :encrypt!
@@ -89,6 +107,7 @@ module PlaceOS::Model
       getter id : Int64?
       getter name : String?
       getter domain : String?
+      getter email_domain : String?
       getter platform : String?
       getter delegated : Bool?
       getter service_account : String?
@@ -96,7 +115,7 @@ module PlaceOS::Model
       getter booking_limits : JSON::Any? = nil
       getter outlook_config : OutlookConfig? = nil
 
-      def initialize(@id, @name, @domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil)
+      def initialize(@id, @name, @domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil, @email_domain = nil)
       end
 
       def to_tenant(update : Bool = false)
@@ -129,6 +148,7 @@ module PlaceOS::Model
         id: self.id,
         name: self.name,
         domain: self.domain,
+        email_domain: self.email_domain,
         platform: self.platform,
         service_account: service,
         delegated: is_delegated,
