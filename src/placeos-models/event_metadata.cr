@@ -36,7 +36,7 @@ module PlaceOS::Model
     )
 
     @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
-    property linked_bookings : Array(Booking) { Booking.where(event_id: self.id, deleted: false, rejected: false) }
+    property linked_bookings : Array(Booking)? { Booking.where(event_id: self.id, deleted: false, rejected: false) }
 
     @[JSON::Field(ignore: true)]
     property? render_linked_bookings : Bool = true
