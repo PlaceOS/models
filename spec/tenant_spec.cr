@@ -51,6 +51,65 @@ module PlaceOS::Model
       end
     end
 
+    it "allows two tenants with the same domain if email_domain is provided" do
+      Generator.tenant({
+        name:        "Bob",
+        platform:    "google",
+        domain:      "club-bob.staff-api.dev",
+        credentials: %({
+              "issuer":      "1122121212",
+              "scopes":      ["http://example.com"],
+              "signing_key": "-----BEGIN PRIVATE KEY-----SOMEKEY DATA-----END PRIVATE KEY-----",
+              "domain":      "example.com.au",
+              "sub":         "bob@example.com.au"
+            }),
+      })
+
+      Generator.tenant({
+        name:         "Bob2",
+        platform:     "google",
+        domain:       "club-bob.staff-api.dev",
+        email_domain: "other.client.domain",
+        credentials:  %({
+          "issuer":      "1122121212",
+          "scopes":      ["http://example.com"],
+          "signing_key": "-----BEGIN PRIVATE KEY-----SOMEKEY DATA-----END PRIVATE KEY-----",
+          "domain":      "example.com.au",
+          "sub":         "bob@example.com.au"
+        }),
+      })
+
+      Generator.tenant({
+        name:         "Bob3",
+        platform:     "google",
+        domain:       "club-bob.staff-api.dev",
+        email_domain: "some.client.domain",
+        credentials:  %({
+          "issuer":      "1122121212",
+          "scopes":      ["http://example.com"],
+          "signing_key": "-----BEGIN PRIVATE KEY-----SOMEKEY DATA-----END PRIVATE KEY-----",
+          "domain":      "example.com.au",
+          "sub":         "bob@example.com.au"
+        }),
+      })
+
+      expect_raises(PgORM::Error::RecordInvalid, "`domain` should be unique") do
+        Generator.tenant({
+          name:         "Bob4",
+          platform:     "google",
+          domain:       "club-bob.staff-api.dev",
+          email_domain: "some.client.domain",
+          credentials:  %({
+            "issuer":      "1122121212",
+            "scopes":      ["http://example.com"],
+            "signing_key": "-----BEGIN PRIVATE KEY-----SOMEKEY DATA-----END PRIVATE KEY-----",
+            "domain":      "example.com.au",
+            "sub":         "bob@example.com.au"
+          }),
+        })
+      end
+    end
+
     it "should accept booking limits" do
       a = Generator.tenant({
         name:           "Jon2",
