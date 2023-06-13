@@ -45,8 +45,8 @@ module PlaceOS::Model
 
     # ensure_unique :domain
     validate ->(this : Tenant) {
-      self.domain = dom = self.domain.strip.downcase
-      self.email_domain = mail = self.email_domain.try(&.strip.downcase.presence)
+      this.domain = dom = this.domain.strip.downcase
+      this.email_domain = mail = this.email_domain.try(&.strip.downcase.presence)
 
       matches = if this.persisted?
                   if mail
