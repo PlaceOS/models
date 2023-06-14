@@ -2,10 +2,10 @@
 -- SQL in section 'Up' is executed when this migration is applied
 
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS email_domain TEXT;
-ALTER TABLE tenants DROP CONSTRAINT tenants_domain_key;
-DROP INDEX index_tenants_domain;
-CREATE INDEX index_tenants_domain ON tenants (domain);
- 
+ALTER TABLE tenants DROP CONSTRAINT IF EXISTS tenants_domain_key;
+DROP INDEX IF EXISTS index_tenants_domain;
+CREATE INDEX IF NOT EXISTS index_tenants_domain ON tenants (domain);
+  
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
 
