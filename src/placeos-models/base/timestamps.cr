@@ -30,7 +30,13 @@ module PlaceOS::Model::Timestamps::EpochConverter
     if (val = str.to_i?)
       Time.unix(val)
     else
-      Time.from_json(str)
+      begin
+        Time.from_json(str)
+      rescue Time::Format::Error
+        fmt = "%FT%T"
+        fmt += ".%6N" if str.index('.')
+        Time.parse_utc(str.strip('"'), fmt)
+      end
     end
   end
 
