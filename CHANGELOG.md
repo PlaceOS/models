@@ -1,3 +1,9 @@
+## v9.11.3 (2023-06-24)
+
+### Refactor
+
+- EpochConverter#from_json
+
 ## v9.11.2 (2023-06-14)
 
 ### Fix
