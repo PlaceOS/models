@@ -1,3 +1,9 @@
+## v9.12.0 (2023-06-25)
+
+### Feat
+
+- **asset**: add barcode field ([#212](https://github.com/PlaceOS/models/pull/212))
+
 ## v9.11.3 (2023-06-24)
 
 ### Refactor
