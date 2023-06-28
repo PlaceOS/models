@@ -29,6 +29,17 @@ module PlaceOS::Model
       asset.should_not be_nil
       asset.persisted?.should be_true
       Asset.find!(asset.id).id.should eq asset.id
+
+      asset = Asset.new(
+        asset_type_id: asset_type.id,
+        zone_id: asset_zone.id,
+        other_data: JSON.parse("{}")
+      )
+      asset.save!
+
+      asset.should_not be_nil
+      asset.persisted?.should be_true
+      Asset.find!(asset.id).id.should eq asset.id
     end
 
     it "books an asset" do
