@@ -1,3 +1,9 @@
+## v9.13.0 (2023-06-29)
+
+### Feat
+
+- **asset_type**: include asset counts in responses ([#215](https://github.com/PlaceOS/models/pull/215))
+
 ## v9.12.0 (2023-06-25)
 
 ### Feat
