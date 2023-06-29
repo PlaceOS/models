@@ -16,6 +16,32 @@ module PlaceOS::Model
       Asset.find!(asset.id).id.should eq asset.id
     end
 
+    it "saves a minimal Asset" do
+      asset_zone = Generator.zone.save!
+      asset_type = Generator.asset_type.save!
+
+      asset = Asset.new(
+        asset_type_id: asset_type.id,
+        zone_id: asset_zone.id,
+      )
+      asset.save!
+
+      asset.should_not be_nil
+      asset.persisted?.should be_true
+      Asset.find!(asset.id).id.should eq asset.id
+
+      asset = Asset.new(
+        asset_type_id: asset_type.id,
+        zone_id: asset_zone.id,
+        other_data: JSON.parse("{}")
+      )
+      asset.save!
+
+      asset.should_not be_nil
+      asset.persisted?.should be_true
+      Asset.find!(asset.id).id.should eq asset.id
+    end
+
     it "books an asset" do
       asset = Generator.asset.save!
 
