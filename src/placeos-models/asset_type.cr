@@ -28,5 +28,16 @@ module PlaceOS::Model
     validates :name, presence: true
     validates :brand, presence: true
     validates :category_id, presence: true
+
+    # Metadata
+    ###############################################################################################
+
+    @[JSON::Field(ignore_deserialize: true)]
+    property asset_count : Int64 { Asset.where(asset_type_id: self.id).count }
+
+    def to_json(json : ::JSON::Builder)
+      asset_count
+      super
+    end
   end
 end
