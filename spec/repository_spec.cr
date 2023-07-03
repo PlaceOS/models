@@ -85,12 +85,17 @@ module PlaceOS::Model
         repository = Generator.repository
         repository.username = "test"
         repository.password = expected_unencrypted
-        repository.id = mock_id
         repository.save!
 
         repository = Repository.find(repository.id.as(String))
         repository.deployed_commit_hash = "1234556"
         repository.update
+
+        repository = Repository.find(repository.id.as(String))
+        encrypted = repository.password.not_nil!
+        encrypted.should_not eq expected_unencrypted
+        encrypted.should start_with '\e'
+        repository.pull!
 
         repository = Repository.find(repository.id.as(String))
         encrypted = repository.password.not_nil!
