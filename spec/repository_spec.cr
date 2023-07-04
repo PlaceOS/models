@@ -80,6 +80,28 @@ module PlaceOS::Model
           encrypted.should start_with '\e'
         end
       {% end %}
+
+      it "credentials are not lost on update" do
+        repository = Generator.repository
+        repository.username = "test"
+        repository.password = expected_unencrypted
+        repository.save!
+
+        repository = Repository.find(repository.id.as(String))
+        repository.deployed_commit_hash = "1234556"
+        repository.update
+
+        repository = Repository.find(repository.id.as(String))
+        encrypted = repository.password.not_nil!
+        encrypted.should_not eq expected_unencrypted
+        encrypted.should start_with '\e'
+        repository.pull!
+
+        repository = Repository.find(repository.id.as(String))
+        encrypted = repository.password.not_nil!
+        encrypted.should_not eq expected_unencrypted
+        encrypted.should start_with '\e'
+      end
     end
 
     it "removes dependent Drivers on destroy" do
