@@ -2,6 +2,12 @@
 
 ### Fix
 
+- **migrations**: ensure unique constraint removed
+
+## v9.13.1 (2023-07-05)
+
+### Fix
+
 - **tenant**: email_domain should be set on create / update
 
 ## v9.13.0 (2023-06-29)
