@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fix
+
+- **tenant**: email_domain should be set on create / update
+
 ## v9.13.0 (2023-06-29)
 
 ### Feat
