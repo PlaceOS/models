@@ -120,7 +120,7 @@ module PlaceOS::Model
 
       def to_tenant(update : Bool = false)
         tenant = Tenant.new
-        {% for key in [:name, :domain, :platform, :delegated, :service_account, :outlook_config] %}
+        {% for key in [:name, :domain, :email_domain, :platform, :delegated, :service_account, :outlook_config] %}
           tenant.{{key.id}} = self.{{key.id}}.not_nil! unless self.{{key.id}}.nil?
         {% end %}
 
