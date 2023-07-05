@@ -1,4 +1,10 @@
-## Unreleased
+## v9.13.3 (2023-07-05)
+
+### Fix
+
+- tenants_domain migration
+
+## v9.13.2 (2023-07-05)
 
 ### Fix
 
