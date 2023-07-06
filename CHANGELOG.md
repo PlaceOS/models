@@ -1,3 +1,9 @@
+## v9.13.4 (2023-07-06)
+
+### Fix
+
+- **migrations**: ensure unique_domain constraint does not exist
+
 ## v9.13.3 (2023-07-05)
 
 ### Fix
