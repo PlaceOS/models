@@ -1,3 +1,9 @@
+## v9.14.0 (2023-07-07)
+
+### Feat
+
+- **migrations**: PPT-53 add index on metadata details
+
 ## v9.13.4 (2023-07-06)
 
 ### Fix
