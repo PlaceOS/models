@@ -1,6 +1,7 @@
 -- +micrate Up
 -- SQL in section 'Up' is executed when this migration is applied
 
+-- +micrate StatementBegin
 DO $$
 BEGIN
     IF EXISTS (
@@ -17,6 +18,7 @@ END $$;
 
 DROP INDEX concurrently IF EXISTS unique_domain;
 DROP INDEX IF EXISTS unique_domain;
-  
+-- +micrate StatementEnd
+
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
