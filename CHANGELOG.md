@@ -1,3 +1,9 @@
+## v9.14.1 (2023-07-10)
+
+### Fix
+
+- **migrations**: multi-line statement, updated spec PG version to 15
+
 ## v9.14.0 (2023-07-07)
 
 ### Feat
