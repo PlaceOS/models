@@ -1,3 +1,9 @@
+## v9.14.2 (2023-07-10)
+
+### Fix
+
+- **migrations**: added pgsql as language for PG func
+
 ## v9.14.1 (2023-07-10)
 
 ### Fix
