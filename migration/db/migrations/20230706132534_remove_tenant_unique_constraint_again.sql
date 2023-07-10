@@ -14,7 +14,9 @@ BEGIN
         ALTER TABLE tenants
         DROP CONSTRAINT unique_domain;
     END IF;
-END $$;
+END;
+$$
+LANGUAGE plpgsql;
 -- +micrate StatementEnd
 
 DROP INDEX concurrently IF EXISTS unique_domain;
