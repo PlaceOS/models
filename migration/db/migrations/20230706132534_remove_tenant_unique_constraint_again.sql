@@ -15,10 +15,10 @@ BEGIN
         DROP CONSTRAINT unique_domain;
     END IF;
 END $$;
+-- +micrate StatementEnd
 
 DROP INDEX concurrently IF EXISTS unique_domain;
 DROP INDEX IF EXISTS unique_domain;
--- +micrate StatementEnd
 
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
