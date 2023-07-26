@@ -1,3 +1,9 @@
+## v9.14.3 (2023-07-26)
+
+### Fix
+
+- **PPT-729**: Add missing FK cascade delete to FKs ([#217](https://github.com/PlaceOS/models/pull/217))
+
 ## v9.14.2 (2023-07-10)
 
 ### Fix
