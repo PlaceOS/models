@@ -86,6 +86,7 @@ module PlaceOS::Model
         SELECT a.* FROM "attendees" a LEFT OUTER JOIN "event_metadatas" m ON (m.id = a.event_id AND m.event_start >= $3 AND m.event_end <= $4)
         LEFT OUTER JOIN "bookings" b ON (b.id = a.booking_id AND b.booking_start >= $3 and b.booking_end <= $4)
         WHERE a.tenant_id = $1 AND a.guest_id = $2
+        LIMIT 1
       SQL
     end
 
