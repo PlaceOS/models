@@ -76,6 +76,32 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    def root_zone_id : String
+      return self.id.as(String) unless self.parent_id.presence
+
+      query = %[
+        WITH RECURSIVE zone_hierarchy AS (
+            SELECT id, parent_id
+            FROM zone
+            WHERE id = $1
+
+            UNION ALL
+            SELECT z.id, z.parent_id
+            FROM zone z
+            INNER JOIN zone_hierarchy zh ON z.id = zh.parent_id
+        )
+        SELECT id
+        FROM zone_hierarchy
+        WHERE parent_id IS NULL OR parent_id = '';
+      ]
+
+      PgORM::Database.connection(&.query_one?(query, self.id, &.read(String))).as(String)
+    end
+
+    def root_zone
+      Zone.find!(root_zone_id)
+    end
+
     # Validation
     ###############################################################################################
 

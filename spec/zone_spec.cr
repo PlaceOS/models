@@ -70,6 +70,17 @@ module PlaceOS::Model
       id2 = zone2.id.as(String)
       id2.should start_with "zone-"
 
+      zone3 = Generator.zone
+      zone3.parent_id = id2
+      begin
+        zone3.save!
+      rescue e : PgORM::Error::RecordInvalid
+        inspect_error(e)
+        raise e
+      end
+
+      zone3.root_zone_id.should eq id
+
       zone.children.to_a.map(&.id).should eq [id2]
       zone2.parent!.id.should eq id
 
