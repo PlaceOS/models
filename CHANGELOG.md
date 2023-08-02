@@ -1,3 +1,13 @@
+## v9.15.0 (2023-08-02)
+
+### Feat
+
+- **zone**: add root zone finding helper
+
+### Fix
+
+- **guest**: attending check
+
 ## v9.14.3 (2023-07-26)
 
 ### Fix
