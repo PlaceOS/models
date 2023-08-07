@@ -15,6 +15,7 @@ module PlaceOS::Model
     attribute owner_id : String, es_type: "keyword"
     attribute redirect_uri : String
     attribute confidential : Bool = false
+    attribute skip_authorization : Bool = false
 
     attribute uid : String, mass_assignment: false
 
