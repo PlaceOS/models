@@ -28,7 +28,7 @@ module PlaceOS::Model
       s1.decrypt_secret.should eq(secret)
     end
 
-    it "should return default storage when no storage is associated with Authority", focus: true do
+    it "should return default storage when no storage is associated with Authority" do
       s1 = Generator.storage.save!
       s1.authority_id.should be_nil
       Storage.storage_or_default("NOT-DEFINED-AUTHORITY").should_not be_nil
