@@ -1,3 +1,9 @@
+## v9.16.0 (2023-08-14)
+
+### Feat
+
+- PPT-767 File Upload models for Storage and Upload ([#219](https://github.com/PlaceOS/models/pull/219))
+
 ## v9.15.1 (2023-08-14)
 
 ### Fix
