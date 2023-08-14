@@ -1,3 +1,9 @@
+## v9.15.1 (2023-08-14)
+
+### Fix
+
+- Add skip_authorization field to the Doorkeeper ([#218](https://github.com/PlaceOS/models/pull/218))
+
 ## v9.15.0 (2023-08-02)
 
 ### Feat
