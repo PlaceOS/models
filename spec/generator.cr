@@ -438,5 +438,24 @@ module PlaceOS::Model
     def self.tenant(params = MOCK_TENANT_PARAMS)
       Tenant.create(**params)
     end
+
+    def self.storage(type = Storage::Type::S3, bucket : String? = nil, authority_id : String? = nil)
+      Storage.new(storage_type: type, bucket_name: bucket || Faker::Hacker.noun,
+        access_key: Faker::Hacker.noun, access_secret: Faker::Hacker.noun,
+        authority_id: authority_id)
+    end
+
+    def self.upload(uploader : User? = nil, storage_id : String? = nil,
+                    file_name : String? = nil, file_size : Int64 = 5120,
+                    object_key : String? = nil, file_md5 : String? = nil,
+                    permissions = Upload::Permissions::Admin)
+      uploader = uploader || self.user(admin: true).save!
+      Upload.new(uploaded_by: uploader.id, uploaded_email: uploader.email,
+        storage_id: storage_id || self.storage.save!.id,
+        file_name: file_name || Faker::Hacker.noun,
+        file_size: file_size, file_md5: file_md5 || Faker::Hacker.noun,
+        object_key: object_key || Faker::Hacker.noun,
+        permissions: permissions)
+    end
   end
 end
