@@ -72,6 +72,10 @@ module PlaceOS::Model
 
       zone3 = Generator.zone
       zone3.parent_id = id2
+
+      # should work before persisted
+      zone3.root_zone_id.should eq id
+
       begin
         zone3.save!
       rescue e : PgORM::Error::RecordInvalid
