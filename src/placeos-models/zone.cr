@@ -77,6 +77,7 @@ module PlaceOS::Model
     )
 
     def root_zone_id : String
+      raise "zone model not persisted and has no parent" unless persisted? || self.parent_id.presence
       return self.id.as(String) unless self.parent_id.presence
 
       query = %[
@@ -95,10 +96,11 @@ module PlaceOS::Model
         WHERE parent_id IS NULL OR parent_id = '';
       ]
 
-      PgORM::Database.connection(&.query_one?(query, self.id, &.read(String))).as(String)
+      PgORM::Database.connection(&.query_one?(query, self.parent_id, &.read(String))).as(String)
     end
 
     def root_zone
+      return self unless self.parent_id.presence
       Zone.find!(root_zone_id)
     end
 
