@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fix
+
+- **zone**: find root zone id without being persisted ([#220](https://github.com/PlaceOS/models/pull/220))
+
 ## v9.16.0 (2023-08-14)
 
 ### Feat
