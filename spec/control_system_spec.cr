@@ -94,6 +94,28 @@ module PlaceOS::Model
         sys.support_url = "string"
         sys.valid?.should be_false
       end
+
+      it "rejects module_ids that don't exist" do
+        control_system = Generator.control_system
+        control_system.save!
+
+        driver = Generator.driver(role: Driver::Role::Logic)
+        mod = Generator.module(driver: driver, control_system: control_system).save!
+        control_system = mod.control_system!
+        control_system.modules.should contain(mod.id)
+
+        control_system.modules += ["mod-no-exist", "mod-breaking"]
+        control_system.modules.size.should eq 3
+        control_system.save!
+        control_system.modules.size.should eq 1
+        control_system.modules.should contain(mod.id)
+
+        control_system = ControlSystem.find!(control_system.id.as(String))
+        control_system.destroy
+
+        Module.find?(mod.id.as(String)).should be_nil
+        driver.destroy
+      end
     end
 
     describe "add_module" do
