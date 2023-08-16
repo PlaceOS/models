@@ -225,10 +225,12 @@ module PlaceOS::Model
       ]
 
       remove_mods = PgORM::Database.connection do |conn|
-        conn.query_one(sql_query, &.read(Array(String)))
+        conn.query_one(sql_query, &.read(Array(String)?))
       end
 
-      self.modules = self.modules - remove_mods unless remove_mods.empty?
+      if remove_mods && !remove_mods.empty?
+        self.modules = self.modules - remove_mods
+      end
     end
 
     private getter remove_zones : Array(String) { [] of String }
