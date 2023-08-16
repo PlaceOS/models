@@ -212,9 +212,10 @@ module PlaceOS::Model
 
     # ensure all the modules are valid and exist
     def check_modules
+      # TODO:: escape the modules list
       sql_query = %[
         WITH input_ids AS (
-          SELECT unnest($1) AS id
+          SELECT unnest(ARRAY['#{self.modules.join("', '")}']) AS id
         )
 
         SELECT ARRAY_AGG(input_ids.id)
@@ -224,7 +225,7 @@ module PlaceOS::Model
       ]
 
       remove_mods = PgORM::Database.connection do |conn|
-        conn.query_one(sql_query, args: [self.modules], &.read(Array(String)))
+        conn.query_one(sql_query, &.read(Array(String)))
       end
 
       self.modules = self.modules - remove_mods unless remove_mods.empty?
