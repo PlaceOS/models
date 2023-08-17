@@ -1,3 +1,9 @@
+## v9.16.3 (2023-08-17)
+
+### Fix
+
+- **survey**: make Survey::Invitation.list return unsent invites if their sent state is null in the DB and sent = false is passed to the function ([#222](https://github.com/PlaceOS/models/pull/222))
+
 ## v9.16.2 (2023-08-17)
 
 ### Fix
