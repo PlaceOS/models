@@ -1,4 +1,10 @@
-## Unreleased
+## v9.16.2 (2023-08-17)
+
+### Fix
+
+- **control_system**: reject invalid module ids at save ([#221](https://github.com/PlaceOS/models/pull/221))
+
+## v9.16.1 (2023-08-15)
 
 ### Fix
 
