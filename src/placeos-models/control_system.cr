@@ -178,6 +178,8 @@ module PlaceOS::Model
 
     before_save :check_zones
 
+    before_save :check_modules
+
     after_save :update_triggers
 
     # Internal modules
@@ -206,6 +208,29 @@ module PlaceOS::Model
       lonesome_modules.map do |m|
         future { m.destroy }
       end.each(&.get)
+    end
+
+    # ensure all the modules are valid and exist
+    def check_modules
+      # TODO:: escape the modules list
+      sql_query = %[
+        WITH input_ids AS (
+          SELECT unnest(ARRAY['#{self.modules.join("', '")}']) AS id
+        )
+
+        SELECT ARRAY_AGG(input_ids.id)
+        FROM input_ids
+        LEFT JOIN mod ON input_ids.id = mod.id
+        WHERE mod.id IS NULL;
+      ]
+
+      remove_mods = PgORM::Database.connection do |conn|
+        conn.query_one(sql_query, &.read(Array(String)?))
+      end
+
+      if remove_mods && !remove_mods.empty?
+        self.modules = self.modules - remove_mods
+      end
     end
 
     private getter remove_zones : Array(String) { [] of String }

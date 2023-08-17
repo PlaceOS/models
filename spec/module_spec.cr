@@ -27,16 +27,19 @@ module PlaceOS::Model
       end
 
       it "removes module from parent system on destroy" do
-        random_id = UUID.random.to_s
         control_system = Generator.control_system
-        control_system.modules = [random_id]
         control_system.save!
         control_system_id = control_system.id.as(String)
 
         driver = Generator.driver(role: Driver::Role::Logic)
+        mod_remain = Generator.module(driver: driver, control_system: control_system).save!
+        mod_remain.persisted?.should be_true
+
         mod = Generator.module(driver: driver, control_system: control_system).save!
         mod.persisted?.should be_true
-        mod.control_system!.modules.should contain(mod.id)
+        control_system = mod.control_system!
+        control_system.modules.should contain(mod.id)
+        control_system.modules.should contain(mod_remain.id)
 
         mod.destroy
 
@@ -45,7 +48,7 @@ module PlaceOS::Model
         # Removes the module reference on destroy
         control_system_modules.should_not contain(mod.id)
         # Preserves the existing modules
-        control_system_modules.should contain(random_id)
+        control_system_modules.should contain(mod_remain.id)
       end
 
       Driver::Role.values.reject(Driver::Role::Logic).each do |role|
