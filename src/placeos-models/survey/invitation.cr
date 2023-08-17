@@ -23,7 +23,7 @@ module PlaceOS::Model
 
         # filter
         query = query.where(survey_id: survey_id) if survey_id
-        query = query.where(sent: sent) unless sent.nil?
+        query = sent ? query.where(sent: true) : query.where_not(sent: true) unless sent.nil?
         query.to_a
       end
 
