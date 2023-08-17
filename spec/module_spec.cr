@@ -28,7 +28,6 @@ module PlaceOS::Model
 
       it "removes module from parent system on destroy" do
         control_system = Generator.control_system
-        control_system.modules = [random_id]
         control_system.save!
         control_system_id = control_system.id.as(String)
 
