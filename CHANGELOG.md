@@ -1,3 +1,9 @@
+## v9.17.0 (2023-08-21)
+
+### Feat
+
+- **storage**: Added file extension and mime filter attributes ([#223](https://github.com/PlaceOS/models/pull/223))
+
 ## v9.16.3 (2023-08-17)
 
 ### Fix
