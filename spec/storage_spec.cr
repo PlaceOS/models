@@ -15,7 +15,7 @@ module PlaceOS::Model
 
     it "ensures uniquness of storage type, service, authority" do
       s1 = Generator.storage.save!
-      expect_raises(PgORM::Error::RecordInvalid) do
+      expect_raises(Exception, "authority_id need to be unique") do
         Generator.storage(bucket: s1.bucket_name).save!
       end
     end
@@ -32,6 +32,24 @@ module PlaceOS::Model
       s1 = Generator.storage.save!
       s1.authority_id.should be_nil
       Storage.storage_or_default("NOT-DEFINED-AUTHORITY").should_not be_nil
+    end
+
+    it "should handle extension and mime whitelist" do
+      s1 = Generator.storage.save!
+      s1.check_file_ext("something")
+      s1.check_file_mime("application/some-mime")
+
+      s1.ext_filter << "jpg"
+      s1.mime_filter << "application/jpeg"
+      s1.save!
+
+      expect_raises(Model::Error, "File extension not allowed") do
+        s1.check_file_ext("something")
+      end
+
+      expect_raises(Model::Error, "File mimetype not allowed") do
+        s1.check_file_mime("application/some-mime")
+      end
     end
   end
 end

@@ -24,16 +24,24 @@ module PlaceOS::Model
     attribute authority_id : String?
     attribute endpoint : String?
 
+    attribute ext_filter : Array(String) = [] of String
+    attribute mime_filter : Array(String) = [] of String
+
     validates :bucket_name, presence: true
     validates :access_key, presence: true
     validates :access_secret, presence: true
 
-    validate ->(this : Model::Storage) {
-      rec = Model::Storage.find_by?(authority_id: this.authority_id, storage_type: this.storage_type.to_s.upcase, bucket_name: this.bucket_name)
-      this.validation_error(:authority_id, "authority_id need to be unique") unless rec.nil?
+    before_create {
+      rec = Model::Storage.find_by?(authority_id: authority_id, storage_type: storage_type.to_s.upcase, bucket_name: bucket_name)
+      raise Model::Error.new("authority_id need to be unique") unless rec.nil?
     }
 
     before_save {
+      @ext_filter = ext_filter.map do |ext|
+        ext = ext[1..] if ext.starts_with?('.')
+        ext.downcase
+      end
+      @mime_filter = ext_filter.map(&.downcase)
       self.access_secret = PlaceOS::Encryption.encrypt(access_secret, level: level, id: encryption_id)
     }
 
@@ -43,8 +51,16 @@ module PlaceOS::Model
 
     def self.storage_or_default(authority_id : String?) : Storage
       model = Storage.find_by?(authority_id: authority_id) || Storage.find_by?(authority_id: nil)
-      raise Error.new("Could not find Default or authority '#{authority_id}' Storage") if model.nil?
+      raise Model::Error.new("Could not find Default or authority '#{authority_id}' Storage") if model.nil?
       model
+    end
+
+    def check_file_ext(ext : String)
+      raise Model::Error.new("File extension not allowed") unless file_ext_allowed(ext)
+    end
+
+    def check_file_mime(mime : String)
+      raise Model::Error.new("File mimetype not allowed") unless file_mime_allowed(mime)
     end
 
     # Determine if access_secret is encrypted
@@ -63,6 +79,16 @@ module PlaceOS::Model
 
     private def level : PlaceOS::Encryption::Level
       PlaceOS::Encryption::Level::NeverDisplay
+    end
+
+    private def file_ext_allowed(ext : String)
+      return true if ext.blank? || ext_filter.empty?
+      ext_filter.includes?(ext.downcase)
+    end
+
+    private def file_mime_allowed(mime : String)
+      return true if mime.blank? || mime_filter.empty?
+      mime_filter.includes?(mime.downcase)
     end
   end
 end
