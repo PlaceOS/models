@@ -82,12 +82,12 @@ module PlaceOS::Model
     end
 
     private def file_ext_allowed(ext : String)
-      return true if ext.blank? || ext_filter.empty?
+      return true if ext_filter.empty?
       ext_filter.includes?(ext.downcase)
     end
 
     private def file_mime_allowed(mime : String)
-      return true if mime.blank? || mime_filter.empty?
+      return true if mime_filter.empty?
       mime_filter.includes?(mime.downcase)
     end
   end
