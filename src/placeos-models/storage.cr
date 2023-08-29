@@ -83,7 +83,7 @@ module PlaceOS::Model
 
     private def file_ext_allowed(ext : String)
       return true if ext_filter.empty?
-      ext_filter.includes?(ext.downcase)
+      ext_filter.includes?(ext.lstrip('.').downcase)
     end
 
     private def file_mime_allowed(mime : String)
