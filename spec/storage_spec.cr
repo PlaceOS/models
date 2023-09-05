@@ -13,6 +13,16 @@ module PlaceOS::Model
       Storage.find?(inst.id.as(String)).try &.id.should eq inst.id
     end
 
+    it "saves mimes and extension" do
+      storage = PlaceOS::Model::Generator.storage
+      storage.mime_filter = ["image/bmp", "image/jpeg", "image/tiff"]
+      storage.ext_filter = [".bmp", ".jpg", ".tiff"]
+      storage.save!
+      inst = Storage.find(storage.id.as(String))
+      inst.mime_filter.should eq(storage.mime_filter)
+      inst.ext_filter.should eq(["bmp", "jpg", "tiff"])
+    end
+
     it "ensures uniquness of storage type, service, authority" do
       s1 = Generator.storage.save!
       expect_raises(Exception, "authority_id need to be unique") do
