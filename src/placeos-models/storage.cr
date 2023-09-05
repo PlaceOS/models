@@ -41,7 +41,7 @@ module PlaceOS::Model
         ext = ext[1..] if ext.starts_with?('.')
         ext.downcase
       end
-      @mime_filter = ext_filter.map(&.downcase)
+      @mime_filter = mime_filter.map(&.downcase)
       self.access_secret = PlaceOS::Encryption.encrypt(access_secret, level: level, id: encryption_id)
     }
 
