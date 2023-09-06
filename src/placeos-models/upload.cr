@@ -44,6 +44,18 @@ module PlaceOS::Model
     validates :object_key, presence: true
     validates :file_md5, presence: true
 
+    before_save :sanitize
+
+    def sanitize : Nil
+      if file_name = @file_name
+        @file_name = file_name.gsub(/[\r\n]+/, String.new)
+      end
+
+      if object_key = @object_key
+        @object_key = object_key.gsub(/[\r\n]+/, String.new)
+      end
+    end
+
     def part_data_changed(flag = true)
       @part_data_changed = flag
     end
