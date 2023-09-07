@@ -44,6 +44,17 @@ module PlaceOS::Model
     validates :object_key, presence: true
     validates :file_md5, presence: true
 
+    # Validate no
+    validate ->(this : Upload) {
+      this.validation_error(:file_name, "contains invalid characters or words") unless Upload.safe_filename?(this.file_name)
+    }
+
+    def self.safe_filename?(filename : String) : Bool
+      # Regex to detect invalid characters and patterns
+      invalid_pattern = /[\x00-\x1F<>:"\/\\|?*#&%=]|\.\.|^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$/i
+      filename =~ invalid_pattern ? false : true
+    end
+
     def part_data_changed(flag = true)
       @part_data_changed = flag
     end
