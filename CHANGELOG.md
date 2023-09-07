@@ -1,3 +1,9 @@
+## v9.18.1 (2023-09-07)
+
+### Fix
+
+- **api_key**: permissions are stored as an integer in the database
+
 ## v9.18.0 (2023-09-07)
 
 ### Feat
