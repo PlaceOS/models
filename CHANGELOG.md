@@ -1,3 +1,9 @@
+## v9.18.0 (2023-09-07)
+
+### Feat
+
+- **upload**: ensures upload file names are valid across systems ([#226](https://github.com/PlaceOS/models/pull/226))
+
 ## v9.17.3 (2023-09-05)
 
 ### Fix
