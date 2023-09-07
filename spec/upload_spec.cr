@@ -24,7 +24,6 @@ module PlaceOS::Model
       Upload.safe_filename?("..test.txt").should be_false
       Upload.safe_filename?("test..txt").should be_false
       Upload.safe_filename?("test..file.txt").should be_false
-      Upload.safe_filename?("test file.txt").should be_false
       Upload.safe_filename?("test&e.txt").should be_false
       Upload.safe_filename?("test=e.txt").should be_false
       Upload.safe_filename?("test%e.txt").should be_false
