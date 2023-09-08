@@ -1,3 +1,9 @@
+## v9.18.4 (2023-09-08)
+
+### Fix
+
+- **api_key**: allow permissions to be nil
+
 ## v9.18.3 (2023-09-08)
 
 ### Fix
