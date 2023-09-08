@@ -23,7 +23,7 @@ module PlaceOS::Model::JSONBQuery
     arr = [] of String
     ignore_next = false
     buff = IO::Memory.new
-    key.chars.each do |c|
+    key.each_char do |c|
       if ignore_next
         ignore_next = false
         buff << c
