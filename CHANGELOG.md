@@ -1,3 +1,9 @@
+## v9.18.2 (2023-09-08)
+
+### Fix
+
+- **Enum::ValueConverter**: support nilable integer enums
+
 ## v9.18.1 (2023-09-07)
 
 ### Fix
