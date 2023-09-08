@@ -44,7 +44,8 @@ end
 
 module Enum::ValueConverter(T)
   def self.from_rs(rs : ::DB::ResultSet)
-    T.from_value(rs.read(Int32))
+    val = rs.read(Int32?) || 0
+    T.from_value(val)
   end
 
   def self.to_json(val : T | Nil)
