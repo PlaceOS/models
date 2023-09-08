@@ -1,3 +1,9 @@
+## v9.18.3 (2023-09-08)
+
+### Fix
+
+- **api_key**: default permissions to be user
+
 ## v9.18.2 (2023-09-08)
 
 ### Fix
