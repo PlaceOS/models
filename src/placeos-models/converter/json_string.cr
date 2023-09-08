@@ -43,18 +43,9 @@ module JSON::Any::StringConverter
 end
 
 module Enum::ValueConverter(T)
-  {% begin %}
-  def self.from_rs(rs : ::DB::ResultSet) : T
-    {% type_name = @type.type_vars[0].stringify %}
-    {% if type_name.includes?("?") || type_name.includes?("Nil") %}
-      val = rs.read(Int32?)
-      return nil unless val
-      T.from_value(val)
-    {% else %}
-      T.from_value(rs.read(Int32))
-    {% end %}
+  def self.from_rs(rs : ::DB::ResultSet)
+    T.from_value(rs.read(Int32))
   end
-  {% end %}
 
   def self.to_json(val : T | Nil)
     return nil if val.nil?

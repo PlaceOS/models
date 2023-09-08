@@ -15,8 +15,7 @@ module PlaceOS::Model
 
     attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope::PUBLIC], converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::UserJWT::Scope), es_type: "keyword"
 
-    # when nil it defaults to the users permissions
-    attribute permissions : UserJWT::Permissions? = nil, converter: Enum::ValueConverter(PlaceOS::Model::UserJWT::Permissions), es_type: "integer"
+    attribute permissions : UserJWT::Permissions = UserJWT::Permissions::User, converter: Enum::ValueConverter(PlaceOS::Model::UserJWT::Permissions), es_type: "integer"
 
     attribute secret : String = ->{ Random::Secure.urlsafe_base64(32) }, mass_assignment: false
 
@@ -25,12 +24,8 @@ module PlaceOS::Model
 
     macro finished
       def user=(user)
-        super(user)
         self.authority_id = user.authority_id
-      end
-
-      def permissions
-        @permissions || self.user.try &.to_jwt_permission
+        super(user)
       end
     end
 
