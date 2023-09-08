@@ -1,3 +1,9 @@
+## v9.18.5 (2023-09-08)
+
+### Fix
+
+- **api_key**: deal with nil values in the database
+
 ## v9.18.4 (2023-09-08)
 
 ### Fix
