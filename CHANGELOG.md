@@ -1,3 +1,9 @@
+## v9.18.6 (2023-09-08)
+
+### Fix
+
+- **api_key**: public json to return permissions as a string
+
 ## v9.18.5 (2023-09-08)
 
 ### Fix
