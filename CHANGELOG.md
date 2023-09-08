@@ -1,3 +1,9 @@
+## v9.18.8 (2023-09-08)
+
+### Fix
+
+- **api_key**: allow string or integer for setting permissions
+
 ## v9.18.7 (2023-09-08)
 
 ### Fix
