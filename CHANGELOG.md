@@ -1,3 +1,9 @@
+## v9.18.7 (2023-09-08)
+
+### Fix
+
+- **api_key**: allow field to be nillable
+
 ## v9.18.6 (2023-09-08)
 
 ### Fix
