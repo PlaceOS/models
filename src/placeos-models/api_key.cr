@@ -15,7 +15,7 @@ module PlaceOS::Model
 
     attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope::PUBLIC], converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::UserJWT::Scope), es_type: "keyword"
 
-    attribute permissions : UserJWT::Permissions = UserJWT::Permissions::User, es_type: "integer"
+    attribute permissions : UserJWT::Permissions? = UserJWT::Permissions::User, es_type: "integer"
 
     attribute secret : String = ->{ Random::Secure.urlsafe_base64(32) }, mass_assignment: false
 
@@ -29,13 +29,17 @@ module PlaceOS::Model
       end
     end
 
+    def permissions : UserJWT::Permissions
+      @permissions || UserJWT::Permissions::User
+    end
+
     # Serialisation
     ###############################################################################################
 
     define_to_json :public, only: [
       :name, :description, :scopes, :user_id, :authority_id, :created_at,
-      :updated_at, :permissions,
-    ], methods: [:user, :authority, :x_api_key, :id]
+      :updated_at,
+    ], methods: [:user, :authority, :x_api_key, :permissions, :id]
 
     # Validation
     ###############################################################################################
