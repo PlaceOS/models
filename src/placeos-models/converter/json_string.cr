@@ -56,4 +56,19 @@ module Enum::ValueConverter(T)
   def self.to_json(val : T | Nil, builder)
     val.try &.to_json(builder)
   end
+
+  # support either integers or strings when pulling
+  def self.from_json(pull : JSON::PullParser) : T
+    value = pull.read?(Int64) || pull.read_string_or_null || 0_i64
+    case value
+    in Int64
+      T.from_value?(value) || pull.raise "Unknown enum #{T} value: #{value}"
+    in String
+      begin
+        T.parse(value)
+      rescue error
+        pull.raise "Unknown enum #{T} value: #{value} (#{error.message})"
+      end
+    end
+  end
 end
