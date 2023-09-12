@@ -1,3 +1,9 @@
+## v9.19.0 (2023-09-12)
+
+### Feat
+
+- **event_metadata**: render rejected bookings
+
 ## v9.18.8 (2023-09-08)
 
 ### Fix
