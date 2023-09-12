@@ -1,3 +1,9 @@
+## v9.20.0 (2023-09-12)
+
+### Feat
+
+- PPT-864 Added fields to capture online and last seen activity ([#227](https://github.com/PlaceOS/models/pull/227))
+
 ## v9.19.0 (2023-09-12)
 
 ### Feat
