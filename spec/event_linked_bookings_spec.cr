@@ -6,7 +6,7 @@ module PlaceOS::Model
   end
 
   describe Booking do
-    describe "event metadata linked bookings", focus: true do
+    describe "event metadata linked bookings" do
       it "creates a booking linked to event metadata" do
         tenant = get_tenant
         event_start = 5.minutes.from_now
@@ -84,8 +84,6 @@ module PlaceOS::Model
         event_start = 5.minutes.from_now
         event_end = 10.minutes.from_now
         asset_id = "tablet"
-
-        puts "\n\n=====================================================Bookings:\n#{Booking.all.count}\n\n"
 
         event = Generator.event_metadata(tenant.id, event_start, event_end)
         event.set_ext_data JSON.parse(%({"secret": true}))

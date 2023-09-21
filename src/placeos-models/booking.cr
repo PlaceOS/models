@@ -98,7 +98,7 @@ module PlaceOS::Model
 
     before_create :set_created
 
-    validate :booking_start, "must not clash with an existing booking", ->(this : self) { this.clashing? }
+    validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.clashing? }
     validate :booking_end, "must be after booking_start", ->(this : self) { this.booking_end > this.booking_start }
 
     before_save do
@@ -363,17 +363,13 @@ module PlaceOS::Model
 
       # gets all the clashing bookings
       query = Booking
-        .by_tenant(self.tenant_id)
+        .by_tenant(tenant_id)
         .where(
           "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_id = ? AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
-          ending, starting, self.booking_type, self.asset_id
+          ending, starting, booking_type, asset_id
         )
-      query = query.where("id != ?", self.id) unless self.id.nil?
-      count = query.count
-
-      puts "\n\n~~~~~~~~~~~~~~~~COUNT: #{count}, ID: #{self.id}\n\n"
-
-      count > 0
+      query = query.where("id != ?", id) unless id.nil?
+      query.count > 0
     end
 
     def as_h(include_attendees : Bool = true)
