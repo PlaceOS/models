@@ -401,6 +401,17 @@ module PlaceOS::Model
     before_update do
       if parent?
         if booking_start_changed? || booking_end_changed?
+          linked_bookings = Booking.where(parent_id: id)
+          clashing = linked_bookings.select do |booking|
+            booking.booking_start = event_start
+            booking.booking_end = event_end
+            booking.clashing?
+          end
+
+          # reject clashing bookings
+          Booking.where({:id => clashing.map(&.id)}).update_all({:rejected => true, :rejected_at => Time.utc.to_unix}) unless clashing.empty?
+
+          # ensure the booking times are in sync
           Booking.where(parent_id: id).update_all({:booking_start => booking_start, :booking_end => booking_end})
         elsif deleted_changed? || deleted_at_changed?
           Booking.where(parent_id: id).update_all({:deleted => deleted, :deleted_at => deleted_at})
