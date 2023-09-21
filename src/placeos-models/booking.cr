@@ -363,13 +363,17 @@ module PlaceOS::Model
 
       # gets all the clashing bookings
       query = Booking
-        .by_tenant(tenant_id)
+        .by_tenant(self.tenant_id)
         .where(
           "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_id = ? AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
-          ending, starting, booking_type, asset_id
+          ending, starting, self.booking_type, self.asset_id
         )
-      query = query.where("id != ?", id) unless id.nil?
-      query.count > 0
+      query = query.where("id != ?", self.id) unless self.id.presence
+      count = query.count
+
+      puts "\n\n~~~~~~~~~~~~~~~~COUNT: #{count}, ID: #{self.id}\n\n"
+
+      count > 0
     end
 
     def as_h(include_attendees : Bool = true)
