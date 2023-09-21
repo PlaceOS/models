@@ -403,8 +403,8 @@ module PlaceOS::Model
         if booking_start_changed? || booking_end_changed?
           linked_bookings = Booking.where(parent_id: id)
           clashing = linked_bookings.select do |booking|
-            booking.booking_start = event_start
-            booking.booking_end = event_end
+            booking.booking_start = booking_start
+            booking.booking_end = booking_end
             booking.clashing?
           end
 
