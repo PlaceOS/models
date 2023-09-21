@@ -368,7 +368,7 @@ module PlaceOS::Model
           "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_id = ? AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
           ending, starting, self.booking_type, self.asset_id
         )
-      query = query.where("id != ?", self.id) unless self.id.presence
+      query = query.where("id != ?", self.id) unless self.id.nil?
       count = query.count
 
       puts "\n\n~~~~~~~~~~~~~~~~COUNT: #{count}, ID: #{self.id}\n\n"
