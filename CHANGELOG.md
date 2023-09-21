@@ -1,3 +1,9 @@
+## v9.20.1 (2023-09-21)
+
+### Fix
+
+- **booking**: check for clashing in a transaction PPT-931 ([#228](https://github.com/PlaceOS/models/pull/228))
+
 ## v9.20.0 (2023-09-12)
 
 ### Feat
