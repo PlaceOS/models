@@ -1,11 +1,12 @@
 require "./helper"
 
 module PlaceOS::Model
-  Spec.before_each do
-    Asset.clear
-  end
-
   describe Asset do
+    Spec.before_each do
+      Asset.clear
+      Booking.clear
+    end
+
     test_round_trip(Asset)
 
     it "saves an Asset" do

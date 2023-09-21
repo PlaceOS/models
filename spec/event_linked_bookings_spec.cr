@@ -1,6 +1,10 @@
 require "./helper"
 
 module PlaceOS::Model
+  Spec.before_each do
+    Booking.clear
+  end
+
   describe Booking do
     describe "event metadata linked bookings" do
       it "creates a booking linked to event metadata" do

@@ -98,6 +98,7 @@ module PlaceOS::Model
 
     before_create :set_created
 
+    validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.clashing? }
     validate :booking_end, "must be after booking_start", ->(this : self) { this.booking_end > this.booking_start }
 
     before_save do
@@ -400,6 +401,17 @@ module PlaceOS::Model
     before_update do
       if parent?
         if booking_start_changed? || booking_end_changed?
+          linked_bookings = Booking.where(parent_id: id)
+          clashing = linked_bookings.select do |booking|
+            booking.booking_start = booking_start
+            booking.booking_end = booking_end
+            booking.clashing?
+          end
+
+          # reject clashing bookings
+          Booking.where({:id => clashing.map(&.id)}).update_all({:rejected => true, :rejected_at => Time.utc.to_unix}) unless clashing.empty?
+
+          # ensure the booking times are in sync
           Booking.where(parent_id: id).update_all({:booking_start => booking_start, :booking_end => booking_end})
         elsif deleted_changed? || deleted_at_changed?
           Booking.where(parent_id: id).update_all({:deleted => deleted, :deleted_at => deleted_at})
