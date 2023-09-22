@@ -19,6 +19,11 @@ module PlaceOS::Model
 
     attribute ext_data : JSON::Any?
 
+    attribute setup_time : Int64 = 0
+    attribute breakdown_time : Int64 = 0
+    attribute setup_event_id : String?
+    attribute breakdown_event_id : String?
+
     belongs_to Tenant, pk_type: Int64
 
     has_many(
