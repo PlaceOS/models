@@ -1,3 +1,9 @@
+## v9.22.0 (2023-09-25)
+
+### Feat
+
+- **migrations**: move id indexes to hash indexes
+
 ## v9.21.0 (2023-09-25)
 
 ### Feat
