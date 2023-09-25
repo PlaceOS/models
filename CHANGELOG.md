@@ -1,3 +1,9 @@
+## v9.21.0 (2023-09-25)
+
+### Feat
+
+- **migrations**: add index on bookings parent_id
+
 ## v9.20.1 (2023-09-21)
 
 ### Fix
