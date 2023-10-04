@@ -27,6 +27,7 @@ module PlaceOS::Model
     getter event : PlaceCalendar::Event? = nil
 
     before_save :survey_trigger
+    after_save :sync_booking_checkin
 
     scope :by_tenant do |tenant_id|
       where(tenant_id: tenant_id)
@@ -60,6 +61,17 @@ module PlaceOS::Model
           )
         end
       end
+    end
+
+    # a one way sync ensuring that the booking is checked in if a guest is
+    def sync_booking_checkin
+      return unless self.booking_id
+      booking = self.booking
+      if self.checked_in
+        booking.checked_in = true
+        booking.checked_in_at ||= Time.utc.to_unix
+      end
+      booking.save!
     end
 
     def to_h(is_parent_metadata : Bool?, meeting_details : PlaceCalendar::Event?)
