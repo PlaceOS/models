@@ -1,3 +1,9 @@
+## v9.23.0 (2023-10-04)
+
+### Feat
+
+- **event_metadata**: add setup/breakdown time ([#229](https://github.com/PlaceOS/models/pull/229))
+
 ## v9.22.0 (2023-09-25)
 
 ### Feat
