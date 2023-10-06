@@ -1,3 +1,9 @@
+## v9.24.1 (2023-10-06)
+
+### Fix
+
+- **attendee**: resolve compile issue
+
 ## v9.24.0 (2023-10-06)
 
 ### Feat
