@@ -1,3 +1,9 @@
+## v9.24.0 (2023-10-06)
+
+### Feat
+
+- **attendee**: ensure booking checked in if guest is ([#230](https://github.com/PlaceOS/models/pull/230))
+
 ## v9.23.0 (2023-10-04)
 
 ### Feat
