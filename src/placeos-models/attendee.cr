@@ -67,11 +67,11 @@ module PlaceOS::Model
     def sync_booking_checkin
       return unless self.booking_id
       booking = self.booking
-      if self.checked_in
+      if booking && self.checked_in
         booking.checked_in = true
         booking.checked_in_at ||= Time.utc.to_unix
+        booking.save!
       end
-      booking.save!
     end
 
     def to_h(is_parent_metadata : Bool?, meeting_details : PlaceCalendar::Event?)
