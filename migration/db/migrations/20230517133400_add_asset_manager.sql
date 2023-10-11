@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS "asset_category" (
     description text,
     parent_category_id bigint,
     created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL  
+    updated_at TIMESTAMPTZ NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS asset_category_parent_id_index ON "asset_category" USING BTREE (parent_category_id);
@@ -25,7 +25,7 @@ ALTER TABLE ONLY "asset_category"
     DROP CONSTRAINT IF EXISTS asset_category_parent_category_id_fkey;
 
 ALTER TABLE ONLY "asset_category"
-    ADD CONSTRAINT asset_category_parent_category_id_fkey FOREIGN KEY (parent_category_id) REFERENCES "asset_category"(id) ON DELETE CASCADE; 
+    ADD CONSTRAINT asset_category_parent_category_id_fkey FOREIGN KEY (parent_category_id) REFERENCES "asset_category"(id) ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS "asset_type" (
     id bigserial PRIMARY KEY,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS "asset_type" (
     images text[],
     category_id bigint NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL 
+    updated_at TIMESTAMPTZ NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS asset_type_category_id_index ON "asset_type" USING BTREE (category_id);
@@ -45,7 +45,7 @@ ALTER TABLE ONLY "asset_type"
     DROP CONSTRAINT IF EXISTS asset_type_category_id_fkey;
 
 ALTER TABLE ONLY "asset_type"
-    ADD CONSTRAINT asset_type_category_id_fkey FOREIGN KEY (category_id) REFERENCES "asset_category"(id) ON DELETE CASCADE; 
+    ADD CONSTRAINT asset_type_category_id_fkey FOREIGN KEY (category_id) REFERENCES "asset_category"(id) ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS "asset_purchase_order" (
     id bigserial PRIMARY KEY,
@@ -68,17 +68,17 @@ CREATE TABLE IF NOT EXISTS "asset" (
     asset_type_id bigint NOT NULL,
     purchase_order_id bigint,
     created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL 
+    updated_at TIMESTAMPTZ NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS asset_asset_type_id_index ON "asset" USING BTREE (asset_type_id);
 CREATE INDEX IF NOT EXISTS asset_purchase_order_id_index ON "asset" USING BTREE (purchase_order_id);
 
 ALTER TABLE ONLY "asset"
-    ADD CONSTRAINT asset_asset_type_id_fkey FOREIGN KEY (asset_type_id) REFERENCES "asset_type"(id) ON DELETE CASCADE; 
+    ADD CONSTRAINT asset_asset_type_id_fkey FOREIGN KEY (asset_type_id) REFERENCES "asset_type"(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY "asset"
-    ADD CONSTRAINT asset_purchase_order_id_fkey FOREIGN KEY (purchase_order_id) REFERENCES "asset_purchase_order"(id) ON DELETE CASCADE; 
+    ADD CONSTRAINT asset_purchase_order_id_fkey FOREIGN KEY (purchase_order_id) REFERENCES "asset_purchase_order"(id) ON DELETE CASCADE;
 
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
