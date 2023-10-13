@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "chats"(
    id TEXT NOT NULL PRIMARY KEY,
    user_id TEXT NOT NULL,
    system_id TEXT NOT NULL,
-   summary TEXT,
+   summary TEXT NOT NULL,
    created_at TIMESTAMPTZ NOT NULL,
    updated_at TIMESTAMPTZ NOT NULL   
 );
