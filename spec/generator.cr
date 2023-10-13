@@ -457,5 +457,20 @@ module PlaceOS::Model
         object_key: object_key || Faker::Hacker.noun,
         permissions: permissions)
     end
+
+    def self.chat(user : User? = nil, system : ControlSystem? = nil, summary : String? = nil)
+      u = user || self.user.save!
+      s = system || self.control_system.save!
+
+      Chat.new(user_id: u.id.not_nil!, system_id: s.id.not_nil!, summary: summary || Faker::Lorem.paragraph)
+    end
+
+    def self.chat_message(chat : Chat? = nil, role = ChatMessage::Role::User, content : String? = nil, func_name : String? = nil, func_args : JSON::Any? = nil)
+      cid = chat || self.chat.save!
+      msg = content || Faker::Lorem.paragraph
+      func = func_name || Faker::Internet.slug
+
+      ChatMessage.new(chat_id: cid.id, role: role, content: msg, function_name: func)
+    end
   end
 end
