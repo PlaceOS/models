@@ -1,3 +1,9 @@
+## v9.25.0 (2023-10-13)
+
+### Feat
+
+- PPT-568 Added Models for ChatBot ([#232](https://github.com/PlaceOS/models/pull/232))
+
 ## v9.24.1 (2023-10-06)
 
 ### Fix
