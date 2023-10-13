@@ -4,16 +4,16 @@
 -- Table for model PlaceOS::Model::Chat
 CREATE TABLE IF NOT EXISTS "chats"(
    id TEXT NOT NULL PRIMARY KEY,
-   user_id TEXT,
-   system_id TEXT,
-   driver_id TEXT,
+   user_id TEXT NOT NULL,
+   system_id TEXT NOT NULL,
+   summary TEXT,
    created_at TIMESTAMPTZ NOT NULL,
    updated_at TIMESTAMPTZ NOT NULL   
 );
 
 CREATE INDEX IF NOT EXISTS chats_user_id_index ON "chats" USING BTREE (user_id);
 CREATE INDEX IF NOT EXISTS chats_system_id_index ON "chats" USING BTREE (system_id);
-CREATE INDEX IF NOT EXISTS chats_driver_id_index ON "chats" USING BTREE (driver_id);
+CREATE INDEX IF NOT EXISTS chats_summary_index ON "chats" USING BTREE (summary);
 
 -- Table for model PlaceOS::Model::ChatMessage
 CREATE TABLE IF NOT EXISTS "chat_messages"(
