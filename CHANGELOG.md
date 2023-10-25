@@ -1,3 +1,9 @@
+## v9.25.2 (2023-10-25)
+
+### Fix
+
+- migration order due to commit merge
+
 ## v9.25.1 (2023-10-25)
 
 ### Fix
