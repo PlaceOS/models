@@ -1,4 +1,8 @@
-## Unreleased
+## v9.25.1 (2023-10-25)
+
+### Fix
+
+- **event_metadata**: change setup_event_id and breakdown_event_id data type in DB ([#233](https://github.com/PlaceOS/models/pull/233))
 
 ## v9.25.0 (2023-10-13)
 
