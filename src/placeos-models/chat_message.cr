@@ -24,6 +24,7 @@ module PlaceOS::Model
     attribute chat_id : String
     attribute role : Role = Role::User, converter: Enum::ValueConverter(PlaceOS::Model::ChatMessage::Role), es_type: "integer"
     attribute content : String? = nil
+    attribute tokens : Int32 = 0
 
     # When `role` is `Function`, then this should contain the name of the function whose response is in the `content`.
     attribute function_name : String? = nil
