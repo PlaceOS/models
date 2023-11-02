@@ -1,3 +1,9 @@
+## v9.26.0 (2023-11-02)
+
+### Feat
+
+- **chat_message**: track token usage
+
 ## v9.25.2 (2023-10-25)
 
 ### Fix
