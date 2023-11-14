@@ -37,7 +37,7 @@ module PlaceOS::Model
       driver.recompile_commit?.should eq commit
     end
 
-    it "return a list of drivers requiring updates", focus: true do
+    it "return a list of drivers requiring updates" do
       driver = Generator.driver(role: Driver::Role::Service)
       driver.commit = "abcdefg"
       driver.save!
