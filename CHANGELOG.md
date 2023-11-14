@@ -1,3 +1,9 @@
+## v9.27.0 (2023-11-14)
+
+### Feat
+
+- PPT-1038 Driver update required logic ([#234](https://github.com/PlaceOS/models/pull/234))
+
 ## v9.26.0 (2023-11-02)
 
 ### Feat
