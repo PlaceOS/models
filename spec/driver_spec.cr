@@ -37,6 +37,23 @@ module PlaceOS::Model
       driver.recompile_commit?.should eq commit
     end
 
+    it "return a list of drivers requiring updates" do
+      driver = Generator.driver(role: Driver::Role::Service)
+      driver.commit = "abcdefg"
+      driver.save!
+
+      driver2 = Generator.driver(role: Driver::Role::Service)
+      driver2.commit = "abcdefh"
+      driver2.save!
+
+      info = Driver::UpdateInfo.new("abcdefhijkl", "new fake version", "fake author")
+      driver.process_update_info(info)
+      driver2.process_update_info(info)
+
+      list = Driver.require_updates
+      list.size.should eq(1)
+    end
+
     describe "callbacks" do
       it "#cleanup_modules removes driver modules" do
         mod = Generator.module.save!

@@ -72,3 +72,24 @@ module Enum::ValueConverter(T)
     end
   end
 end
+
+module OptionalRecordConverter(T)
+  def self.from_rs(rs : ::DB::ResultSet)
+    val = rs.read(JSON::PullParser?)
+    if v = val
+      T.from_json(JSON::Any.new(v).to_json)
+    end
+  end
+
+  def self.from_json(pull : JSON::PullParser)
+    T.from_json(pull.read_string)
+  end
+
+  def self.to_json(val : T | Nil)
+    val.try &.to_json
+  end
+
+  def self.to_json(val : T | Nil, builder)
+    val.try &.to_json(builder)
+  end
+end
