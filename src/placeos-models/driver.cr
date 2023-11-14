@@ -49,6 +49,13 @@ module PlaceOS::Model
     # Might be a device that commonly goes offline (like a PC or Display that only supports Wake on Lan)
     attribute ignore_connected : Bool = false
 
+    record UpdateInfo, commit : String, message : String, author : String? = nil, date : String? = nil do
+      include JSON::Serializable
+    end
+
+    attribute update_available : Bool = false
+    attribute update_info : UpdateInfo? = nil, converter: OptionalRecordConverter(PlaceOS::Model::Driver::UpdateInfo)
+
     # Association
     ###############################################################################################
     belongs_to Repository, foreign_key: "repository_id", presence: true
@@ -142,6 +149,18 @@ module PlaceOS::Model
     def recompile(commit_hash : String? = nil)
       commit_hash ||= self.commit
       self.update_fields(commit: RECOMPILE_PREFIX + commit_hash) if commit_hash
+    end
+
+    def process_update_info(info : UpdateInfo)
+      return if info.commit[0...self.commit.size] == self.commit
+      self.update_available = true
+      self.update_info = info
+      self.save!
+    end
+
+    # Returns the list of Drivers which has update available
+    def self.require_updates : Array(self)
+      Driver.where(update_available: true).to_a
     end
   end
 end
