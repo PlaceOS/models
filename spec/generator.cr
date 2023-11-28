@@ -465,12 +465,14 @@ module PlaceOS::Model
       Chat.new(user_id: u.id.not_nil!, system_id: s.id.not_nil!, summary: summary || Faker::Lorem.paragraph)
     end
 
-    def self.chat_message(chat : Chat? = nil, role = ChatMessage::Role::User, content : String? = nil, func_name : String? = nil, func_args : JSON::Any? = nil)
+    def self.chat_message(chat : Chat? = nil, role = ChatMessage::Role::User, content : String? = nil, func_name : String? = nil,
+                          func_args : JSON::Any? = nil, tool_call_id : String? = nil)
       cid = chat || self.chat.save!
       msg = content || Faker::Lorem.paragraph
       func = func_name || Faker::Internet.slug
+      call_id = tool_call_id || "Call_#{Faker::Internet.slug}"
 
-      ChatMessage.new(chat_id: cid.id, role: role, content: msg, function_name: func)
+      ChatMessage.new(chat_id: cid.id, role: role, content: msg, function_name: func, tool_call_id: call_id)
     end
   end
 end
