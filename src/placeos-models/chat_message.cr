@@ -29,6 +29,7 @@ module PlaceOS::Model
     # When `role` is `Function`, then this should contain the name of the function whose response is in the `content`.
     attribute function_name : String? = nil
     attribute function_args : JSON::Any? = nil
+    attribute tool_call_id : String? = nil
 
     belongs_to Chat
   end
