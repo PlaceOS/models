@@ -1,3 +1,9 @@
+## v9.28.0 (2023-11-28)
+
+### Feat
+
+- PPT-1085 Add OpenAI Tool Call support ([#235](https://github.com/PlaceOS/models/pull/235))
+
 ## v9.27.0 (2023-11-14)
 
 ### Feat
