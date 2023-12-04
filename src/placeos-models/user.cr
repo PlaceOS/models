@@ -48,6 +48,9 @@ module PlaceOS::Model
     attribute sys_admin : Bool = false, mass_assignment: false
     attribute support : Bool = false, mass_assignment: false
 
+    attribute login_count : Int64 = 0
+    attribute last_login : Time? = nil, converter: Time::EpochConverter
+
     # Association
     ################################################################################################
 
@@ -272,7 +275,7 @@ module PlaceOS::Model
     {% begin %}
     ADMIN_DATA = {{
                    PUBLIC_DATA + [
-                     :sys_admin, :support, :misc, :login_name, :card_number, :ui_theme,
+                     :sys_admin, :support, :misc, :login_name, :card_number, :ui_theme, :login_count, :last_login,
                    ]
                  }}
     {% end %}
