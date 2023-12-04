@@ -1,3 +1,9 @@
+## v9.29.0 (2023-12-04)
+
+### Feat
+
+- PPT-1077 add user login stats ([#236](https://github.com/PlaceOS/models/pull/236))
+
 ## v9.28.0 (2023-11-28)
 
 ### Feat
