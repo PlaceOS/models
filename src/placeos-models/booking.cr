@@ -119,9 +119,14 @@ module PlaceOS::Model
     end
 
     def update_assets
-      asset_ids[0] = asset_id unless asset_ids.empty?
+      asset_ids[0] = asset_id if asset_ids.size == 1
       asset_ids.insert(0, asset_id) if asset_ids.empty?
-      asset_id = asset_ids.first
+      @asset_id = asset_ids.first
+    end
+
+    def asset_ids=(vals : Array(String))
+      @asset_ids = vals
+      @asset_ids_changed = true
     end
 
     def survey_trigger
@@ -156,6 +161,7 @@ module PlaceOS::Model
 
     def set_created
       self.last_changed = self.created = Time.utc.to_unix
+      self.asset_id = self.asset_ids.first unless self.asset_ids.empty?
     end
 
     def change_extension_data(data : JSON::Any)

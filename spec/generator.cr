@@ -42,6 +42,26 @@ module PlaceOS::Model
       )
     end
 
+    def self.booking(tenant_id, asset_ids : Array(String), start : Time, ending : Time, booking_type = "booking", parent_id = nil, event_id = nil)
+      user_name = Faker::Hacker.noun
+      user_email = Faker::Internet.email
+      Booking.new(
+        booking_type: booking_type,
+        asset_ids: asset_ids,
+        booking_start: start.to_unix,
+        booking_end: ending.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_email),
+        user_name: user_name,
+        booked_by_email: PlaceOS::Model::Email.new(user_email),
+        booked_by_name: user_name,
+        tenant_id: tenant_id,
+        parent_id: parent_id,
+        event_id: event_id,
+        booked_by_id: "user-1234",
+        history: [] of Booking::History
+      )
+    end
+
     def self.driver(role : Driver::Role? = nil, module_name : String? = nil, repo : Repository? = nil)
       role = self.role unless role
       repo = self.repository(type: Repository::Type::Driver).save! unless repo
