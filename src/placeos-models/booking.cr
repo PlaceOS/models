@@ -86,6 +86,7 @@ module PlaceOS::Model
     getter(resp_attendees : Array(Attendee)?) { attendees.try &.to_a }
 
     attribute utm_source : String? = nil, persistence: false
+    attribute asset_ids : Array(String) = [] of String
 
     belongs_to Tenant, pk_type: Int64
 
@@ -113,7 +114,19 @@ module PlaceOS::Model
         message: "History contains more than 3 events.",
         id:      id,
       } } if history.size > 3
+      update_assets
       survey_trigger
+    end
+
+    def update_assets
+      asset_ids[0] = asset_id if asset_ids.size == 1
+      asset_ids.insert(0, asset_id) if asset_ids.empty?
+      @asset_id = asset_ids.first
+    end
+
+    def asset_ids=(vals : Array(String))
+      @asset_ids = vals
+      @asset_ids_changed = true
     end
 
     def survey_trigger
@@ -148,6 +161,7 @@ module PlaceOS::Model
 
     def set_created
       self.last_changed = self.created = Time.utc.to_unix
+      self.asset_id = self.asset_ids.first unless self.asset_ids.empty?
     end
 
     def change_extension_data(data : JSON::Any)

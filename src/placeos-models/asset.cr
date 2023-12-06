@@ -30,8 +30,8 @@ module PlaceOS::Model
       current_time = Time.utc.to_unix
 
       Booking.where(
-        %("booking_end" > ? AND asset_id = ?),
-        current_time, self.id
+        %("booking_end" > ? AND '#{self.id}'=ANY(asset_ids)),
+        current_time
       ).update_all({:rejected => true, :rejected_at => current_time, :approved => false})
     end
   end
