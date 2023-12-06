@@ -1,3 +1,9 @@
+## v9.30.0 (2023-12-06)
+
+### Feat
+
+- PPT-1098 Add support of multiple assets per booking ([#237](https://github.com/PlaceOS/models/pull/237))
+
 ## v9.29.0 (2023-12-04)
 
 ### Feat
