@@ -48,6 +48,35 @@ module PlaceOS::Model
       driver.destroy
     end
 
+    it "removes modules only when there is a single instance of it remaining" do
+      device_driver = Generator.driver(role: Driver::Role::Device)
+      device_mod2 = Generator.module(driver: device_driver).save!
+      device_mod = Generator.module(driver: device_driver).save!
+
+      control_system = Generator.control_system
+      control_system.modules = [device_mod.id.as(String), device_mod2.id.as(String)]
+      control_system.save!
+
+      driver = Generator.driver(role: Driver::Role::Logic)
+      mod = Generator.module(driver: driver, control_system: control_system).save!
+      control_system = mod.control_system!
+      control_system.modules.should contain(mod.id)
+      control_system.modules.size.should eq 3
+
+      control_system2 = Generator.control_system
+      control_system2.modules = [device_mod2.id.as(String)]
+      control_system2.save!
+
+      control_system = ControlSystem.find!(control_system.id.as(String))
+      control_system.destroy
+
+      Module.find?(mod.id.as(String)).should be_nil
+      Module.find?(device_mod.id.as(String)).should be_nil
+      Module.find!(device_mod2.id.as(String)).id.should eq device_mod2.id
+      device_driver.destroy
+      driver.destroy
+    end
+
     describe "generation of json data" do
       it "#module_data" do
         cs = Generator.control_system.save!

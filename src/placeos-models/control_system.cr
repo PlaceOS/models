@@ -190,24 +190,23 @@ module PlaceOS::Model
     def cleanup_modules
       return if self.modules.empty?
 
-      # Locate modules that have no other associated ControlSystems
-      args = [] of String
-      query = ""
-
-      self.modules.each_with_index do |v, i|
-        args << v
-        query += ", " unless i == 0
-        query += "$#{i + 1}"
-      end
-
-      lonesome_modules = Module.find_all_by_sql(<<-SQL, args: args)
-        select m.* from "#{Module.table_name}" m, "#{ControlSystem.table_name}" s where m.id in (#{query}) and m.id = ANY(s.modules)
-      SQL
-
-      # Asynchronously remove the modules
-      lonesome_modules.map do |m|
+      modules_with_single_occurrence.map do |m|
         future { m.destroy }
       end.each(&.get)
+    end
+
+    def modules_with_single_occurrence : Array(Module)
+      Module.where(%[
+        id IN (
+        SELECT module
+        FROM (
+            SELECT UNNEST(modules) AS module
+            FROM sys
+        ) AS module_list
+        WHERE module IN ('#{self.modules.join("', ")}')
+        GROUP BY module
+        HAVING COUNT(*) = 1)
+      ]).to_a
     end
 
     # ensure all the modules are valid and exist
