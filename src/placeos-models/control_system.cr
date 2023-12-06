@@ -203,7 +203,7 @@ module PlaceOS::Model
             SELECT UNNEST(modules) AS module
             FROM sys
         ) AS module_list
-        WHERE module IN ('#{self.modules.join("', ")}')
+        WHERE module IN ('#{self.modules.join("', '")}')
         GROUP BY module
         HAVING COUNT(*) = 1)
       ]).to_a
