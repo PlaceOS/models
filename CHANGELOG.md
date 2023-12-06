@@ -1,3 +1,9 @@
+## v9.30.1 (2023-12-06)
+
+### Fix
+
+- **control_system**: should only remove modules only in system [PPT-1102] ([#238](https://github.com/PlaceOS/models/pull/238))
+
 ## v9.30.0 (2023-12-06)
 
 ### Feat
