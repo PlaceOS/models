@@ -94,7 +94,8 @@ module PlaceOS::Model
       child_class: Attendee,
       collection_name: "attendees",
       foreign_key: "booking_id",
-      dependent: :destroy
+      dependent: :destroy,
+      serialize: true
     )
 
     before_create :set_created
