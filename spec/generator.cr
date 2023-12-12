@@ -52,6 +52,7 @@ module PlaceOS::Model
       ).save!
 
       Attendee.new(
+        tenant_id: tenant_id,
         visit_expected: true,
         booking_id: booking.id,
         guest_id: guest.id,
