@@ -1,3 +1,9 @@
+## v9.31.0 (2023-12-12)
+
+### Feat
+
+- PPT-1113 add collection serialization logic ([#239](https://github.com/PlaceOS/models/pull/239))
+
 ## v9.30.1 (2023-12-06)
 
 ### Fix
