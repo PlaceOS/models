@@ -2,7 +2,11 @@ require "../src/ext/*"
 
 require "placeos-log-backend"
 
-::Log.setup("*", backend: PlaceOS::LogBackend.log_backend, level: :trace)
+::Log.setup("*", :trace)
+
+Spec.before_suite do
+  ::Log.setup("*", :trace)
+end
 
 require "spec"
 require "random"
