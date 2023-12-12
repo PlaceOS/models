@@ -97,6 +97,17 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    # has_many guests through attendees
+    @[PgORM::Associations::SerializeMarker(key: __guests_rel)]
+    @[JSON::Field(key: :guests, ignore_deserialize: true)]
+    getter(__guests_rel : Array(Guest)) { guests.to_a || Array(Guest).new }
+
+    @__guests_rel : Array(Guest)?
+
+    def guests
+      @__guests_rel ||= Guest.join(Attendee, :guest_id).join(Booking, "bookings.id = attendees.booking_id").where("bookings.id = ?", self.id.as(String)).to_a
+    end
+
     before_create :set_created
 
     validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.clashing? }
