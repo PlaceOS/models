@@ -109,8 +109,8 @@ module PlaceOS::Model
       def invoke_props
         previous_def
         if (guests_rel = @guests) && guests_rel.cached?
-          lookup = {} of String => Guest
-          self.guests.each { |guest| lookup[guest.id.as(String)] = guest }
+          lookup = {} of Int64 => Guest
+          self.guests.each { |guest| lookup[guest.id.as(Int64)] = guest }
           self.attendees.each do |attending|
             guest = lookup[attending.guest_id]
             guest.checked_in = attending.checked_in
