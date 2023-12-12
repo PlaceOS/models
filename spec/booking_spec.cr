@@ -8,7 +8,7 @@ module PlaceOS::Model
   end
 
   describe Booking do
-    it "returns booking with assets" do
+    it "returns booking with assets", focus: true do
       booking_id = Generator.booking_attendee
       Booking.where(id: booking_id).to_a.size.should eq 1
 
@@ -22,8 +22,10 @@ module PlaceOS::Model
       guests.size.should eq 1
       JSON.parse(booking.to_json).as_h["guests"].as_a.size.should eq 1
 
+      puts "\n\n#{booking.@extra_attributes}\n\n"
+
       booking = Booking.where(id: booking_id).to_a.first
-      JSON.parse(booking.to_json).as_h["guests"]?.should be_nil
+      JSON.parse(booking.to_json).as_h["guests"].should eq([] of JSON::Any)
 
       booking.attendees.first.destroy
       query_check = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id").to_a.first
