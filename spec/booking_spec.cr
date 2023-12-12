@@ -15,7 +15,7 @@ module PlaceOS::Model
       query = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id")
 
       booking = query.to_a.first
-      booking.attendees.size.should eq 1
+      booking.attendees.to_a.size.should eq 1
 
       # ensure we didn't need a second query to fill this in
       guests = booking.__guests_rel
@@ -29,8 +29,7 @@ module PlaceOS::Model
 
       Attendee.clear
       query_check = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id").to_a.first
-      puts "\n\n#{query_check.attendees.inspect}\n\n"
-      query_check.attendees.size.should eq 0
+      query_check.attendees.to_a.size.should eq 0
     end
   end
 end
