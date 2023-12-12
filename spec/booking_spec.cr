@@ -12,12 +12,19 @@ module PlaceOS::Model
       booking_id = Generator.booking_attendee
       Booking.where(id: booking_id).to_a.size.should eq 1
 
-      query = Booking.where(id: booking_id).join(Attendee, :booking_id).join(Guest, "guests.id = attendees.guest_id")
+      query = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id")
       puts "\n\n\nSQL: #{query.to_sql}\n\n\n"
 
       booking = query.to_a.first
+      booking.attendees.size.should eq 1
+
+      # ensure we didn't need a second query to fill this in
       guests = booking.@__guests_rel.as(Array(Guest))
       guests.size.should eq 1
+
+      booking.attendees.first.destroy
+      query_check = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id").to_a.first
+      query_check.attendees.size.should eq 0
     end
   end
 end
