@@ -13,7 +13,6 @@ module PlaceOS::Model
       Booking.where(id: booking_id).to_a.size.should eq 1
 
       query = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id")
-      puts "\n\n\nSQL: #{query.to_sql}\n\n\n"
 
       booking = query.to_a.first
       booking.attendees.size.should eq 1
