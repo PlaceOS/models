@@ -29,6 +29,7 @@ module PlaceOS::Model
 
       Attendee.clear
       query_check = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id").to_a.first
+      puts "\n\n#{query_check.attendees.inspect}\n\n"
       query_check.attendees.size.should eq 0
     end
   end
