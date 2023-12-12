@@ -22,7 +22,7 @@ module PlaceOS::Model
       guests.size.should eq 1
       json_booking = JSON.parse(booking.to_json).as_h
       json_booking["guests"].as_a.size.should eq 1
-      json_booking["guests"].first.as_h["checked_in"]?.should be_false
+      json_booking["guests"].as_a.first.as_h["checked_in"]?.should be_false
 
       check_no_guest = Booking.where(id: booking_id).to_a.first
       JSON.parse(check_no_guest.to_json).as_h["guests"]?.should be_nil
