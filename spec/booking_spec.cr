@@ -10,7 +10,12 @@ module PlaceOS::Model
   describe Booking do
     it "returns booking with assets" do
       booking_id = Generator.booking_attendee
-      booking = Booking.where(id: booking_id).join(Attendee, :booking_id).join(Guest, "guests.id = attendees.guest_id").to_a.first
+      Booking.where(id: booking_id).to_a.size.should eq 1
+
+      query = Booking.where(id: booking_id).join(Attendee, :booking_id).join(Guest, "guests.id = attendees.guest_id")
+      puts "\n\n\nSQL: #{query.to_sql}\n\n\n"
+
+      booking = query.to_a.first
       guests = booking.@__guests_rel.as(Array(Guest))
       guests.size.should eq 1
     end

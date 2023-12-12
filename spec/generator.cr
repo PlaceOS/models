@@ -55,7 +55,7 @@ module PlaceOS::Model
         visit_expected: true,
         booking_id: booking.id,
         guest_id: guest.id
-      )
+      ).save!
 
       booking.id
     end
