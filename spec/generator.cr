@@ -41,6 +41,7 @@ module PlaceOS::Model
         booked_by_email: PlaceOS::Model::Email.new(user_email),
         booked_by_name: user_name,
         tenant_id: tenant_id,
+        booked_by_id: "user-1234",
         history: [] of Booking::History
       ).save!
 
