@@ -27,8 +27,7 @@ module PlaceOS::Model
       check_no_guest = Booking.where(id: booking_id).to_a.first
       JSON.parse(check_no_guest.to_json).as_h["guests"]?.should be_nil
 
-      booking.attendees.first.destroy
-      sleep 0.1
+      Attendee.clear
       query_check = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id").to_a.first
       query_check.attendees.size.should eq 0
     end
