@@ -1,3 +1,9 @@
+## v9.33.0 (2023-12-12)
+
+### Feat
+
+- **bookings**: checked in status on booking guests ([#240](https://github.com/PlaceOS/models/pull/240))
+
 ## v9.32.0 (2023-12-12)
 
 ### Feat
