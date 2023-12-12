@@ -24,8 +24,8 @@ module PlaceOS::Model
 
       puts "\n\n#{booking.@extra_attributes}\n\n"
 
-      booking = Booking.where(id: booking_id).to_a.first
-      JSON.parse(booking.to_json).as_h["guests"].should eq([] of JSON::Any)
+      check_no_guest = Booking.where(id: booking_id).to_a.first
+      JSON.parse(check_no_guest.to_json).as_h["guests"].should eq([] of JSON::Any)
 
       booking.attendees.first.destroy
       query_check = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id").to_a.first
