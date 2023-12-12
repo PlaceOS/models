@@ -48,7 +48,10 @@ module PlaceOS::Model
 
     def to_json(json : ::JSON::Builder)
       if render_linked_bookings?
-        @linked_bookings = bookings.to_a.tap(&.each(&.render_event=(false)))
+        @linked_bookings = bookings
+          .join(:left, Attendee, :booking_id)
+          .join(:left, Guest, "guests.id = attendees.guest_id")
+          .to_a.tap(&.each(&.render_event=(false)))
       else
         @linked_bookings = nil
       end
