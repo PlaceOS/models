@@ -8,7 +8,7 @@ module PlaceOS::Model
   end
 
   describe Booking do
-    it "returns booking with assets", focus: true do
+    it "returns booking with assets" do
       booking_id = Generator.booking_attendee
       Booking.where(id: booking_id).to_a.size.should eq 1
 
