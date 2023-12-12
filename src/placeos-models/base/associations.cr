@@ -107,15 +107,22 @@ module PlaceOS::Model
     end
 
     # Must be used in conjunction with the belongs_to macro
-    macro has_many(child_class, collection_name = nil, dependent = :none, foreign_key = nil)
+    macro has_many(child_class, collection_name = nil, dependent = :none, foreign_key = nil, serialize = false)
       {% child_collection = (collection_name ? collection_name : child_class + 's').underscore.downcase %}
       {% association_method = child_collection.id.symbolize %}
+      {% relation_var = ("__" + child_collection.id.stringify + "_rel").id %}
 
       destroy_callback({{association_method}}, {{ dependent }})
 
       @[JSON::Field(ignore: true)]
       @[YAML::Field(ignore: true)]
       @{{child_collection.id}} : ::PgORM::Relation({{child_class}})?
+
+      {% if serialize %}
+        @[PgORM::Associations::SerializeMarker(key: {{relation_var.id}})]
+        @[JSON::Field(key: {{child_collection.id}}, ignore_deserialize: true)]
+        getter({{relation_var.id}} : Array({{child_class}})){ {{child_collection.id}}.to_a || Array({{child_class}}).new }
+      {% end %}
 
       def {{ child_collection.id }}
         @{{child_collection.id}} ||= ::PgORM::Relation({{child_class}}).new(self, {{foreign_key.id.symbolize}})

@@ -97,6 +97,14 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    # NOTE:: not to be used directly, only here for caching
+    has_many(
+      child_class: Guest,
+      collection_name: "guests",
+      foreign_key: "id",
+      serialize: true
+    )
+
     before_create :set_created
 
     validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.clashing? }

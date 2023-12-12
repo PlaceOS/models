@@ -22,6 +22,46 @@ module PlaceOS::Model
       )
     end
 
+    def self.booking_attendee
+      user_name = Faker::Hacker.noun
+      user_email = Faker::Internet.email
+
+      visitor_name = Faker::Hacker.noun
+      visitor_email = Faker::Internet.email
+
+      tenant_id = tenant.id
+
+      booking = Booking.new(
+        booking_type: "visitor",
+        asset_id: visitor_email,
+        booking_start: 1.hour.from_now.to_unix,
+        booking_end: 2.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_email),
+        user_name: user_name,
+        booked_by_email: PlaceOS::Model::Email.new(user_email),
+        booked_by_name: user_name,
+        tenant_id: tenant_id,
+        booked_by_id: "user-1234",
+        history: [] of Booking::History
+      ).save!
+
+      guest = Guest.new(
+        email: visitor_email,
+        name: visitor_name,
+        tenant_id: tenant_id,
+      ).save!
+
+      Attendee.new(
+        tenant_id: tenant_id,
+        visit_expected: true,
+        booking_id: booking.id,
+        guest_id: guest.id,
+        checked_in: false,
+      ).save!
+
+      booking.id
+    end
+
     def self.booking(tenant_id, asset_id : String, start : Time, ending : Time, booking_type = "booking", parent_id = nil, event_id = nil)
       user_name = Faker::Hacker.noun
       user_email = Faker::Internet.email
