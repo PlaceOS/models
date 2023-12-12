@@ -105,6 +105,20 @@ module PlaceOS::Model
       serialize: true
     )
 
+    macro finished
+      def invoke_props
+        previous_def
+        if (guests_rel = @guests) && guests_rel.cached?
+          lookup = {} of String => Guest
+          self.guests.each { |guest| lookup[guest.id.as(String)] = guest }
+          self.attendees.each do |attending|
+            guest = lookup[attending.guest_id]
+            guest.checked_in = attending.checked_in
+          end
+        end
+      end
+    end
+
     before_create :set_created
 
     validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.clashing? }

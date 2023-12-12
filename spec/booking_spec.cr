@@ -20,9 +20,9 @@ module PlaceOS::Model
       # ensure we didn't need a second query to fill this in
       guests = booking.__guests_rel
       guests.size.should eq 1
-      JSON.parse(booking.to_json).as_h["guests"].as_a.size.should eq 1
-
-      puts "\n\n#{booking.@extra_attributes}\n\n"
+      json_booking = JSON.parse(booking.to_json).as_h
+      json_booking["guests"].as_a.size.should eq 1
+      json_booking["guests"].first.as_h["checked_in"]?.should be_false
 
       check_no_guest = Booking.where(id: booking_id).to_a.first
       JSON.parse(check_no_guest.to_json).as_h["guests"]?.should be_nil
