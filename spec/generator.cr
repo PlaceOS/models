@@ -54,7 +54,8 @@ module PlaceOS::Model
       Attendee.new(
         visit_expected: true,
         booking_id: booking.id,
-        guest_id: guest.id
+        guest_id: guest.id,
+        checked_in: false,
       ).save!
 
       booking.id
