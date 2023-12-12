@@ -119,7 +119,7 @@ module PlaceOS::Model
       @{{child_collection.id}} : ::PgORM::Relation({{child_class}})?
 
       {% if serialize %}
-        @[PgORM::Associations::SerializeMarker(key: {{relation_var.id}}, cache: {{name.id}})]
+        @[PgORM::Associations::SerializeMarker(key: {{relation_var.id}}, cache: {{child_collection.id}})]
         @[JSON::Field(key: {{child_collection.id}}, ignore_deserialize: true)]
         getter({{relation_var.id}} : Array({{child_class}})){ {{child_collection.id}}.to_a || Array({{child_class}}).new }
       {% end %}
