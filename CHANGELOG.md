@@ -1,3 +1,9 @@
+## v9.32.0 (2023-12-12)
+
+### Feat
+
+- **event_metadata**: include guest list in linked bookings
+
 ## v9.31.0 (2023-12-12)
 
 ### Feat
