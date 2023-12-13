@@ -226,7 +226,7 @@ module PlaceOS::Model
         query = self
         array.each do |entry|
           split_entry = entry.split(":")
-          query = query.where(sql: "extension_data @> '#{PlaceOS::Model::JSONBQuery.to_query(split_entry[0], split_entry[1])}'")
+          query = query.where(sql: "bookings.extension_data @> '#{PlaceOS::Model::JSONBQuery.to_query(split_entry[0], split_entry[1])}'")
         end
         query
       else
