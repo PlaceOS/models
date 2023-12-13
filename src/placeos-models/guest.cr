@@ -37,8 +37,6 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
-    property checked_in : Bool? = nil
-
     # Save searchable information
     before_save do
       @email = email.strip.downcase
