@@ -1,3 +1,9 @@
+## v9.33.2 (2023-12-13)
+
+### Fix
+
+- **guest**: remove property overload
+
 ## v9.33.1 (2023-12-13)
 
 ### Fix
