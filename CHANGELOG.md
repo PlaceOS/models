@@ -1,3 +1,9 @@
+## v9.33.1 (2023-12-13)
+
+### Fix
+
+- **bookings**: remove ambiguity on extension_data
+
 ## v9.33.0 (2023-12-12)
 
 ### Feat
