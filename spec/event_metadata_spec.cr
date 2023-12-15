@@ -7,7 +7,7 @@ module PlaceOS::Model
 
   describe EventMetadata do
     describe "event metadata querying" do
-      it "looks up event metadata", focus: true do
+      it "looks up event metadata" do
         tenant = get_tenant
         event_start = 5.minutes.from_now
         event_end = 10.minutes.from_now
@@ -15,9 +15,6 @@ module PlaceOS::Model
         event = Generator.event_metadata(tenant.id, event_start, event_end)
         event.save!
 
-        puts "\n\n\n"
-        puts EventMetadata.by_tenant(tenant.id).by_event_ids([event.event_id]).to_sql
-        puts "\n\n\n"
         EventMetadata.by_tenant(tenant.id).by_event_ids([event.event_id]).to_a.size.should eq 1
         EventMetadata.by_tenant(tenant.id).by_event_ids([event.ical_uid]).to_a.size.should eq 1
         EventMetadata.by_tenant(tenant.id).by_event_ids([event.event_id, event.ical_uid]).to_a.size.should eq 1
