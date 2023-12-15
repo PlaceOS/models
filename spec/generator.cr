@@ -16,6 +16,8 @@ module PlaceOS::Model
         event_end: ending.to_unix,
         event_id: RANDOM.hex(4),
         ical_uid: RANDOM.hex(4),
+        recurring_master_id: RANDOM.hex(4),
+        resource_master_id: RANDOM.hex(4),
         host_email: Faker::Internet.email,
         resource_calendar: Faker::Internet.email,
         tenant_id: tenant_id
