@@ -1,3 +1,9 @@
+## v9.35.1 (2023-12-18)
+
+### Fix
+
+- **event_metadata**: metadata migration
+
 ## v9.35.0 (2023-12-18)
 
 ### Feat
