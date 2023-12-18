@@ -101,6 +101,30 @@ module PlaceOS::Model
       end
     end
 
+    scope :by_events_or_master_ids do |event_ids, master_ids|
+      execute = false
+      statement = String.build do |q|
+        if event_ids && !event_ids.empty?
+          execute = true
+          the_ids = event_ids.uniq!.join("', '")
+          q << "event_id IN ('#{the_ids}') OR ical_uid IN ('#{the_ids}')"
+        end
+
+        if master_ids && !master_ids.empty?
+          q << " OR " if execute
+          execute = true
+          the_ids = master_ids.uniq!.join("', '")
+          q << "recurring_master_id IN ('#{the_ids}') OR resource_master_id IN ('#{the_ids}')"
+        end
+      end
+
+      if execute
+        where(sql: statement)
+      else
+        self
+      end
+    end
+
     def for_event_instance?(event, client_id)
       if client_id == :office365
         # ical_uid is unique for every instance of an event in office365

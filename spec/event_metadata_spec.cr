@@ -22,6 +22,8 @@ module PlaceOS::Model
         # these two ids would only be queried seperately
         EventMetadata.by_tenant(tenant.id).by_master_ids([event.recurring_master_id]).to_a.size.should eq 1
         EventMetadata.by_tenant(tenant.id).by_master_ids([event.resource_master_id]).to_a.size.should eq 1
+
+        EventMetadata.by_tenant(tenant.id).by_events_or_master_ids([event.resource_master_id, "1234", event.ical_uid], [event.resource_master_id, "1234", event.ical_uid]).to_a.size.should eq 1
       end
     end
   end
