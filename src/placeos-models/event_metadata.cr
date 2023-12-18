@@ -11,6 +11,10 @@ module PlaceOS::Model
     attribute recurring_master_id : String?
     attribute ical_uid : String
 
+    # this allows us to find the recurring master metadata from the resource calendar
+    # annoying how hard this is to find on MS Graph API.
+    attribute resource_master_id : String?
+
     attribute host_email : String
     attribute resource_calendar : String
     attribute event_start : Int64
@@ -81,8 +85,17 @@ module PlaceOS::Model
 
     scope :by_event_ids do |event_ids|
       if event_ids && !event_ids.empty?
-        the_ids = event_ids.join(",")
-        where("event_id IN (?) OR ical_uid IN (?)", the_ids, the_ids)
+        the_ids = event_ids.join("', '")
+        where(sql: "event_id IN ('#{the_ids}') OR ical_uid IN ('#{the_ids}')")
+      else
+        self
+      end
+    end
+
+    scope :by_master_ids do |master_ids|
+      if master_ids && !master_ids.empty?
+        the_ids = master_ids.join("', '")
+        where(sql: "recurring_master_id IN ('#{the_ids}') OR resource_master_id IN ('#{the_ids}')")
       else
         self
       end
