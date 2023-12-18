@@ -1,3 +1,9 @@
+## v9.35.0 (2023-12-18)
+
+### Feat
+
+- **event_metadata**: add an additional query
+
 ## v9.34.0 (2023-12-18)
 
 ### Feat
