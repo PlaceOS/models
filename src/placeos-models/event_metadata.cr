@@ -86,7 +86,7 @@ module PlaceOS::Model
     scope :by_event_ids do |event_ids|
       if event_ids && !event_ids.empty?
         the_ids = event_ids.join("', '")
-        where("event_id IN ('#{the_ids}') OR ical_uid IN ('#{the_ids}')", nil)
+        where(sql: "event_id IN ('#{the_ids}') OR ical_uid IN ('#{the_ids}')")
       else
         self
       end
@@ -95,7 +95,7 @@ module PlaceOS::Model
     scope :by_master_ids do |master_ids|
       if master_ids && !master_ids.empty?
         the_ids = master_ids.join("', '")
-        where("recurring_master_id IN ('#{the_ids}') OR resource_master_id IN ('#{the_ids}')", nil)
+        where(sql: "recurring_master_id IN ('#{the_ids}') OR resource_master_id IN ('#{the_ids}')")
       else
         self
       end
