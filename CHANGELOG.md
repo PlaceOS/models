@@ -1,3 +1,9 @@
+## v9.34.0 (2023-12-18)
+
+### Feat
+
+- **event_metadata**: allows lookup of recurring master events ([#241](https://github.com/PlaceOS/models/pull/241)) [PPT-1072]
+
 ## v9.33.2 (2023-12-13)
 
 ### Fix
