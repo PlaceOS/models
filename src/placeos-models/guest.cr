@@ -89,6 +89,7 @@ module PlaceOS::Model
         WHERE a.tenant_id = $1 AND a.guest_id = $2
           AND a.visit_expected = true AND a.checked_in IS NULL
           AND (m.id IS NOT NULL OR b.id IS NOT NULL)
+        ORDER BY COALESCE(b.booking_start, m.event_start) ASC
         LIMIT 1
       SQL
     end
