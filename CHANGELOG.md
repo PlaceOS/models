@@ -1,3 +1,9 @@
+## v9.35.5 (2023-12-21)
+
+### Fix
+
+- **guest**: checked_in is never null
+
 ## v9.35.4 (2023-12-21)
 
 ### Fix
