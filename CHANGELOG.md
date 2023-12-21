@@ -1,3 +1,9 @@
+## v9.35.6 (2023-12-21)
+
+### Fix
+
+- **guest**: don't pick a meeting that has ended
+
 ## v9.35.5 (2023-12-21)
 
 ### Fix
