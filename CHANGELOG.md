@@ -1,3 +1,9 @@
+## v9.35.4 (2023-12-21)
+
+### Fix
+
+- **guest**: order by the earliest starting booking
+
 ## v9.35.3 (2023-12-21)
 
 ### Fix
