@@ -86,8 +86,7 @@ module PlaceOS::Model
         SELECT a.* FROM "attendees" a
         LEFT OUTER JOIN "event_metadatas" m ON (m.id = a.event_id AND m.event_end >= $3 AND m.event_start <= $4)
         LEFT OUTER JOIN "bookings" b ON (b.id = a.booking_id AND b.booking_end >= $3 and b.booking_start <= $4)
-        WHERE a.tenant_id = $1 AND a.guest_id = $2
-          AND a.visit_expected = true AND a.checked_in IS NULL
+        WHERE a.tenant_id = $1 AND a.guest_id = $2 AND a.visit_expected = true
           AND (m.id IS NOT NULL OR b.id IS NOT NULL)
         ORDER BY COALESCE(b.booking_start, m.event_start) ASC
         LIMIT 1
