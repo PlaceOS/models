@@ -79,7 +79,7 @@ module PlaceOS::Model
 
     def attending_today(tenant_id, timezone)
       now = Time.local(timezone)
-      morning = now.at_beginning_of_day.to_unix
+      morning = now.to_unix
       tonight = now.at_end_of_day.to_unix
 
       Attendee.find_one_by_sql?(<<-SQL, tenant_id, id.not_nil!, morning, tonight)
