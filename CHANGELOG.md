@@ -1,3 +1,9 @@
+## v9.35.3 (2023-12-21)
+
+### Fix
+
+- **guest**: need to ensure the joins have a result
+
 ## v9.35.2 (2023-12-21)
 
 ### Fix
