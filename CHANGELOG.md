@@ -1,3 +1,9 @@
+## v9.35.2 (2023-12-21)
+
+### Fix
+
+- **guest**: attending today query
+
 ## v9.35.1 (2023-12-18)
 
 ### Fix
