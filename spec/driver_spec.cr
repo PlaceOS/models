@@ -81,5 +81,14 @@ module PlaceOS::Model
         Module.find!(mod.id.as(String)).role.should eq Driver::Role::SSH
       end
     end
+
+    describe "update_info" do
+      it "properly handles update_info data" do
+        json = <<-J
+        {"id": "driver-HPfHrDuS_d_", "name": "Floorsense Desk Tracking (WS)", "role": 3, "commit": "01fad928c508f66d4444106d3b98ec98c19b8d8a", "file_name": "drivers/floorsense/desks_websocket.cr", "created_at": "2021-06-03T18:49:37+10:00", "updated_at": "2023-12-22T15:10:44.486961+11:00", "default_uri": "wss://_your_subdomain_.floorsense.com.au", "description": "", "json_schema": {}, "module_name": "Floorsense", "update_info": {"date": "2023-10-12T12:29:10+11:00", "author": "Stephen von Takach", "commit": "01fad928c508f66d4444106d3b98ec98c19b8d8a", "message": "feat(floorsense): improve error response"}, "default_port": 1, "repository_id": "repo-Fhwr6Ovf5z0", "ignore_connected": false, "update_available": true, "compilation_output": null}
+        J
+        Model::Driver.from_json(json).should_not be_nil
+      end
+    end
   end
 end
