@@ -82,7 +82,7 @@ module OptionalRecordConverter(T)
   end
 
   def self.from_json(pull : JSON::PullParser)
-    T.from_json(pull.read_string)
+    T.from_json(pull.read_raw)
   end
 
   def self.to_json(val : T | Nil)
