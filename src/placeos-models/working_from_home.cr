@@ -3,6 +3,8 @@ require "./base/model"
 
 module PlaceOS::Model
   class WorkingFromHome < ModelBase
+    include PlaceOS::Model::Timestamps
+    
     table :working_from_home
 
     attribute start_time : Int64
