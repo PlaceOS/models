@@ -11,7 +11,6 @@ module PlaceOS::Model
     attribute end_time : Int64
     attribute location : String = ""
     attribute user_id : String, es_type: "keyword"
-    
 
     belongs_to User, foreign_key: "user_id", association_name: "user"
 
