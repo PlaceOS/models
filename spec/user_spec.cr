@@ -21,6 +21,20 @@ module PlaceOS::Model
         user.persisted?.should be_true
         user.email_digest.should eq expected_digest
       end
+
+      it "saves work_preferences and work_overrides" do
+        user = Generator.user
+        preference = User::WorktimePreference.from_json %("day": 0, "start": 9.0, "end": 17.0, "location": "")
+        override = User::WorktimePreference.from_json %("day": 3, "start": 9.0, "end": 17.0, "location": "secret")
+
+        user.work_preferences << preference
+        user.work_overrides["20240124"] = override
+        user.save!
+
+        user.persisted?.should be_true
+        user.work_preferences.should contain(preference)
+        user.work_overrides["20240124"].should eq override
+      end
     end
 
     describe "before_destroy" do
