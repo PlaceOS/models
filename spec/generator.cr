@@ -536,10 +536,5 @@ module PlaceOS::Model
 
       ChatMessage.new(chat_id: cid.id, role: role, content: msg, function_name: func, tool_call_id: call_id)
     end
-
-    def self.working_location(user : User? = nil, start : Time = Time.utc, ending : Time = Time.utc + 1.hour, location : String = "")
-      u = user || self.user.save!
-      WorkingLocation.new(user_id: u.id.not_nil!, start_time: start.to_unix, end_time: ending.to_unix, location: location)
-    end
   end
 end

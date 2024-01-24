@@ -6,7 +6,6 @@ require "./api_key"
 require "./metadata"
 require "./email"
 require "./utilities/metadata_helper"
-require "./working_location"
 
 module PlaceOS::Model
   class User < ModelBase
@@ -14,6 +13,20 @@ module PlaceOS::Model
     include Utilities::MetadataHelper
 
     table :user
+
+    record WorktimePreference, day : DayOfWeek, start_time : Float64, end_time : Float64, location : String = "" do
+      include JSON::Serializable
+
+      enum DayOfWeek
+        Sunday    = 0
+        Monday    = 1
+        Tuesday   = 2
+        Wednesday = 3
+        Thursday  = 4
+        Friday    = 5
+        Saturday  = 6
+      end
+    end
 
     attribute name : String, es_subfield: "keyword"
     attribute nickname : String?
@@ -52,7 +65,8 @@ module PlaceOS::Model
     attribute login_count : Int64 = 0
     attribute last_login : Time? = nil, converter: Time::EpochConverter
 
-    attribute working_location_preference : Array(WorkingLocation::Preference) = [] of WorkingLocation::Preference, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::WorkingLocation::Preference)
+    attribute work_preferences : Array(WorktimePreference) = [] of WorktimePreference, converter: PlaceOS::Model::DBArrConverter(WorktimePreference)
+    attribute work_overrides : Hash(String, WorktimePreference) = {} of String => WorktimePreference
 
     # Association
     ################################################################################################
@@ -77,13 +91,6 @@ module PlaceOS::Model
     has_many(
       child_class: ApiKey,
       collection_name: "api_tokens",
-      foreign_key: "user_id",
-      dependent: :destroy
-    )
-
-    has_many(
-      child_class: WorkingLocation,
-      collection_name: "working_locations",
       foreign_key: "user_id",
       dependent: :destroy
     )
