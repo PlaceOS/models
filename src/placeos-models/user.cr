@@ -276,7 +276,8 @@ module PlaceOS::Model
     PUBLIC_DATA = [
       :email_digest, :email, :nickname, :name, :first_name, :last_name, :groups,
       :country, :building, :image, :created_at, :authority_id, :deleted,
-      :department, :preferred_language, :staff_id, :phone,
+      :department, :preferred_language, :staff_id, :phone, :work_preferences,
+      :work_overrides
     ]
 
     {% begin %}
