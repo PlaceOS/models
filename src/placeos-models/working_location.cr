@@ -25,8 +25,8 @@ module PlaceOS::Model
     # Queries
     ###############################################################################################
 
-    scope :by_user_id do |user_id|
-      user_id ? where(user_id: user_id) : self
+    def self.by_user_id(user_id : String)
+      WorkingLocation.where(user_id: user_id)
     end
 
     # Other
