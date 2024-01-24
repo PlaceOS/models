@@ -65,8 +65,8 @@ module PlaceOS::Model
     attribute login_count : Int64 = 0
     attribute last_login : Time? = nil, converter: Time::EpochConverter
 
-    attribute work_preferences : Array(WorktimePreference) = [] of WorktimePreference, converter: PlaceOS::Model::DBArrConverter(WorktimePreference)
-    attribute work_overrides : Hash(String, WorktimePreference) = {} of String => WorktimePreference
+    attribute work_preferences : Array(WorktimePreference) = [] of WorktimePreference, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::User::WorktimePreference)
+    attribute work_overrides : Hash(String, WorktimePreference) = {} of String => WorktimePreference, converter: PlaceOS::Model::DBHashConverter(String, PlaceOS::Model::User::WorktimePreference)
 
     # Association
     ################################################################################################
