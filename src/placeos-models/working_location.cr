@@ -17,7 +17,7 @@ module PlaceOS::Model
 
     validates :start_time, :end_time, :user_id, presence: true
 
-    record Preference, day : Time::DayOfWeek, start_time : Int64, end_time : Int64, location : String do
+    record Preference, day : Time::DayOfWeek, start_time : Int64, end_time : Int64, location : String = "" do
       include JSON::Serializable
     end
   end
