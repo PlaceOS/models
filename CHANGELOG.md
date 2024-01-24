@@ -1,3 +1,9 @@
+## v9.36.1 (2024-01-24)
+
+### Fix
+
+- **user**: work_preferences need to be public
+
 ## v9.36.0 (2024-01-24)
 
 ### Feat
