@@ -5,7 +5,7 @@ module PlaceOS::Model
   class WorkingLocation < ModelBase
     include PlaceOS::Model::Timestamps
 
-    table :working_from_home
+    table :working_location
 
     attribute start_time : Int64
     attribute end_time : Int64
