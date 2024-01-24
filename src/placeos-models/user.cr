@@ -81,6 +81,13 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    has_many(
+      child_class: WorkingLocation,
+      collection_name: "working_locations",
+      foreign_key: "user_id",
+      dependent: :destroy
+    )
+
     # Validation
     ###############################################################################################
 
