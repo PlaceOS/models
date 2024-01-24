@@ -6,7 +6,7 @@ require "./api_key"
 require "./metadata"
 require "./email"
 require "./utilities/metadata_helper"
-require "./working_from_home"
+require "./working_location"
 
 module PlaceOS::Model
   class User < ModelBase
@@ -52,7 +52,7 @@ module PlaceOS::Model
     attribute login_count : Int64 = 0
     attribute last_login : Time? = nil, converter: Time::EpochConverter
 
-    attribute wfh_preference : Array(WorkingFromHome::Preference) = [] of WorkingFromHome::Preference, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::WorkingFromHome::Preference)
+    attribute working_location_preference : Array(WorkingLocation::Preference) = [] of WorkingLocation::Preference, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::WorkingLocation::Preference)
 
     # Association
     ################################################################################################
