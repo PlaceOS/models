@@ -122,6 +122,33 @@ module PlaceOS::Model
   end
 
   # :nodoc:
+  module DBHashConverter(K, V)
+    def self.from_rs(rs : ::DB::ResultSet)
+      vals = JSON::Any.new(rs.read(JSON::PullParser)).to_json
+      Hash(K, V).from_json(vals)
+    end
+
+    def self.from_json(pull : JSON::PullParser)
+      hash = Hash(K, V).new
+      pull.read_object do
+        key = K.from_json(pull.read_raw)
+        hash[key] = V.from_json(pull.read_raw)
+      end
+      hash
+    end
+
+    def self.to_json(value : Hash(K, V) | Nil)
+      String.build do |sb|
+        value.to_json(sb)
+      end
+    end
+
+    def self.to_json(value : Hash(K, V) | Nil, builder)
+      value.to_json(builder)
+    end
+  end
+
+  # :nodoc:
   module EnumConverter(T)
     def self.from_rs(rs : ::DB::ResultSet)
       val = rs.read(Int32)

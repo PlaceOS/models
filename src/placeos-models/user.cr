@@ -14,6 +14,10 @@ module PlaceOS::Model
 
     table :user
 
+    record WorktimePreference, day : Time::DayOfWeek, start_time : Float64, end_time : Float64, location : String = "" do
+      include JSON::Serializable
+    end
+
     attribute name : String, es_subfield: "keyword"
     attribute nickname : String?
     attribute email : Email = Email.new(""), converter: PlaceOS::Model::EmailConverter, es_type: "text"
@@ -50,6 +54,9 @@ module PlaceOS::Model
 
     attribute login_count : Int64 = 0
     attribute last_login : Time? = nil, converter: Time::EpochConverter
+
+    attribute work_preferences : Array(WorktimePreference) = [] of WorktimePreference, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::User::WorktimePreference)
+    attribute work_overrides : Hash(String, WorktimePreference) = {} of String => WorktimePreference, converter: PlaceOS::Model::DBHashConverter(String, PlaceOS::Model::User::WorktimePreference)
 
     # Association
     ################################################################################################
