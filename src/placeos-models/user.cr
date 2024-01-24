@@ -14,18 +14,8 @@ module PlaceOS::Model
 
     table :user
 
-    record WorktimePreference, day : DayOfWeek, start_time : Float64, end_time : Float64, location : String = "" do
+    record WorktimePreference, day : Time::DayOfWeek, start_time : Float64, end_time : Float64, location : String = "" do
       include JSON::Serializable
-
-      enum DayOfWeek
-        Sunday    = 0
-        Monday    = 1
-        Tuesday   = 2
-        Wednesday = 3
-        Thursday  = 4
-        Friday    = 5
-        Saturday  = 6
-      end
     end
 
     attribute name : String, es_subfield: "keyword"

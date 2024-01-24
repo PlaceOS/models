@@ -24,8 +24,8 @@ module PlaceOS::Model
 
       it "saves work_preferences and work_overrides" do
         user = Generator.user
-        preference = User::WorktimePreference.from_json %({"day": 0, "start": 9.0, "end": 17.0, "location": ""})
-        override = User::WorktimePreference.from_json %({"day": 3, "start": 9.0, "end": 17.0, "location": "secret"})
+        preference = User::WorktimePreference.from_json %({"day": "sunday", "start_time": 9.0, "end_time": 17.0, "location": ""})
+        override = User::WorktimePreference.from_json %({"day": "wednesday", "start_time": 9.0, "end_time": 17.0, "location": "secret"})
 
         user.work_preferences << preference
         user.work_overrides["20240124"] = override
