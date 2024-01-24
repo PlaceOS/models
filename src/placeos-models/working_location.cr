@@ -12,7 +12,13 @@ module PlaceOS::Model
     attribute location : String = ""
     attribute user_id : String, es_type: "keyword"
 
+    # Association
+    ###############################################################################################
+
     belongs_to User, foreign_key: "user_id", association_name: "user"
+
+    # Validation
+    ###############################################################################################
 
     validates :start_time, :end_time, :user_id, presence: true
 
