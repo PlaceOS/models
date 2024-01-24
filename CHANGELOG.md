@@ -1,4 +1,10 @@
-## Unreleased
+## v9.36.0 (2024-01-24)
+
+### Feat
+
+- **wfh**: [PPT-1148] add work_preferences to user model ([#243](https://github.com/PlaceOS/models/pull/243))
+
+## v9.35.7 (2023-12-22)
 
 ## v9.35.6 (2023-12-21)
 
