@@ -1,3 +1,9 @@
+## v9.36.2 (2024-01-25)
+
+### Fix
+
+- **users**: [PPT-1148] work_preferences default ([#244](https://github.com/PlaceOS/models/pull/244))
+
 ## v9.36.1 (2024-01-24)
 
 ### Fix
