@@ -28,27 +28,27 @@ module PlaceOS::Model
         override = User::WorktimePreference.from_json %({"day_of_week": 3, "start_time": 9.0, "end_time": 17.0, "location": "secret"})
 
         user.work_preferences << preference
-        user.work_overrides["20240124"] = override
+        user.work_overrides["2024-01-30"] = override
         user.save!
 
         user.persisted?.should be_true
         user.work_preferences.should contain(preference)
-        user.work_overrides["20240124"].should eq override
+        user.work_overrides["2024-01-30"].should eq override
       end
 
       it "can be created from json" do
         json = <<-JSON
         {
-          "id": "user-DvJmmpel6IqfC1",
-          "name": "Grady Archie",
+          "id": "user-dTi56StJI5LVo6",
+          "name": "User One",
           "created_at": 1697764581,
           "updated_at": 0,
           "version": 0,
           "password": "",
           "confirm_password": "",
-          "authority_id": "authority-GAdySsf05mL",
-          "email": "gradya@0cbfs.onmicrosoft.com",
-          "email_digest": "ef9d6f6f8fb6aa233fca69ce30801fd0",
+          "authority_id": "authority-HOR7Noh73YL",
+          "email": "user-one@example.com",
+          "email_digest": "757365722D6F6E65406578616D706C652E636F6D",
           "phone": "",
           "country": "",
           "building": "",
@@ -56,8 +56,8 @@ module PlaceOS::Model
           "metadata": "",
           "login_name": "",
           "staff_id": "",
-          "first_name": "Grady",
-          "last_name": "Archie",
+          "first_name": "User",
+          "last_name": "One",
           "support": false,
           "sys_admin": true,
           "ui_theme": "light",
