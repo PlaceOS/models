@@ -130,8 +130,7 @@ module PlaceOS::Model
 
     def self.from_json(pull : JSON::PullParser)
       hash = Hash(K, V).new
-      pull.read_object do
-        key = K.from_json(pull.read_raw)
+      pull.read_object do |key, _key_location|
         hash[key] = V.from_json(pull.read_raw)
       end
       hash

@@ -28,12 +28,107 @@ module PlaceOS::Model
         override = User::WorktimePreference.from_json %({"day_of_week": 3, "start_time": 9.0, "end_time": 17.0, "location": "secret"})
 
         user.work_preferences << preference
-        user.work_overrides["20240124"] = override
+        user.work_overrides["2024-01-30"] = override
         user.save!
 
         user.persisted?.should be_true
         user.work_preferences.should contain(preference)
-        user.work_overrides["20240124"].should eq override
+        user.work_overrides["2024-01-30"].should eq override
+      end
+
+      it "can be created from json" do
+        json = <<-JSON
+        {
+          "id": "user-dTi56StJI5LVo6",
+          "name": "User One",
+          "created_at": 1697764581,
+          "updated_at": 0,
+          "version": 0,
+          "password": "",
+          "confirm_password": "",
+          "authority_id": "authority-HOR7Noh73YL",
+          "email": "user-one@example.com",
+          "email_digest": "757365722D6F6E65406578616D706C652E636F6D",
+          "phone": "",
+          "country": "",
+          "building": "",
+          "image": "",
+          "metadata": "",
+          "login_name": "",
+          "staff_id": "",
+          "first_name": "User",
+          "last_name": "One",
+          "support": false,
+          "sys_admin": true,
+          "ui_theme": "light",
+          "card_number": "",
+          "groups": [],
+          "department": "",
+          "work_preferences": [
+            {
+              "day_of_week": 0,
+              "start_time": 9,
+              "end_time": 17,
+              "location": "wfo"
+            },
+            {
+              "day_of_week": 1,
+              "start_time": 9,
+              "end_time": 17,
+              "location": "wfo"
+            },
+            {
+              "day_of_week": 2,
+              "start_time": 9.5,
+              "end_time": 17,
+              "location": "wfo"
+            },
+            {
+              "day_of_week": 3,
+              "start_time": 9,
+              "end_time": 17,
+              "location": "wfo"
+            },
+            {
+              "day_of_week": 4,
+              "start_time": 9,
+              "end_time": 17,
+              "location": "wfo"
+            },
+            {
+              "day_of_week": 5,
+              "start_time": 9,
+              "end_time": 17,
+              "location": "wfo"
+            },
+            {
+              "day_of_week": 6,
+              "start_time": 9,
+              "end_time": 17,
+              "location": "wfo"
+            }
+          ],
+          "work_overrides": {
+            "2024-01-30": {
+              "day_of_week": 2,
+              "start_time": 9.5,
+              "end_time": 17,
+              "location": "wfo"
+            },
+            "2024-02-30": {
+              "day_of_week": 2,
+              "start_time": 9.5,
+              "end_time": 17,
+              "location": "wfo"
+            }
+          }
+        }
+        JSON
+
+        user = User.from_json(json)
+        user.save!
+
+        user.persisted?.should be_true
       end
     end
 
