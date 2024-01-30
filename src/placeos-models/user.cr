@@ -14,7 +14,11 @@ module PlaceOS::Model
 
     table :user
 
-    record WorktimePreference, day : Time::DayOfWeek, start_time : Float64, end_time : Float64, location : String = "" do
+    # day_of_week: Index of the day of the week. `0` being Sunday
+    # start_time: Start time of work hours. e.g. `7.5` being 7:30AM
+    # end_time: End time of work hours. e.g. `18.5` being 6:30PM
+    # location: Name of the location the work is being performed at
+    record WorktimePreference, day_of_week : Int64, start_time : Float64, end_time : Float64, location : String = "" do
       include JSON::Serializable
     end
 
