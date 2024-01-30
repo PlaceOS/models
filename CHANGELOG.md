@@ -1,3 +1,9 @@
+## v9.36.3 (2024-01-30)
+
+### Fix
+
+- **user**: change WorktimePreference day to day_of_week ([#245](https://github.com/PlaceOS/models/pull/245))
+
 ## v9.36.2 (2024-01-25)
 
 ### Fix
