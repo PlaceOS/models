@@ -1,3 +1,9 @@
+## v9.36.4 (2024-01-30)
+
+### Fix
+
+- **model**: DBHashConverter ([#246](https://github.com/PlaceOS/models/pull/246))
+
 ## v9.36.3 (2024-01-30)
 
 ### Fix
