@@ -1,3 +1,9 @@
+## v9.37.0 (2024-02-07)
+
+### Feat
+
+- **zone**: [PPT-1154] add auto_release ([#247](https://github.com/PlaceOS/models/pull/247))
+
 ## v9.36.4 (2024-01-30)
 
 ### Fix
