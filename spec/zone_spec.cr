@@ -46,7 +46,7 @@ module PlaceOS::Model
     it "saves auto_release" do
       zone_one = Generator.zone
       zone_one.save!
-      Zone.find!(zone_one.id.as(String)).auto_release.not_nil!.should eq(Zone::AutoReleaseConfig.new)
+      Zone.find!(zone_one.id.as(String)).auto_release.should be_nil
 
       zone_two = Generator.zone
       auto_release = Zone::AutoReleaseConfig.new(
