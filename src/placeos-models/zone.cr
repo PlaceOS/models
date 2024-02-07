@@ -14,6 +14,11 @@ module PlaceOS::Model
 
     table :zone
 
+    # time_before and time_after are in minutes
+    record AutoReleaseConfig, time_before : Int64? = nil, time_after : Int64? = nil, resources : Array(String) = [] of String do
+      include JSON::Serializable
+    end
+
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
     attribute tags : Set(String) = ->{ Set(String).new }
@@ -41,6 +46,8 @@ module PlaceOS::Model
 
     attribute triggers : Array(String) = [] of String
     attribute images : Array(String) = [] of String
+
+    attribute auto_release : AutoReleaseConfig?, converter: OptionalRecordConverter(PlaceOS::Model::Zone::AutoReleaseConfig)
 
     # Association
     ###############################################################################################
