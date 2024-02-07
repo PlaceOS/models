@@ -43,6 +43,22 @@ module PlaceOS::Model
       Zone.find!(zone.id.as(String)).tags.should eq Set{"hello", "bye"}
     end
 
+    it "saves auto_release" do
+      zone_one = Generator.zone
+      zone_one.save!
+      Zone.find!(zone_one.id.as(String)).auto_release.not_nil!.should eq(Zone::AutoReleaseConfig.new)
+
+      zone_two = Generator.zone
+      auto_release = Zone::AutoReleaseConfig.new(
+        time_before: 10,
+        time_after: 20,
+        resources: ["desk"],
+      )
+      zone_two.auto_release = auto_release
+      zone_two.save!
+      Zone.find!(zone_two.id.as(String)).auto_release.not_nil!.to_json.should eq(auto_release.to_json)
+    end
+
     it "supports zone hierarchies" do
       zone = Generator.zone
 
