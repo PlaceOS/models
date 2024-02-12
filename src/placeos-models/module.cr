@@ -62,6 +62,8 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    belongs_to Client, foreign_key: "client_id", association_name: "client"
+
     # Validation
     ###############################################################################################
 

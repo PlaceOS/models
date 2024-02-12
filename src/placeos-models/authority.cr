@@ -38,6 +38,7 @@ module PlaceOS::Model
 
     # Associations
     ###############################################################################################
+    belongs_to Client, foreign_key: "client_id", association_name: "client"
 
     {% for relation, _idx in [
                                {LdapAuthentication, "ldap_authentications"},
