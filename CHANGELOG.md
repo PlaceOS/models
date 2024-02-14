@@ -1,3 +1,9 @@
+## v9.37.1 (2024-02-14)
+
+### Refactor
+
+- **zone**: [PPT-1154] remove unused field ([#248](https://github.com/PlaceOS/models/pull/248))
+
 ## v9.37.0 (2024-02-07)
 
 ### Feat
