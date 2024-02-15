@@ -396,6 +396,7 @@ module PlaceOS::Model
     def clashing?
       starting = self.booking_start
       ending = self.booking_end
+      update_assets
 
       # gets all the clashing bookings
       query = Booking
