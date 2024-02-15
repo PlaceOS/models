@@ -1,3 +1,9 @@
+## v9.37.2 (2024-02-15)
+
+### Fix
+
+- **booking**: #clashing? with asset_ids ([#250](https://github.com/PlaceOS/models/pull/250))
+
 ## v9.37.1 (2024-02-14)
 
 ### Refactor
