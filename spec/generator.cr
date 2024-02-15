@@ -536,5 +536,36 @@ module PlaceOS::Model
 
       ChatMessage.new(chat_id: cid.id, role: role, content: msg, function_name: func, tool_call_id: call_id)
     end
+
+    def self.survey(
+      title : String = Faker::Hacker.abbreviation,
+      description : String = Faker::Hacker.say_something_smart,
+      trigger : Survey::TriggerType = Survey::TriggerType::NONE,
+      zone_id : String = "",
+      building_id = "",
+      pages : Array(Survey::Page) = [] of Survey::Page,
+      )
+      Survey.new(
+        title: title,
+        description: description,
+        trigger: trigger,
+        zone_id: zone_id,
+        building_id: building_id,
+        pages: pages,
+      )
+    end
+
+    def self.invitation(
+      survey_id : Int64? = nil,
+      email : String = Faker::Internet.email,
+      sent : Bool? = nil,
+      )
+      survey_id || self.survey.save!.id
+      Survey::Invitation.new(
+        survey_id: survey_id,
+        email: email,
+        sent: sent,
+      )
+    end
   end
 end
