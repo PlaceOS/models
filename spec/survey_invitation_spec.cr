@@ -38,7 +38,7 @@ module PlaceOS::Model
       surveys.first.id.should eq invitation_one.id
     end
 
-    it "lists invitations with sent != true", focus: true do
+    it "lists invitations with sent != true" do
       invitation_one = Generator.invitation(sent: true).save!
       invitation_two = Generator.invitation(sent: false).save!
       invitation_three = Generator.invitation(sent: nil).save!
