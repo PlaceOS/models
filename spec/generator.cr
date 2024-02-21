@@ -543,7 +543,7 @@ module PlaceOS::Model
       trigger : Survey::TriggerType = Survey::TriggerType::NONE,
       zone_id : String = "",
       building_id = "",
-      pages : Array(Survey::Page) = [] of Survey::Page,
+      pages : Array(Survey::Page) = [self.page],
       )
       Survey.new(
         title: title,
@@ -552,6 +552,41 @@ module PlaceOS::Model
         zone_id: zone_id,
         building_id: building_id,
         pages: pages,
+      )
+    end
+
+    def self.page(
+      title : String = Faker::Hacker.adjective,
+      description : String = Faker::Hacker.say_something_smart,
+      question_order : Array(Int64) = [] of Int64,
+      )
+      Survey::Page.new(
+        title: title,
+        description: description,
+        question_order: question_order,
+    )
+
+    def self.question(
+      title : String = Faker::Hacker.noun,
+      description : String = Faker::Hacker.say_something_smart,
+      type : String = "text",
+      options : JSON::Any = JSON::Any.new({} of String => JSON::Any),
+      required : Bool = false,
+      choices : JSON::Any = JSON::Any.new({} of String => JSON::Any),
+      max_rating : Int32? = nil,
+      tags : Array(String) = [] of String,
+      deleted_at : Int64? = nil,
+      )
+      Survey::Question.new(
+        title: title,
+        description: description,
+        type: type,
+        options: options,
+        required: required,
+        choices: choices,
+        max_rating: max_rating,
+        tags: tags,
+        deleted_at: deleted_at,
       )
     end
 
