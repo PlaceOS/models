@@ -1,3 +1,9 @@
+## v9.37.3 (2024-02-21)
+
+### Fix
+
+- **survey**: make Survey::Invitation.list(sent: false) return unsent invites ([#251](https://github.com/PlaceOS/models/pull/251))
+
 ## v9.37.2 (2024-02-15)
 
 ### Fix
