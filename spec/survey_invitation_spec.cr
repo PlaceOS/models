@@ -30,8 +30,8 @@ module PlaceOS::Model
 
     it "lists invitations with sent = true" do
       invitation_one = Generator.invitation(sent: true).save!
-      invitation_two = Generator.invitation(sent: false).save!
-      invitation_three = Generator.invitation(sent: nil).save!
+      _invitation_two = Generator.invitation(sent: false).save!
+      _invitation_three = Generator.invitation(sent: nil).save!
 
       surveys = Survey::Invitation.list(sent: true)
       surveys.size.should eq 1
@@ -39,7 +39,7 @@ module PlaceOS::Model
     end
 
     it "lists invitations with sent != true" do
-      invitation_one = Generator.invitation(sent: true).save!
+      _invitation_one = Generator.invitation(sent: true).save!
       invitation_two = Generator.invitation(sent: false).save!
       invitation_three = Generator.invitation(sent: nil).save!
 
