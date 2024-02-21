@@ -596,9 +596,9 @@ module PlaceOS::Model
       email : String = Faker::Internet.email,
       sent : Bool? = nil
     )
-      survey_id || self.survey.save!.id
+      id = survey_id || self.survey.save!.id
       Survey::Invitation.new(
-        survey_id: survey_id,
+        survey_id: id,
         email: email,
         sent: sent,
       )
