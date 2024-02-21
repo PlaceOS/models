@@ -23,9 +23,9 @@ module PlaceOS::Model
 
       surveys = Survey::Invitation.list(sent: nil)
       surveys.size.should eq 3
-      surveys.map(&:id).should contain(invitation_one.id)
-      surveys.map(&:id).should contain(invitation_two.id)
-      surveys.map(&:id).should contain(invitation_three.id)
+      surveys.map(&.id).should contain(invitation_one.id)
+      surveys.map(&.id).should contain(invitation_two.id)
+      surveys.map(&.id).should contain(invitation_three.id)
     end
 
     it "lists invitations with sent = true" do
@@ -45,8 +45,8 @@ module PlaceOS::Model
 
       surveys = Survey::Invitation.list(sent: false)
       surveys.size.should eq 2
-      surveys.map(&:id).should contain(invitation_two.id)
-      surveys.map(&:id).should contain(invitation_three.id)
+      surveys.map(&.id).should contain(invitation_two.id)
+      surveys.map(&.id).should contain(invitation_three.id)
     end
   end
 end
