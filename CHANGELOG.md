@@ -1,3 +1,9 @@
+## v9.37.4 (2024-02-22)
+
+### Fix
+
+- **booking**: ensure all asset ids are unique in the booking
+
 ## v9.37.3 (2024-02-21)
 
 ### Fix
