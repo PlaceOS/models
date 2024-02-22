@@ -397,6 +397,8 @@ module PlaceOS::Model
       starting = self.booking_start
       ending = self.booking_end
       update_assets
+      unique_ids = self.asset_ids.uniq
+      return true unless unique_ids.size == self.asset_ids.size
 
       # gets all the clashing bookings
       query = Booking
