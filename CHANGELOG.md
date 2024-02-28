@@ -1,3 +1,9 @@
+## v9.37.5 (2024-02-28)
+
+### Fix
+
+- **bookings**: improve update_assets
+
 ## v9.37.4 (2024-02-22)
 
 ### Fix
