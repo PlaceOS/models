@@ -141,9 +141,11 @@ module PlaceOS::Model
     end
 
     def update_assets
-      asset_ids[0] = asset_id if asset_ids.size == 1
-      asset_ids.insert(0, asset_id) if asset_ids.empty?
-      @asset_id = asset_ids.first
+      if (single_id = self.asset_id) && !asset_ids.includes?(single_id)
+        asset_ids.insert(0, single_id)
+        @asset_ids_changed = true
+      end
+      self.asset_id = asset_ids.first
     end
 
     def asset_ids=(vals : Array(String))
@@ -396,16 +398,24 @@ module PlaceOS::Model
     def clashing?
       starting = self.booking_start
       ending = self.booking_end
+      update_assets
+      unique_ids = self.asset_ids.uniq
+      return true unless unique_ids.size == self.asset_ids.size
 
       # gets all the clashing bookings
       query = Booking
         .by_tenant(tenant_id)
         .where(
-          "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_id = ? AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
-          ending, starting, booking_type, asset_id
+          "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_ids && #{format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
+          ending, starting, booking_type
         )
       query = query.where("id != ?", id) unless id.nil?
       query.count > 0
+    end
+
+    private def format_list_for_postgres(list : Array(String)) : String
+      formatted_list = list.compact_map { |str| "'#{str.gsub("'", "''")}'" }.join(',')
+      "ARRAY[#{formatted_list}]::text[]"
     end
 
     def as_h(include_attendees : Bool = true)

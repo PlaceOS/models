@@ -1,3 +1,33 @@
+## v9.37.5 (2024-02-28)
+
+### Fix
+
+- **bookings**: improve update_assets
+
+## v9.37.4 (2024-02-22)
+
+### Fix
+
+- **booking**: ensure all asset ids are unique in the booking
+
+## v9.37.3 (2024-02-21)
+
+### Fix
+
+- **survey**: make Survey::Invitation.list(sent: false) return unsent invites ([#251](https://github.com/PlaceOS/models/pull/251))
+
+## v9.37.2 (2024-02-15)
+
+### Fix
+
+- **booking**: #clashing? with asset_ids ([#250](https://github.com/PlaceOS/models/pull/250))
+
+## v9.37.1 (2024-02-14)
+
+### Refactor
+
+- **zone**: [PPT-1154] remove unused field ([#248](https://github.com/PlaceOS/models/pull/248))
+
 ## v9.37.0 (2024-02-07)
 
 ### Feat

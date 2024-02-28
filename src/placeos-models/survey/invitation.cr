@@ -23,7 +23,9 @@ module PlaceOS::Model
 
         # filter
         query = query.where(survey_id: survey_id) if survey_id
-        query = sent ? query.where(sent: true) : query.where_not(sent: true) unless sent.nil?
+        # can't use `query.where_not(sent: true)` here due to
+        # sent <> true` not being equivalent to `sent IS NOT true` in PostgreSQL
+        query = sent ? query.where(sent: true) : query.where(sql: "sent IS NOT true") unless sent.nil?
         query.to_a
       end
 
