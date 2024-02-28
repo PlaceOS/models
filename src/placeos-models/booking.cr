@@ -141,9 +141,11 @@ module PlaceOS::Model
     end
 
     def update_assets
-      asset_ids[0] = asset_id if asset_ids.size == 1
-      asset_ids.insert(0, asset_id) if asset_ids.empty?
-      @asset_id = asset_ids.first
+      if (single_id = self.asset_id) && !asset_ids.includes?(single_id)
+        asset_ids.insert(0, single_id)
+        @asset_ids_changed = true
+      end
+      self.asset_id = asset_ids.first
     end
 
     def asset_ids=(vals : Array(String))
