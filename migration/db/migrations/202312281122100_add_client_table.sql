@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS "clients"(
    billing_contact TEXT,
    is_management BOOLEAN NOT NULL DEFAULT FALSE,
    config JSONB NULL,
+   parent_id TEXT,
    created_at TIMESTAMPTZ NOT NULL,
    updated_at TIMESTAMPTZ NOT NULL
 );
@@ -17,32 +18,35 @@ CREATE INDEX IF NOT EXISTS idx_clients_name ON clients(name);
 CREATE INDEX IF NOT EXISTS idx_clients_description ON clients(description);
 CREATE INDEX IF NOT EXISTS idx_clients_config ON clients USING GIN (config jsonb_path_ops);
 
+ALTER TABLE ONLY "clients"
+    ADD CONSTRAINT clients_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES "clients"(id) ON DELETE CASCADE;
+
 ALTER TABLE "authority" ADD COLUMN IF NOT EXISTS client_id TEXT;
 ALTER TABLE "authority"
    ADD CONSTRAINT fk_authority_client
    FOREIGN KEY (client_id)
-   REFERENCES clients(client_id)
+   REFERENCES clients(id)
    ON DELETE CASCADE;
 
 ALTER TABLE "sys" ADD COLUMN IF NOT EXISTS client_id TEXT;
 ALTER TABLE "sys"
    ADD CONSTRAINT fk_sys_client
    FOREIGN KEY (client_id)
-   REFERENCES clients(client_id)
+   REFERENCES clients(id)
    ON DELETE CASCADE;
 
 ALTER TABLE "mod" ADD COLUMN IF NOT EXISTS client_id TEXT;
 ALTER TABLE "mod"
    ADD CONSTRAINT fk_mod_client
    FOREIGN KEY (client_id)
-   REFERENCES clients(client_id)
+   REFERENCES clients(id)
    ON DELETE CASCADE;
 
 ALTER TABLE "zone" ADD COLUMN IF NOT EXISTS client_id TEXT;
 ALTER TABLE "zone"
    ADD CONSTRAINT fk_zone_client
    FOREIGN KEY (client_id)
-   REFERENCES clients(client_id)
+   REFERENCES clients(id)
    ON DELETE CASCADE;
 
 -- +micrate Down

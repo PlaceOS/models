@@ -536,5 +536,11 @@ module PlaceOS::Model
 
       ChatMessage.new(chat_id: cid.id, role: role, content: msg, function_name: func, tool_call_id: call_id)
     end
+
+    def self.client(parent : Client? = nil)
+      Client.new(name: Faker::Company.name, description: Faker::Lorem.sentence,
+        billing_address: Faker::Address.street_address, billing_contact: Faker::Name.name,
+        is_management: !parent.nil?, parent_id: parent.try &.id)
+    end
   end
 end

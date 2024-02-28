@@ -12,6 +12,15 @@ module PlaceOS::Model
     attribute is_management : Bool = false
     attribute config : JSON::Any? = nil
 
+    belongs_to Client, foreign_key: "parent_id", association_name: "parent"
+
+    has_many(
+      child_class: Client,
+      foreign_key: "parent_id",
+      collection_name: :children,
+      serialize: true
+    )
+
     has_many(
       child_class: Authority,
       foreign_key: "client_id",
@@ -37,5 +46,10 @@ module PlaceOS::Model
     )
 
     validates :name, presence: true
+
+    def to_json(json : ::JSON::Builder)
+      __children_rel
+      super
+    end
   end
 end
