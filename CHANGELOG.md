@@ -1,3 +1,9 @@
+## v9.38.2 (2024-02-29)
+
+### Fix
+
+- **bookings**: prevent start and end times being the same
+
 ## v9.38.1 (2024-02-29)
 
 ### Fix
