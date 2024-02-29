@@ -140,6 +140,31 @@ module PlaceOS::Model
     booking.persisted?.should be_true
   end
 
+  it "should work when run in a transaction" do
+    PgORM::Database.transaction do |tx|
+      tx.connection.exec("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
+
+      user_email = "steve@place.tech"
+      tenant_id = Generator.tenant.id
+
+      booking = Booking.new(
+        booking_type: "desk",
+        asset_ids: ["desk2"],
+        booking_start: 1.hour.from_now.to_unix,
+        booking_end: 2.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_email),
+        user_name: "Steve",
+        booked_by_email: PlaceOS::Model::Email.new(user_email),
+        booked_by_name: "Steve",
+        tenant_id: tenant_id,
+        booked_by_id: "user-1234",
+        history: [] of Booking::History
+      ).save!
+      booking.asset_id.should eq "desk2"
+      booking.persisted?.should be_true
+    end
+  end
+
   it "rejects a booking that clashes" do
     user_email = "steve@place.tech"
     tenant_id = Generator.tenant.id

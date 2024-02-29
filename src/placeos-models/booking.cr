@@ -122,7 +122,8 @@ module PlaceOS::Model
     before_create :set_created
 
     validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.clashing? }
-    validate :booking_end, "must be after booking_start", ->(this : self) { this.booking_end > this.booking_start }
+    validate :asset_ids, "must be unique", ->(this : self) { this.unique_ids? }
+    validate :booking_end, "must be after booking_start", ->(this : self) { this.booking_end >= this.booking_start }
 
     before_save do
       @user_id ||= booked_by_id
@@ -143,10 +144,12 @@ module PlaceOS::Model
     def update_assets
       if asset_ids.size == 1 && !@asset_ids_changed && @asset_id_changed
         asset_ids[0] = asset_id
+        @asset_ids_changed = true
       elsif asset_ids.empty?
         asset_ids.insert(0, asset_id)
+        @asset_ids_changed = true
       end
-      @asset_id = asset_ids.first
+      self.asset_id = asset_ids.first
     end
 
     def asset_ids=(vals : Array(String))
@@ -396,12 +399,20 @@ module PlaceOS::Model
       end
     end
 
-    def clashing?
-      starting = self.booking_start
-      ending = self.booking_end
+    def unique_ids?
       update_assets
       unique_ids = self.asset_ids.uniq
-      return true unless unique_ids.size == self.asset_ids.size
+      unique_ids.size == self.asset_ids.size
+    end
+
+    def clashing?
+      clashing_bookings.count > 0
+    end
+
+    def clashing_bookings
+      update_assets
+      starting = self.booking_start
+      ending = self.booking_end
 
       # gets all the clashing bookings
       query = Booking
@@ -411,7 +422,7 @@ module PlaceOS::Model
           ending, starting, booking_type
         )
       query = query.where("id != ?", id) unless id.nil?
-      query.count > 0
+      query
     end
 
     private def format_list_for_postgres(list : Array(String)) : String
