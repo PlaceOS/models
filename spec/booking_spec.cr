@@ -89,7 +89,7 @@ module PlaceOS::Model
     booking.asset_ids.should eq ["desk3", "desk4"]
     booking.persisted?.should be_true
 
-    # mismatch
+    # mismatch 1
     booking = Booking.new(
       booking_type: "desk",
       asset_id: "desk5",
@@ -104,7 +104,39 @@ module PlaceOS::Model
       booked_by_id: "user-1234",
       history: [] of Booking::History
     ).save!
-    booking.asset_ids.should eq ["desk5", "desk6", "desk7"]
+    booking.asset_ids.should eq ["desk6", "desk7"]
+    booking.asset_id.should eq "desk6"
+    booking.persisted?.should be_true
+
+    # mismatch 2
+    booking = Booking.new(
+      booking_type: "desk",
+      asset_ids: ["desk8"],
+      booking_start: 1.hour.from_now.to_unix,
+      booking_end: 2.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "Steve",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "Steve",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1234",
+      history: [] of Booking::History
+    ).save!
+    booking.asset_ids.should eq ["desk8"]
+    booking.asset_id.should eq "desk8"
+    booking.persisted?.should be_true
+
+    booking.asset_id = "desk9"
+    booking.save!
+    booking.asset_ids.should eq ["desk9"]
+    booking.asset_id.should eq "desk9"
+    booking.persisted?.should be_true
+
+    booking.asset_id = "desk10"
+    booking.asset_ids = ["desk11"]
+    booking.save!
+    booking.asset_ids.should eq ["desk11"]
+    booking.asset_id.should eq "desk11"
     booking.persisted?.should be_true
   end
 
