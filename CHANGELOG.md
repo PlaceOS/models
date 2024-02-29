@@ -1,3 +1,9 @@
+## v9.39.0 (2024-02-29)
+
+### Feat
+
+- PPT-1224 Add secret_expiry attribute to tenant model ([#253](https://github.com/PlaceOS/models/pull/253))
+
 ## v9.38.2 (2024-02-29)
 
 ### Fix
