@@ -1,3 +1,9 @@
+## v9.38.1 (2024-02-29)
+
+### Fix
+
+- **booking**: expose format_list_for_postgres
+
 ## v9.38.0 (2024-02-29)
 
 ### Feat
