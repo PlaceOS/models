@@ -269,4 +269,26 @@ module PlaceOS::Model
     local.save.should be_false
     local.persisted?.should be_false
   end
+
+  it "rejects a booking with the same start and end times" do
+    user_email = "steve@place.tech"
+    tenant_id = Generator.tenant.id
+    start_time = 1.hour.from_now.to_unix
+
+    booking = Booking.new(
+      booking_type: "desk",
+      asset_ids: ["desk2"],
+      booking_start: start_time,
+      booking_end: start_time,
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "Steve",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "Steve",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1234",
+      history: [] of Booking::History
+    )
+    booking.save.should be_false
+    booking.persisted?.should be_false
+  end
 end
