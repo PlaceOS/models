@@ -1,3 +1,9 @@
+## v9.37.6 (2024-02-29)
+
+### Fix
+
+- **bookings**: details specs for desired behaviour [PROJ-636] ([#252](https://github.com/PlaceOS/models/pull/252))
+
 ## v9.37.5 (2024-02-28)
 
 ### Fix
