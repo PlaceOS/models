@@ -141,11 +141,11 @@ module PlaceOS::Model
     end
 
     def update_assets
-      if (single_id = self.asset_id) && !asset_ids.includes?(single_id)
-        asset_ids.insert(0, single_id)
+      if (single_id = self.asset_id) && !self.asset_ids.includes?(single_id)
+        self.asset_ids = [single_id] + self.asset_ids
         @asset_ids_changed = true
       end
-      self.asset_id = asset_ids.first
+      self.asset_id = self.asset_ids.first
     end
 
     def asset_ids=(vals : Array(String))
@@ -185,7 +185,7 @@ module PlaceOS::Model
 
     def set_created
       self.last_changed = self.created = Time.utc.to_unix
-      self.asset_id = self.asset_ids.first unless self.asset_ids.empty?
+      @asset_id ||= self.asset_ids.first unless self.asset_ids.empty?
     end
 
     def change_extension_data(data : JSON::Any)
