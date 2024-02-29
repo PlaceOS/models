@@ -20,6 +20,8 @@ module PlaceOS::Model
     attribute delegated : Bool = false
     attribute service_account : String?
 
+    attribute secret_expiry : Time?, converter: Time::EpochConverter
+
     has_many(
       child_class: Attendee,
       collection_name: "attendees",
