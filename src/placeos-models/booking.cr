@@ -425,7 +425,7 @@ module PlaceOS::Model
       query
     end
 
-    private def format_list_for_postgres(list : Array(String)) : String
+    def format_list_for_postgres(list : Array(String)) : String
       formatted_list = list.compact_map { |str| "'#{str.gsub("'", "''")}'" }.join(',')
       "ARRAY[#{formatted_list}]::text[]"
     end
