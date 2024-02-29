@@ -1,3 +1,9 @@
+## v9.38.0 (2024-02-29)
+
+### Feat
+
+- **bookings**: split out unique ids
+
 ## v9.37.6 (2024-02-29)
 
 ### Fix
