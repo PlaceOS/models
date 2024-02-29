@@ -180,4 +180,31 @@ module PlaceOS::Model
       tenant.update(platform: "google")
     end
   end
+
+  it "handles secret_expiry column data" do
+    date = Time.local
+    tenant = Generator.tenant({
+      name:          "Jon",
+      platform:      "google",
+      domain:        "google.staff-api.dev",
+      credentials:   %({"issuer":"1122121212","scopes":["http://example.com"],"signing_key":"-----BEGIN PRIVATE KEY-----SOMEKEY DATA-----END PRIVATE KEY-----","domain":"example.com.au","sub":"jon@example.com.au"}),
+      secret_expiry: date,
+    })
+
+    tenant.secret_expiry.try &.to_unix.should eq date.to_unix
+  end
+
+  it "handles secret_expiry column data on save" do
+    date = Time.utc
+    tenant = Generator.tenant({
+      name:        "Jon",
+      platform:    "google",
+      domain:      "google.staff-api.dev",
+      credentials: %({"issuer":"1122121212","scopes":["http://example.com"],"signing_key":"-----BEGIN PRIVATE KEY-----SOMEKEY DATA-----END PRIVATE KEY-----","domain":"example.com.au","sub":"jon@example.com.au"}),
+    })
+
+    tenant.secret_expiry = date
+    tenant.save!
+    Tenant.find!(tenant.id).secret_expiry.try &.to_unix.should eq date.to_unix
+  end
 end
