@@ -405,7 +405,8 @@ module PlaceOS::Model
       unique_ids.size == self.asset_ids.size
     end
 
-    def clashing?
+    def clashing? : Bool
+      return false if self.deleted || self.rejected || self.checked_out_at
       clashing_bookings.count > 0
     end
 
