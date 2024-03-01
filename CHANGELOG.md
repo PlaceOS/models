@@ -1,3 +1,9 @@
+## v9.39.1 (2024-03-01)
+
+### Fix
+
+- **booking**: can't clash if deleted
+
 ## v9.39.0 (2024-02-29)
 
 ### Feat
