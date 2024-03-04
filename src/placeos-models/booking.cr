@@ -88,6 +88,8 @@ module PlaceOS::Model
     attribute utm_source : String? = nil, persistence: false
     attribute asset_ids : Array(String) = [] of String
 
+    attribute images : Array(String) = [] of String
+
     belongs_to Tenant, pk_type: Int64
 
     has_many(
