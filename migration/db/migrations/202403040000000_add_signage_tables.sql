@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS "playlist_items" (
   play_time INT NOT NULL DEFAULT 0,
   animation INT NOT NULL DEFAULT 0,
 
-  orientation public.playlist_item_media_type NOT NULL,
+  media_type public.playlist_item_media_type NOT NULL,
   orientation public.playlist_orientation_type DEFAULT 'UNSPECIFIED'::public.playlist_orientation_type,
 
   media_uri TEXT,

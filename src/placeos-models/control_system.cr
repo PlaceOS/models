@@ -55,7 +55,7 @@ module PlaceOS::Model
     # Systems as digital signage displays
     # playlists can be assigned directly to displays or to zones
     # playlists in zones will only be loaded if they have matching orientations
-    attribute orientation : Playlist::Orientation? = nil, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Orientation)
+    attribute orientation : Playlist::Orientation = Playlist::Orientation::Unspecified, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Orientation)
     attribute playlists : Array(String) = [] of String, es_type: "keyword"
     attribute signage : Bool = false
 
