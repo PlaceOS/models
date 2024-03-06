@@ -132,4 +132,18 @@ CREATE TABLE IF NOT EXISTS "playlist_items" (
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
 
+DROP TABLE IF EXISTS "playlist_items";
+DROP TABLE IF EXISTS "playlist_revisions";
+DROP TABLE IF EXISTS "playlists";
 
+DROP INDEX IF EXISTS sys_playlists_idx;
+DROP INDEX IF EXISTS zone_playlists_idx;
+
+ALTER TABLE "sys" DROP COLUMN IF EXISTS orientation;
+ALTER TABLE "sys" DROP COLUMN IF EXISTS playlists;
+ALTER TABLE "sys" DROP COLUMN IF EXISTS signage;
+
+ALTER TABLE "zone" DROP COLUMN IF EXISTS playlists;
+
+DROP TYPE IF EXISTS public.playlist_orientation_type;
+DROP TYPE IF EXISTS public.playlist_item_media_type;
