@@ -41,6 +41,7 @@ module PlaceOS::Model
 
     attribute triggers : Array(String) = [] of String
     attribute images : Array(String) = [] of String
+    attribute playlists : Array(String) = [] of String, es_type: "keyword"
 
     # Association
     ###############################################################################################

@@ -9,6 +9,7 @@ require "./settings"
 require "./email"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
+require "./playlist"
 
 module PlaceOS::Model
   class ControlSystem < ModelBase
@@ -50,6 +51,13 @@ module PlaceOS::Model
     # IDs of associated models
     attribute zones : Array(String) = [] of String, es_type: "keyword"
     attribute modules : Array(String) = [] of String, es_type: "keyword"
+
+    # Systems as digital signage displays
+    # playlists can be assigned directly to displays or to zones
+    # playlists in zones will only be loaded if they have matching orientations
+    attribute orientation : Playlist::Orientation? = nil, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Orientation)
+    attribute playlists : Array(String) = [] of String, es_type: "keyword"
+    attribute signage : Bool = false
 
     # Associations
     ###############################################################################################
