@@ -212,5 +212,9 @@ module PlaceOS::Model
         Trigger.find_all(self.triggers).to_a
       end
     end
+
+    def self.with_playlists(ids : Enumerable(String))
+      Zone.where("playlists @> #{Associations.format_list_for_postgres(ids)}")
+    end
   end
 end

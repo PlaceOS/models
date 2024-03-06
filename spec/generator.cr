@@ -84,6 +84,17 @@ module PlaceOS::Model
       )
     end
 
+    def self.playlist(
+      name : String = Faker::Hacker.noun,
+      description : String = ""
+    )
+      play = Playlist.new(
+        name: name,
+        description: description
+      )
+      play
+    end
+
     def self.booking(tenant_id, asset_ids : Array(String), start : Time, ending : Time, booking_type = "booking", parent_id = nil, event_id = nil)
       user_name = Faker::Hacker.noun
       user_email = Faker::Internet.email

@@ -1,6 +1,10 @@
 module PlaceOS::Model
   module Associations
-    def format_list_for_postgres(list : Array(String)) : String
+    def format_list_for_postgres(list : Enumerable(String)) : String
+      Associations.format_list_for_postgres list
+    end
+
+    def self.format_list_for_postgres(list : Enumerable(String)) : String
       formatted_list = list.compact_map { |str| "'#{str.gsub("'", "''")}'" }.join(',')
       "ARRAY[#{formatted_list}]::text[]"
     end

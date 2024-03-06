@@ -1,5 +1,7 @@
 require "./base/model"
 require "./upload"
+require "./control_system"
+require "./zone"
 
 module PlaceOS::Model
   class Playlist < ModelBase
@@ -42,12 +44,20 @@ module PlaceOS::Model
     attribute valid_until : Time? = nil, converter: Time::EpochConverter
 
     # hours in the timezone that the playlist should play
-    attribute play_hours : String?
+    attribute play_hours : String? = nil
 
     # start playing the playlist at exactly this time or on CRON schedule
     # play_at will ignore timezones
     attribute play_at : Time? = nil, converter: Time::EpochConverter
     attribute play_cron : String? = nil
+
+    def systems
+      ControlSystem.with_playlists({self.id.as(String)})
+    end
+
+    def zones
+      Zone.with_playlists({self.id.as(String)})
+    end
   end
 end
 

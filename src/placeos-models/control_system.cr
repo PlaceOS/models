@@ -357,5 +357,9 @@ module PlaceOS::Model
 
       true
     end
+
+    def self.with_playlists(ids : Enumerable(String))
+      ControlSystem.where("playlists @> #{Associations.format_list_for_postgres(ids)}")
+    end
   end
 end
