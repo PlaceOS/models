@@ -16,6 +16,7 @@ module PlaceOS::Model
     include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
     include Utilities::MetadataHelper
+    include Playlist::Checker
 
     table :sys
 
@@ -219,10 +220,9 @@ module PlaceOS::Model
 
     # ensure all the modules are valid and exist
     def check_modules
-      # TODO:: escape the modules list
       sql_query = %[
         WITH input_ids AS (
-          SELECT unnest(ARRAY['#{self.modules.join("', '")}']) AS id
+          SELECT unnest(#{format_list_for_postgres(self.modules)}) AS id
         )
 
         SELECT ARRAY_AGG(input_ids.id)

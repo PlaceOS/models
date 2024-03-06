@@ -1,5 +1,5 @@
-require "./base/model"
-require "./playlist_item"
+require "../base/model"
+require "./item"
 
 module PlaceOS::Model
   class Playlist::Revision < ModelBase

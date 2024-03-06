@@ -50,3 +50,5 @@ module PlaceOS::Model
     attribute play_cron : String? = nil
   end
 end
+
+require "./playlist/*"

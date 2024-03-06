@@ -1,6 +1,6 @@
-require "./base/model"
-require "./playlist"
-require "./upload"
+require "../base/model"
+require "../playlist"
+require "../upload"
 
 module PlaceOS::Model
   class Playlist::Item < ModelBase

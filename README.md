@@ -24,6 +24,18 @@ We use [RethinkDB](https://rethinkdb.com) to unify our database and event bus, g
 | `PG_QUERY`                | Query string, that can be used to configure pooling | ""     |
 | `PG_LOCK_TIMEOUT`         | Timeout on retrying Advisory lock in seconds   | 5           |
 | `PG_DATABASE_URL`         | Or provide a Database DSN                      |             |
+
+## Testing
+
+```shell
+# prune docker images if you have new migrations that need to run
+# since the last time migrations image was built
+docker system prune --all
+
+# builds migrations and runs tests in a containerised env
+./test
+```
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md).

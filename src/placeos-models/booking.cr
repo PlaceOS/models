@@ -428,11 +428,6 @@ module PlaceOS::Model
       query
     end
 
-    def format_list_for_postgres(list : Array(String)) : String
-      formatted_list = list.compact_map { |str| "'#{str.gsub("'", "''")}'" }.join(',')
-      "ARRAY[#{formatted_list}]::text[]"
-    end
-
     def as_h(include_attendees : Bool = true)
       @resp_attendees = include_attendees ? attendees.to_a : nil
       self

@@ -5,12 +5,14 @@ require "./settings"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
 require "./converter/time_location"
+require "./playlist"
 
 module PlaceOS::Model
   class Zone < ModelBase
     include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
     include Utilities::MetadataHelper
+    include Playlist::Checker
 
     table :zone
 
