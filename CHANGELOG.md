@@ -1,3 +1,9 @@
+## v9.40.0 (2024-03-06)
+
+### Feat
+
+- **booking**: [PPT-1213] add images ([#254](https://github.com/PlaceOS/models/pull/254))
+
 ## v9.39.1 (2024-03-01)
 
 ### Fix
