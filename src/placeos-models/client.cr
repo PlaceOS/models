@@ -48,7 +48,7 @@ module PlaceOS::Model
     validates :name, presence: true
 
     def to_json(json : ::JSON::Builder)
-      __children_rel
+      __children_rel if @id
       super
     end
   end
