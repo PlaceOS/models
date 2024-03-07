@@ -361,5 +361,46 @@ module PlaceOS::Model
     def self.with_playlists(ids : Enumerable(String))
       ControlSystem.where("playlists @> #{Associations.format_list_for_postgres(ids)}")
     end
+
+    def all_playlists : Hash(String, Array(String))
+      # find all the zones and triggers with playlists configured
+      # then construct a hash
+      sys_id = self.id.as(String)
+      sql_query = %[
+        WITH zone_ids AS (
+          SELECT UNNEST(zones) as zone_id
+          FROM sys
+          WHERE id = $1
+        ),
+        zone_playlists AS (
+          SELECT z.id, z.playlists
+          FROM zone z
+          INNER JOIN zone_ids zi ON z.id = zi.zone_id
+          WHERE cardinality(z.playlists) > 0
+        ),
+        trig_playlists AS (
+          SELECT t.id, t.playlists
+          FROM trig t
+          WHERE t.control_system_id = $1 AND cardinality(t.playlists) > 0
+        )
+
+        SELECT id, playlists FROM zone_playlists
+        UNION ALL
+        SELECT id, playlists FROM trig_playlists;
+      ]
+
+      playlists = {
+        sys_id => self.playlists,
+      }
+      PgORM::Database.connection do |conn|
+        conn.query(sql_query, args: [sys_id]) do |rs|
+          while rs.move_next
+            playlists[rs.read(String)] = rs.read(Array(String))
+          end
+        end
+      end
+
+      playlists
+    end
   end
 end

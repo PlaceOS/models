@@ -59,6 +59,12 @@ ALTER TABLE "zone" ADD COLUMN IF NOT EXISTS playlists TEXT[] DEFAULT '{}'::TEXT[
 
 CREATE INDEX zone_playlists_idx ON zone USING GIN (playlists);
 
+-- Update the trigger instance table
+
+ALTER TABLE "trig" ADD COLUMN IF NOT EXISTS playlists TEXT[] DEFAULT '{}'::TEXT[];
+
+CREATE INDEX trig_playlists_idx ON zone USING GIN (playlists);
+
 -- ===
 -- Add Playlist table
 -- ===

@@ -14,6 +14,8 @@ module PlaceOS::Model
       playlist.save!
 
       cs = Generator.control_system
+      Generator.control_system.save!
+      Generator.control_system.save!
       cs.playlists = [playlist.id.as(String)]
       cs.save!
 
@@ -25,10 +27,70 @@ module PlaceOS::Model
       playlist.save!
 
       zone = Generator.zone
+      Generator.control_system.save!
+      Generator.control_system.save!
       zone.playlists = [playlist.id.as(String)]
       zone.save!
 
       playlist.zones.map(&.id).should eq [zone.id]
+    end
+
+    it "cleans up playlists lazily when systems are saved" do
+      playlist = Generator.playlist
+      playlist.save!
+      play_id = playlist.id.as(String)
+
+      cs = Generator.control_system
+      cs.playlists = [play_id]
+      cs.save!
+      cs_id = cs.id.as(String)
+
+      playlist.destroy
+
+      cs = ControlSystem.find(cs_id)
+      cs.playlists.first.should eq play_id
+      cs.save!
+
+      cs = ControlSystem.find(cs_id)
+      cs.playlists.size.should eq 0
+    end
+
+    it "finds all the playlist ids associated with a system" do
+      playlist = Generator.playlist
+      playlist.save!
+      play_id = playlist.id.as(String)
+
+      cs = Generator.control_system
+      cs.playlists = [play_id]
+
+      zone = Generator.zone
+      zone.playlists = [play_id]
+      zone.save!
+
+      zone2 = Generator.zone
+      zone2.playlists = [play_id]
+      zone2.save!
+
+      cs.zones = [zone.id.as(String), zone2.id.as(String)]
+      cs.save!
+      cs_id = cs.id.as(String)
+
+      trigger = Generator.trigger_instance control_system: cs
+      trigger.playlists = [play_id]
+      trigger.save!
+
+      trigger2 = Generator.trigger_instance control_system: cs
+      trigger2.playlists = [play_id]
+      trigger2.save!
+
+      cs = ControlSystem.find(cs_id)
+      cs.all_playlists.should eq({
+        cs_id                  => [play_id],
+        zone.id.as(String)     => [play_id],
+        zone2.id.as(String)    => [play_id],
+        trigger.id.as(String)  => [play_id],
+        trigger2.id.as(String) => [play_id],
+      })
     end
   end
 end
