@@ -1,3 +1,9 @@
+## v9.41.0 (2024-03-08)
+
+### Feat
+
+- add digital signage models ([#255](https://github.com/PlaceOS/models/pull/255)) [PPT-1040]
+
 ## v9.40.0 (2024-03-06)
 
 ### Feat
