@@ -92,5 +92,16 @@ module PlaceOS::Model
         trigger2.id.as(String) => [play_id],
       })
     end
+
+    it "validates CRONs are valid" do
+      playlist = Generator.playlist
+      playlist.play_cron = "not valid"
+      playlist.save.should eq false
+
+      playlist.errors.first.field.should eq :play_cron
+
+      playlist.play_cron = "*/2 * * * *"
+      playlist.save.should eq true
+    end
   end
 end

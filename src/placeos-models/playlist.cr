@@ -1,3 +1,4 @@
+require "cron_parser"
 require "./base/model"
 require "./upload"
 require "./control_system"
@@ -58,6 +59,38 @@ module PlaceOS::Model
     def zones
       Zone.with_playlists({self.id.as(String)})
     end
+
+    def revisions
+      Playlist::Revision.where(playlist_id: self.id).order(created_at: :desc)
+    end
+
+    def revision
+      revisions.first
+    end
+
+    # TODO:: given an array of playlists grab the list of playlist revisions
+    # given a list of playlist revisions grab all the playlist items for all those revisions
+    # map the items to the revisions for payload response
+    #
+    # create a query given a system for finding the date of the most recent change to any playlist / revision or trigger
+
+    define_to_json :items, except: :everywhere, methods: :revision
+
+    # Validation
+    ###############################################################################################
+
+    validates :name, presence: true
+    validates :default_duration, presence: true, numericality: {greater_than: 999}
+
+    # ensure crons valid
+    validate ->(this : Playlist) {
+      return if (cron = this.play_cron).nil?
+      begin
+        CronParser.new(cron)
+      rescue error
+        this.validation_error(:play_cron, "invalid: #{error.message}")
+      end
+    }
   end
 end
 

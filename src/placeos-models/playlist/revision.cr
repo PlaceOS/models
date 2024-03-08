@@ -15,7 +15,52 @@ module PlaceOS::Model
     belongs_to Playlist, foreign_key: "playlist_id"
 
     def fetch_items
-      Items.where(id: items)
+      Playlist::Item.where(id: items)
     end
+
+    def clone : Playlist::Revision
+      rev = Playlist::Revision.new
+      rev.items = self.items
+      rev.playlist_id = playlist_id
+      rev
+    end
+
+    def user=(user)
+      self.user_id = user.id.as(String)
+      self.user_email = user.email
+      self.user_name = user.name
+    end
+
+    # Cleanup and items that don't exist
+    ###############################################################################################
+    before_save :check_items
+
+    def check_items
+      sql_query = %[
+        WITH input_ids AS (
+          SELECT unnest(#{format_list_for_postgres(self.items)}) AS id
+        )
+
+        SELECT ARRAY_AGG(input_ids.id)
+        FROM input_ids
+        LEFT JOIN playlist_items ON input_ids.id = playlist_items.id
+        WHERE playlist_items.id IS NULL;
+      ]
+
+      remove_ids = PgORM::Database.connection do |conn|
+        conn.query_one(sql_query, &.read(Array(String)?))
+      end
+
+      if remove_ids && !remove_ids.empty?
+        self.items = self.items - remove_ids
+      end
+    end
+
+    # Validation
+    ###############################################################################################
+
+    validates :playlist_id, presence: true
+    validates :user_id, presence: true
+    validates :user_name, presence: true
   end
 end

@@ -116,15 +116,18 @@ CREATE INDEX playlist_revisions_items_idx ON playlist_revisions USING GIN (items
 CREATE TABLE IF NOT EXISTS "playlist_items" (
   id TEXT NOT NULL PRIMARY KEY,
 
+  name TEXT NOT NULL,
+  description TEXT,
+
   start_time INT NOT NULL DEFAULT 0,
   play_time INT NOT NULL DEFAULT 0,
-  animation INT NOT NULL DEFAULT 0,
+  animation INT,
 
   media_type public.playlist_item_media_type NOT NULL,
   orientation public.playlist_orientation_type DEFAULT 'UNSPECIFIED'::public.playlist_orientation_type,
 
   media_uri TEXT,
-  media_id TEXT NOT NULL REFERENCES "uploads"(id) ON DELETE CASCADE,
+  media_id TEXT REFERENCES "uploads"(id) ON DELETE CASCADE,
   thumbnail_id TEXT REFERENCES "uploads"(id) ON DELETE SET NULL,
 
   play_count BIGINT NOT NULL DEFAULT 0,
