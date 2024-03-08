@@ -9,12 +9,14 @@ require "./settings"
 require "./email"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
+require "./playlist"
 
 module PlaceOS::Model
   class ControlSystem < ModelBase
     include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
     include Utilities::MetadataHelper
+    include Playlist::Checker
 
     table :sys
 
@@ -50,6 +52,13 @@ module PlaceOS::Model
     # IDs of associated models
     attribute zones : Array(String) = [] of String, es_type: "keyword"
     attribute modules : Array(String) = [] of String, es_type: "keyword"
+
+    # Systems as digital signage displays
+    # playlists can be assigned directly to displays or to zones
+    # playlists in zones will only be loaded if they have matching orientations
+    attribute orientation : Playlist::Orientation = Playlist::Orientation::Unspecified, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Orientation)
+    attribute playlists : Array(String) = [] of String, es_type: "keyword"
+    attribute signage : Bool = false
 
     # Associations
     ###############################################################################################
@@ -211,10 +220,9 @@ module PlaceOS::Model
 
     # ensure all the modules are valid and exist
     def check_modules
-      # TODO:: escape the modules list
       sql_query = %[
         WITH input_ids AS (
-          SELECT unnest(ARRAY['#{self.modules.join("', '")}']) AS id
+          SELECT unnest(#{Associations.format_list_for_postgres(self.modules)}) AS id
         )
 
         SELECT ARRAY_AGG(input_ids.id)
@@ -348,6 +356,66 @@ module PlaceOS::Model
       } }
 
       true
+    end
+
+    # Playlist management
+    # ===================
+
+    def playlists_last_updated(playlists : Hash(String, Array(String)) = all_playlists) : Time
+      playlist_ids = playlists.values.flatten.uniq!
+      rev_created_at = Playlist::Revision.where(playlist_id: playlist_ids).order(created_at: :desc).limit(1).to_a.first?.try(&.created_at)
+      trig_created_at = TriggerInstance
+        .where(control_system_id: self.id.as(String))
+        .where("cardinality(playlists) > ?", 0)
+        .order(created_at: :desc)
+        .limit(1).to_a.first?.try(&.created_at)
+
+      [rev_created_at, trig_created_at, self.created_at].compact.max
+    end
+
+    def self.with_playlists(ids : Enumerable(String))
+      ControlSystem.where("playlists @> #{Associations.format_list_for_postgres(ids)}")
+    end
+
+    def all_playlists : Hash(String, Array(String))
+      # find all the zones and triggers with playlists configured
+      # then construct a hash
+      sys_id = self.id.as(String)
+      sql_query = %[
+        WITH zone_ids AS (
+          SELECT UNNEST(zones) as zone_id
+          FROM sys
+          WHERE id = $1
+        ),
+        zone_playlists AS (
+          SELECT z.id, z.playlists
+          FROM zone z
+          INNER JOIN zone_ids zi ON z.id = zi.zone_id
+          WHERE cardinality(z.playlists) > 0
+        ),
+        trig_playlists AS (
+          SELECT t.id, t.playlists
+          FROM trig t
+          WHERE t.control_system_id = $1 AND cardinality(t.playlists) > 0
+        )
+
+        SELECT id, playlists FROM zone_playlists
+        UNION ALL
+        SELECT id, playlists FROM trig_playlists;
+      ]
+
+      playlists = {
+        sys_id => self.playlists,
+      }
+      PgORM::Database.connection do |conn|
+        conn.query(sql_query, args: [sys_id]) do |rs|
+          while rs.move_next
+            playlists[rs.read(String)] = rs.read(Array(String))
+          end
+        end
+      end
+
+      playlists
     end
   end
 end

@@ -421,16 +421,11 @@ module PlaceOS::Model
       query = Booking
         .by_tenant(tenant_id)
         .where(
-          "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_ids && #{format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
+          "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
           ending, starting, booking_type
         )
       query = query.where("id != ?", id) unless id.nil?
       query
-    end
-
-    def format_list_for_postgres(list : Array(String)) : String
-      formatted_list = list.compact_map { |str| "'#{str.gsub("'", "''")}'" }.join(',')
-      "ARRAY[#{formatted_list}]::text[]"
     end
 
     def as_h(include_attendees : Bool = true)

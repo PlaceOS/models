@@ -17,6 +17,9 @@ docker-compose pull -q
 
 exit_code="0"
 
+# NOTE:: if you have migrations to run you should run:
+# docker system prune --all
+# so that a new migration image is built
 docker-compose run \
         --rm \
         test $@ \

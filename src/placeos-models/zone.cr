@@ -5,12 +5,14 @@ require "./settings"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
 require "./converter/time_location"
+require "./playlist"
 
 module PlaceOS::Model
   class Zone < ModelBase
     include PlaceOS::Model::Timestamps
     include Utilities::SettingsHelper
     include Utilities::MetadataHelper
+    include Playlist::Checker
 
     table :zone
 
@@ -41,6 +43,7 @@ module PlaceOS::Model
 
     attribute triggers : Array(String) = [] of String
     attribute images : Array(String) = [] of String
+    attribute playlists : Array(String) = [] of String, es_type: "keyword"
 
     # Association
     ###############################################################################################
@@ -208,6 +211,10 @@ module PlaceOS::Model
       else
         Trigger.find_all(self.triggers).to_a
       end
+    end
+
+    def self.with_playlists(ids : Enumerable(String))
+      Zone.where("playlists @> #{Associations.format_list_for_postgres(ids)}")
     end
   end
 end

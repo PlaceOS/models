@@ -91,4 +91,4 @@ CREATE INDEX IF NOT EXISTS uploads_uploaded_email_index ON "uploads" USING BTREE
 DROP TABLE IF EXISTS "uploads";
 DROP TYPE IF EXISTS public.file_permission_type;
 DROP TABLE IF EXISTS "storages";
-DROP TYPE IF EXISTS public.file_storage_type
+DROP TYPE IF EXISTS public.file_storage_type;

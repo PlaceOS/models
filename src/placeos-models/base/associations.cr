@@ -1,5 +1,14 @@
 module PlaceOS::Model
   module Associations
+    def format_list_for_postgres(list : Enumerable(String)) : String
+      Associations.format_list_for_postgres list
+    end
+
+    def self.format_list_for_postgres(list : Enumerable(String)) : String
+      formatted_list = list.compact_map { |str| "'#{str.gsub("'", "''")}'" }.join(',')
+      "ARRAY[#{formatted_list}]::text[]"
+    end
+
     # Defines getter and setter for parent relationship
     macro belongs_to(parent_class, dependent = :none, association_name = nil, foreign_key = nil, presence = false, pk_type = nil, serialize = true)
       {% parent_name = association_name || parent_class.id.stringify.underscore.downcase.gsub(/::/, "_") %}

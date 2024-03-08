@@ -84,6 +84,37 @@ module PlaceOS::Model
       )
     end
 
+    def self.playlist(
+      name : String = Faker::Hacker.noun,
+      description : String = ""
+    )
+      play = Playlist.new(
+        name: name,
+        description: description
+      )
+      play
+    end
+
+    def self.revision(playlist : Playlist = playlist.save!, user : User = user.save!)
+      rev = Playlist::Revision.new
+      rev.playlist_id = playlist.id
+      rev.user = user
+      rev
+    end
+
+    def self.item(name : String = Faker::Hacker.noun, media_uri : String = "https://placeos.com/", media_id : String? = nil)
+      item = Playlist::Item.new
+      item.name = name
+      item.media_uri = media_uri
+      if media_id
+        item.media_id = media_id
+        item.media_type = Playlist::Item::MediaType::Image
+      else
+        item.media_type = Playlist::Item::MediaType::Webpage
+      end
+      item
+    end
+
     def self.booking(tenant_id, asset_ids : Array(String), start : Time, ending : Time, booking_type = "booking", parent_id = nil, event_id = nil)
       user_name = Faker::Hacker.noun
       user_email = Faker::Internet.email

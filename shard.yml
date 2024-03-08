@@ -59,6 +59,10 @@ dependencies:
     github: place-labs/ulid
     branch: master
 
+  # cron parser
+  cron_parser:
+    github: kostya/cron_parser
+
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
