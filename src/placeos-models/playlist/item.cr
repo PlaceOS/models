@@ -39,6 +39,10 @@ module PlaceOS::Model
     attribute valid_from : Time? = nil, converter: Time::EpochConverter
     attribute valid_until : Time? = nil, converter: Time::EpochConverter
 
+    def self.items(item_ids : Array(String)) : Array(Playlist::Item)
+      Playlist::Item.where(id: item_ids).to_a
+    end
+
     # Validation
     ###############################################################################################
 

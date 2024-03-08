@@ -222,7 +222,7 @@ module PlaceOS::Model
     def check_modules
       sql_query = %[
         WITH input_ids AS (
-          SELECT unnest(#{format_list_for_postgres(self.modules)}) AS id
+          SELECT unnest(#{Associations.format_list_for_postgres(self.modules)}) AS id
         )
 
         SELECT ARRAY_AGG(input_ids.id)
@@ -356,6 +356,21 @@ module PlaceOS::Model
       } }
 
       true
+    end
+
+    # Playlist management
+    # ===================
+
+    def playlists_last_updated(playlists : Hash(String, Array(String)) = all_playlists) : Time
+      playlist_ids = playlists.values.flatten.uniq!
+      rev_created_at = Playlist::Revision.where(playlist_id: playlist_ids).order(created_at: :desc).limit(1).to_a.first?.try(&.created_at)
+      trig_created_at = TriggerInstance
+        .where(control_system_id: self.id.as(String))
+        .where("cardinality(playlists) > ?", 0)
+        .order(created_at: :desc)
+        .limit(1).to_a.first?.try(&.created_at)
+
+      [rev_created_at, trig_created_at, self.created_at].compact.max
     end
 
     def self.with_playlists(ids : Enumerable(String))

@@ -31,6 +31,16 @@ module PlaceOS::Model
       self.user_name = user.name
     end
 
+    def self.revisions(playlist_ids : Array(String))
+      query = %[(playlist_id, created_at) IN (
+        SELECT playlist_id, MAX(created_at) AS most_recent
+        FROM playlist_revisions
+        WHERE playlist_id = ANY(#{Associations.format_list_for_postgres(playlist_ids)})
+        GROUP BY playlist_id
+      )]
+      Playlist::Revision.where(query).to_a
+    end
+
     # Cleanup and items that don't exist
     ###############################################################################################
     before_save :check_items
@@ -38,7 +48,7 @@ module PlaceOS::Model
     def check_items
       sql_query = %[
         WITH input_ids AS (
-          SELECT unnest(#{format_list_for_postgres(self.items)}) AS id
+          SELECT unnest(#{Associations.format_list_for_postgres(self.items)}) AS id
         )
 
         SELECT ARRAY_AGG(input_ids.id)

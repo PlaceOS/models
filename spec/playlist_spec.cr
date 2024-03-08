@@ -1,7 +1,7 @@
 require "./helper"
 
 module PlaceOS::Model
-  describe Playlist, focus: true do
+  describe Playlist do
     Spec.before_each do
       Playlist.clear
       ControlSystem.clear
@@ -102,6 +102,21 @@ module PlaceOS::Model
 
       playlist.play_cron = "*/2 * * * *"
       playlist.save.should eq true
+    end
+
+    it "can calculate the last time the display was updated" do
+      revision1 = Generator.revision.save!
+      sleep 0.5
+      revision2 = Generator.revision.save!
+      sleep 0.5
+      revision3 = Generator.revision.save!
+      sleep 0.5
+
+      cs = Generator.control_system
+      cs.playlists = [revision1.playlist_id.as(String), revision2.playlist_id.as(String), revision3.playlist_id.as(String)]
+      cs.save!
+
+      cs.playlists_last_updated.should eq cs.created_at
     end
   end
 end

@@ -68,12 +68,6 @@ module PlaceOS::Model
       revisions.first
     end
 
-    # TODO:: given an array of playlists grab the list of playlist revisions
-    # given a list of playlist revisions grab all the playlist items for all those revisions
-    # map the items to the revisions for payload response
-    #
-    # create a query given a system for finding the date of the most recent change to any playlist / revision or trigger
-
     define_to_json :items, except: :everywhere, methods: :revision
 
     # Validation

@@ -6,7 +6,7 @@ module PlaceOS::Model::Playlist::Checker
   def check_playlists
     sql_query = %[
       WITH input_ids AS (
-        SELECT unnest(#{format_list_for_postgres(self.playlists)}) AS id
+        SELECT unnest(#{Associations.format_list_for_postgres(self.playlists)}) AS id
       )
 
       SELECT ARRAY_AGG(input_ids.id)
