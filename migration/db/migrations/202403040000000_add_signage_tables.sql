@@ -71,6 +71,7 @@ CREATE INDEX trig_playlists_idx ON zone USING GIN (playlists);
 
 CREATE TABLE IF NOT EXISTS "playlists" (
   id TEXT NOT NULL PRIMARY KEY,
+  authority_id TEXT NOT NULL REFERENCES "authority"(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
   orientation public.playlist_orientation_type DEFAULT 'PORTRAIT'::public.playlist_orientation_type,
@@ -88,6 +89,8 @@ CREATE TABLE IF NOT EXISTS "playlists" (
   created_at TIMESTAMPTZ NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS playlists_authority_id_index ON "playlists" USING HASH (authority_id);
 
 -- ===
 -- Add Playlist Revision table
@@ -115,6 +118,7 @@ CREATE INDEX playlist_revisions_items_idx ON playlist_revisions USING GIN (items
 
 CREATE TABLE IF NOT EXISTS "playlist_items" (
   id TEXT NOT NULL PRIMARY KEY,
+  authority_id TEXT NOT NULL REFERENCES "authority"(id) ON DELETE CASCADE,
 
   name TEXT NOT NULL,
   description TEXT,
@@ -138,8 +142,14 @@ CREATE TABLE IF NOT EXISTS "playlist_items" (
   updated_at TIMESTAMPTZ NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS playlist_items_authority_id_index ON "playlist_items" USING HASH (authority_id);
+
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
+
+DROP INDEX IF EXISTS playlists_authority_id_index;
+DROP INDEX IF EXISTS playlist_revisions_items_idx;
+DROP INDEX IF EXISTS playlist_items_authority_id_index;
 
 DROP TABLE IF EXISTS "playlist_items";
 DROP TABLE IF EXISTS "playlist_revisions";

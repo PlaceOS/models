@@ -29,6 +29,8 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
 
+    belongs_to Authority, foreign_key: "authority_id"
+
     attribute orientation : Orientation = Orientation::Portrait, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Orientation)
     attribute play_count : Int64 = 0
     attribute play_through_count : Int64 = 0

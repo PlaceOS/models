@@ -86,11 +86,19 @@ module PlaceOS::Model
 
     def self.playlist(
       name : String = Faker::Hacker.noun,
-      description : String = ""
+      description : String = "",
+      authority : Authority? = nil
     )
+      unless authority
+        # look up an existing authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
       play = Playlist.new(
         name: name,
-        description: description
+        description: description,
+        authority_id: authority.id
       )
       play
     end
@@ -102,8 +110,20 @@ module PlaceOS::Model
       rev
     end
 
-    def self.item(name : String = Faker::Hacker.noun, media_uri : String = "https://placeos.com/", media_id : String? = nil)
+    def self.item(
+      name : String = Faker::Hacker.noun,
+      media_uri : String = "https://placeos.com/",
+      media_id : String? = nil,
+      authority : Authority? = nil
+    )
+      unless authority
+        # look up an existing authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
       item = Playlist::Item.new
+      item.authority_id = authority.id
       item.name = name
       item.media_uri = media_uri
       if media_id

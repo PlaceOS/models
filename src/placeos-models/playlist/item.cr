@@ -20,6 +20,8 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
 
+    belongs_to Authority, foreign_key: "authority_id"
+
     # times in milliseconds (start time is for videos)
     attribute start_time : Int32 = 0
     attribute play_time : Int32 = 0
