@@ -1,3 +1,9 @@
+## v9.41.1 (2024-03-09)
+
+### Fix
+
+- **playlist/item**: requires authority scope
+
 ## v9.41.0 (2024-03-08)
 
 ### Feat
