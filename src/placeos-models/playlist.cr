@@ -70,6 +70,45 @@ module PlaceOS::Model
       revisions.first
     end
 
+    def self.update_counts(metrics : Hash(String, Int32))
+      update_count_field("play_count", metrics)
+    end
+
+    def self.update_through_counts(metrics : Hash(String, Int32))
+      update_count_field("play_through_count", metrics)
+    end
+
+    protected def self.update_count_field(field : String, metrics : Hash(String, Int32)) : Int64
+      return 0_i64 if metrics.empty?
+
+      metrics = metrics.transform_keys(&.gsub("'", "''"))
+
+      update_item_counts = String.build do |str|
+        str << %[
+          UPDATE playlists
+          SET #{field} = #{field} + CASE id
+        ]
+
+        metrics.each do |key, count|
+          # WHEN 'id2' THEN 5
+          str << "\nWHEN '"
+          str << key.gsub("'", "''")
+          str << "' THEN "
+          count.to_s(str)
+        end
+
+        str << %[\nELSE 0
+          END
+          WHERE id IN ('#{metrics.keys.join("', '")}')
+        ]
+      end
+
+      response = PgORM::Database.connection do |db|
+        db.exec(update_item_counts)
+      end
+      response.rows_affected
+    end
+
     define_to_json :items, except: :everywhere, methods: :revision
 
     # Validation

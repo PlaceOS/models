@@ -88,5 +88,30 @@ module PlaceOS::Model
       rev_ids.includes?(rev2_new_id).should be_true
       rev_ids.includes?(revision3.id).should be_true
     end
+
+    it "updates playlist item play count" do
+      item1 = Generator.item
+      item1.save!
+      item1_id = item1.id.as(String)
+      item2 = Generator.item
+      item2.save!
+      item2_id = item2.id.as(String)
+
+      Playlist::Item.update_counts({
+        item1_id => 5,
+        item2_id => 1,
+      }).should eq 2
+
+      Playlist::Item.find(item1_id).play_count.should eq 5
+      Playlist::Item.find(item2_id).play_count.should eq 1
+
+      Playlist::Item.update_counts({
+        item1_id => 2,
+        item2_id => 3,
+      }).should eq 2
+
+      Playlist::Item.find(item1_id).play_count.should eq 7
+      Playlist::Item.find(item2_id).play_count.should eq 4
+    end
   end
 end

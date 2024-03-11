@@ -45,6 +45,37 @@ module PlaceOS::Model
       Playlist::Item.where(id: item_ids).to_a
     end
 
+    def self.update_counts(metrics : Hash(String, Int32)) : Int64
+      return 0_i64 if metrics.empty?
+
+      metrics = metrics.transform_keys(&.gsub("'", "''"))
+
+      update_item_counts = String.build do |str|
+        str << %[
+          UPDATE playlist_items
+          SET play_count = play_count + CASE id
+        ]
+
+        metrics.each do |key, count|
+          # WHEN 'id2' THEN 5
+          str << "\nWHEN '"
+          str << key.gsub("'", "''")
+          str << "' THEN "
+          count.to_s(str)
+        end
+
+        str << %[\nELSE 0
+          END
+          WHERE id IN ('#{metrics.keys.join("', '")}')
+        ]
+      end
+
+      response = PgORM::Database.connection do |db|
+        db.exec(update_item_counts)
+      end
+      response.rows_affected
+    end
+
     # Validation
     ###############################################################################################
 

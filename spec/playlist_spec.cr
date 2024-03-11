@@ -118,5 +118,55 @@ module PlaceOS::Model
 
       cs.playlists_last_updated.should eq cs.created_at
     end
+
+    it "updates playlist play count" do
+      playlist1 = Generator.playlist
+      playlist1.save!
+      playlist1_id = playlist1.id.as(String)
+      playlist2 = Generator.playlist
+      playlist2.save!
+      playlist2_id = playlist2.id.as(String)
+
+      Playlist.update_counts({
+        playlist1_id => 5,
+        playlist2_id => 1,
+      }).should eq 2
+
+      Playlist.find(playlist1_id).play_count.should eq 5
+      Playlist.find(playlist2_id).play_count.should eq 1
+
+      Playlist.update_counts({
+        playlist1_id => 2,
+        playlist2_id => 3,
+      }).should eq 2
+
+      Playlist.find(playlist1_id).play_count.should eq 7
+      Playlist.find(playlist2_id).play_count.should eq 4
+    end
+
+    it "updates playlist play through count" do
+      playlist1 = Generator.playlist
+      playlist1.save!
+      playlist1_id = playlist1.id.as(String)
+      playlist2 = Generator.playlist
+      playlist2.save!
+      playlist2_id = playlist2.id.as(String)
+
+      Playlist.update_through_counts({
+        playlist1_id => 5,
+        playlist2_id => 1,
+      }).should eq 2
+
+      Playlist.find(playlist1_id).play_through_count.should eq 5
+      Playlist.find(playlist2_id).play_through_count.should eq 1
+
+      Playlist.update_through_counts({
+        playlist1_id => 2,
+        playlist2_id => 3,
+      }).should eq 2
+
+      Playlist.find(playlist1_id).play_through_count.should eq 7
+      Playlist.find(playlist2_id).play_through_count.should eq 4
+    end
   end
 end
