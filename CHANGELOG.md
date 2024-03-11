@@ -1,3 +1,9 @@
+## v9.42.0 (2024-03-11)
+
+### Feat
+
+- **playlist**: add helpers for updating metrics
+
 ## v9.41.1 (2024-03-09)
 
 ### Fix
