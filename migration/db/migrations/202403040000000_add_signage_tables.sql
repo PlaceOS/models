@@ -47,7 +47,7 @@ LANGUAGE plpgsql;
 -- +micrate StatementEnd
 
 -- Update the control system table
-ALTER TABLE "sys" ADD COLUMN IF NOT EXISTS orientation public.playlist_orientation_type DEFAULT NULL;
+ALTER TABLE "sys" ADD COLUMN IF NOT EXISTS orientation public.playlist_orientation_type DEFAULT 'UNSPECIFIED'::public.playlist_orientation_type;
 ALTER TABLE "sys" ADD COLUMN IF NOT EXISTS playlists TEXT[] DEFAULT '{}'::TEXT[];
 ALTER TABLE "sys" ADD COLUMN IF NOT EXISTS signage BOOL DEFAULT false;
 
