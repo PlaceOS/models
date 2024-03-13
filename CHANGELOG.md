@@ -1,3 +1,9 @@
+## v9.42.1 (2024-03-13)
+
+### Fix
+
+- **migrations**: signage migration
+
 ## v9.42.0 (2024-03-11)
 
 ### Feat
