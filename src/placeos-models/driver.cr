@@ -83,6 +83,8 @@ module PlaceOS::Model
     # Callbacks
     ###############################################################################################
 
+    before_save :check_update_available
+
     after_save :update_modules
 
     before_destroy :cleanup_modules
@@ -102,6 +104,13 @@ module PlaceOS::Model
     protected def cleanup_modules
       # TODO: Perform asynchronously
       self.modules.each &.destroy
+    end
+
+    # sets update_available appropriately
+    protected def check_update_available
+      if update_available
+        self.update_available = false if self.commit == self.update_info.try(&.commit)
+      end
     end
 
     # Validation
