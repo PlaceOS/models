@@ -1,3 +1,9 @@
+## v9.42.2 (2024-03-19)
+
+### Fix
+
+- **driver**: remove flag if commits match ([#257](https://github.com/PlaceOS/models/pull/257))
+
 ## v9.42.1 (2024-03-13)
 
 ### Fix
