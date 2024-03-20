@@ -24,6 +24,12 @@ module PlaceOS::Model
       Unknown
     end
 
+    enum Permission
+      PRIVATE # Default, attendees must be invited
+      OPEN    # Users in the same tenant can join
+      PUBLIC  # Open for everyone to join
+    end
+
     attribute booking_type : String
     attribute booking_start : Int64
     attribute booking_end : Int64
@@ -89,6 +95,9 @@ module PlaceOS::Model
     attribute asset_ids : Array(String) = [] of String
 
     attribute images : Array(String) = [] of String
+
+    attribute permission : Permission = Permission::PRIVATE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Permission),
+      description: "The permission level for the booking. Defaults to private. If set to private, attendees must be invited.If set to open, users in the same tenant can join. If set to public, the booking is open for everyone to join."
 
     belongs_to Tenant, pk_type: Int64
 
