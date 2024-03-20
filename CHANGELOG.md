@@ -1,3 +1,9 @@
+## v9.43.0 (2024-03-20)
+
+### Feat
+
+- **booking**: [PPT-1215] add permission field ([#256](https://github.com/PlaceOS/models/pull/256))
+
 ## v9.42.2 (2024-03-19)
 
 ### Fix
