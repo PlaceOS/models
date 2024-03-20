@@ -14,7 +14,7 @@ BEGIN
     CREATE TYPE booking_permission_type AS ENUM (
             'PRIVATE',
             'OPEN',
-            'PUBLIC',
+            'PUBLIC'
         );
   END IF;
 END;
