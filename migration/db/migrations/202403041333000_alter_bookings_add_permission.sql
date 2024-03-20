@@ -28,4 +28,4 @@ ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS permission public.booking_permis
 -- SQL section 'Down' is executed when this migration is rolled back
 
 ALTER TABLE "bookings" DROP COLUMN IF EXISTS permission;
-DROP TYPE IF EXISTS public.booking_permission_type
+DROP TYPE IF EXISTS public.booking_permission_type;
