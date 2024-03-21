@@ -1,3 +1,9 @@
+## v9.44.1 (2024-03-21)
+
+### Fix
+
+- **shortener**: add some rand and validation
+
 ## v9.44.0 (2024-03-21)
 
 ### Feat
