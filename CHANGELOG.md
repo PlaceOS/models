@@ -1,3 +1,9 @@
+## v9.44.0 (2024-03-21)
+
+### Feat
+
+- **shortener**: add URL shortening model ([#258](https://github.com/PlaceOS/models/pull/258)) [PPT-1272]
+
 ## v9.43.0 (2024-03-20)
 
 ### Feat
