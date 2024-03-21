@@ -110,6 +110,26 @@ module PlaceOS::Model
       rev
     end
 
+    def self.shortener(
+      uri : String = "https://google.com.au/maps",
+      user : User = user.save!,
+      authority : Authority? = nil
+    )
+      unless authority
+        # look up an existing authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
+      short = Shortener.new(
+        name: uri,
+        uri: uri,
+        authority_id: authority.id
+      )
+      short.user = user
+      short
+    end
+
     def self.item(
       name : String = Faker::Hacker.noun,
       media_uri : String = "https://placeos.com/",
