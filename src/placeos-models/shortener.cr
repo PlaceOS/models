@@ -55,7 +55,7 @@ module PlaceOS::Model
 
     protected def short_id
       self.new_record = true
-      time = Time.utc.to_unix - TIME_OFFSET
+      time = ((Time.utc.to_unix - TIME_OFFSET) << 6) + rand(63)
       @id = "uri-#{time.to_s(62)}"
     end
 
@@ -66,5 +66,18 @@ module PlaceOS::Model
     validates :name, presence: true
     validates :user_id, presence: true
     validates :user_name, presence: true
+
+    validate ->(this : Shortener) do
+      if url = this.uri
+        begin
+          uri = URI.parse(url)
+          raise "requires a scheme" unless uri.scheme.presence
+          raise "requires a host" unless uri.host.presence
+          raise "requires a path" unless uri.path.presence
+        rescue error
+          this.validation_error(:uri, "not valid: #{error.message}")
+        end
+      end
+    end
   end
 end
