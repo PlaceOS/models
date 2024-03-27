@@ -96,6 +96,8 @@ module PlaceOS::Model
 
     attribute images : Array(String) = [] of String
 
+    attribute induction : Bool = false
+
     attribute permission : Permission = Permission::PRIVATE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Permission),
       description: "The permission level for the booking. Defaults to private. If set to private, attendees must be invited.If set to open, users in the same tenant can join. If set to public, the booking is open for everyone to join."
 
