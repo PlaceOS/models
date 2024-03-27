@@ -1,3 +1,9 @@
+## v9.45.0 (2024-03-27)
+
+### Feat
+
+- **booking**: [PPT-1267] add induction field ([#259](https://github.com/PlaceOS/models/pull/259))
+
 ## v9.44.1 (2024-03-21)
 
 ### Fix
