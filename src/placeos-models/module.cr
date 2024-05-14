@@ -44,7 +44,7 @@ module PlaceOS::Model
 
     # Runtime Error Indicators
     attribute has_runtime_error : Bool = false
-    attribute error_timestamp : Time? = null, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64"
+    attribute error_timestamp : Time? = nil, converter: Time::EpochConverter, type: "integer", format: "Int64"
 
     # Associations
     ###############################################################################################
