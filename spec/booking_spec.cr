@@ -81,6 +81,163 @@ module PlaceOS::Model
       list.map(&.id).should contain(bookings[0].id)
       list.map(&.id).should_not contain(bookings[1].id)
     end
+
+    it "returns bookings by_user_or_email including open and public permissions" do
+      tenant_id = Generator.tenant.id
+
+      user_one_email = "one@example.com"
+      user_two_email = "two@example.com"
+
+      bookings = [] of Booking
+
+      # user one private group-event
+      bookings << Booking.new(
+        booking_type: "group-event",
+        asset_ids: ["room-1"],
+        booking_start: 1.hour.from_now.to_unix,
+        booking_end: 2.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_one_email),
+        user_name: "One",
+        booked_by_email: PlaceOS::Model::Email.new(user_one_email),
+        booked_by_name: "One",
+        tenant_id: tenant_id,
+        booked_by_id: "user-1",
+        history: [] of Booking::History,
+        permission: Booking::Permission::PRIVATE
+      ).save!
+
+      # user one open group-event
+      bookings << Booking.new(
+        booking_type: "group-event",
+        asset_ids: ["room-2"],
+        booking_start: 1.hour.from_now.to_unix,
+        booking_end: 2.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_one_email),
+        user_name: "One",
+        booked_by_email: PlaceOS::Model::Email.new(user_one_email),
+        booked_by_name: "One",
+        tenant_id: tenant_id,
+        booked_by_id: "user-1",
+        history: [] of Booking::History,
+        permission: Booking::Permission::OPEN
+      ).save!
+
+      # user one public group-event
+      bookings << Booking.new(
+        booking_type: "group-event",
+        asset_ids: ["room-3"],
+        booking_start: 1.hour.from_now.to_unix,
+        booking_end: 2.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_one_email),
+        user_name: "One",
+        booked_by_email: PlaceOS::Model::Email.new(user_one_email),
+        booked_by_name: "One",
+        tenant_id: tenant_id,
+        booked_by_id: "user-1",
+        history: [] of Booking::History,
+        permission: Booking::Permission::PUBLIC
+      ).save!
+
+      # user two private group-event
+      bookings << Booking.new(
+        booking_type: "group-event",
+        asset_ids: ["room-4"],
+        booking_start: 1.hour.from_now.to_unix,
+        booking_end: 2.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_two_email),
+        user_name: "Two",
+        booked_by_email: PlaceOS::Model::Email.new(user_two_email),
+        booked_by_name: "Two",
+        tenant_id: tenant_id,
+        booked_by_id: "user-2",
+        history: [] of Booking::History,
+        permission: Booking::Permission::PRIVATE
+      ).save!
+
+      # user two open group-event
+      bookings << Booking.new(
+        booking_type: "group-event",
+        asset_ids: ["room-5"],
+        booking_start: 1.hour.from_now.to_unix,
+        booking_end: 2.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_two_email),
+        user_name: "Two",
+        booked_by_email: PlaceOS::Model::Email.new(user_two_email),
+        booked_by_name: "Two",
+        tenant_id: tenant_id,
+        booked_by_id: "user-2",
+        history: [] of Booking::History,
+        permission: Booking::Permission::OPEN
+      ).save!
+
+      # user two public group-event
+      bookings << Booking.new(
+        booking_type: "group-event",
+        asset_ids: ["room-6"],
+        booking_start: 1.hour.from_now.to_unix,
+        booking_end: 2.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_two_email),
+        user_name: "Two",
+        booked_by_email: PlaceOS::Model::Email.new(user_two_email),
+        booked_by_name: "Two",
+        tenant_id: tenant_id,
+        booked_by_id: "user-2",
+        history: [] of Booking::History,
+        permission: Booking::Permission::PUBLIC
+      ).save!
+
+      query = Booking
+        .by_tenant(tenant_id)
+        .by_user_or_email(nil, user_one_email, true)
+
+      list = query.to_a
+      list.size.should eq 3
+      list.map(&.id).should contain(bookings[0].id)
+      list.map(&.id).should contain(bookings[1].id)
+      list.map(&.id).should contain(bookings[2].id)
+      list.map(&.id).should_not contain(bookings[3].id)
+      list.map(&.id).should_not contain(bookings[4].id)
+      list.map(&.id).should_not contain(bookings[5].id)
+
+      query = Booking
+        .by_tenant(tenant_id)
+        .by_user_or_email(nil, user_one_email, true, include_open_permission: true, include_public_permission: false)
+
+      list = query.to_a
+      list.size.should eq 4
+      list.map(&.id).should contain(bookings[0].id)
+      list.map(&.id).should contain(bookings[1].id)
+      list.map(&.id).should contain(bookings[2].id)
+      list.map(&.id).should_not contain(bookings[3].id)
+      list.map(&.id).should contain(bookings[4].id)
+      list.map(&.id).should_not contain(bookings[5].id)
+
+      query = Booking
+        .by_tenant(tenant_id)
+        .by_user_or_email(nil, user_one_email, true, include_open_permission: false, include_public_permission: true)
+
+      list = query.to_a
+      list.size.should eq 4
+      list.map(&.id).should contain(bookings[0].id)
+      list.map(&.id).should contain(bookings[1].id)
+      list.map(&.id).should contain(bookings[2].id)
+      list.map(&.id).should_not contain(bookings[3].id)
+      list.map(&.id).should_not contain(bookings[4].id)
+      list.map(&.id).should contain(bookings[5].id)
+
+      query = Booking
+        .by_tenant(tenant_id)
+        .by_user_or_email(nil, user_one_email, true, include_open_permission: true, include_public_permission: true)
+
+      list = query.to_a
+      list.size.should eq 5
+      list.map(&.id).should contain(bookings[0].id)
+      list.map(&.id).should contain(bookings[1].id)
+      list.map(&.id).should contain(bookings[2].id)
+      list.map(&.id).should_not contain(bookings[3].id)
+      list.map(&.id).should contain(bookings[4].id)
+      list.map(&.id).should contain(bookings[5].id)
+    end
   end
 
   it "successfully saves a booking" do
