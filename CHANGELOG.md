@@ -1,3 +1,9 @@
+## v9.46.0 (2024-05-15)
+
+### Feat
+
+- **booking**: #by_user_or_email include open and public permissions ([#261](https://github.com/PlaceOS/models/pull/261))
+
 ## v9.45.0 (2024-03-27)
 
 ### Feat
