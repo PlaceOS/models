@@ -42,6 +42,10 @@ module PlaceOS::Model
     attribute ignore_connected : Bool = false
     attribute ignore_startstop : Bool = false
 
+    # Runtime Error Indicators
+    attribute has_runtime_error : Bool = false
+    attribute error_timestamp : Time? = nil, converter: Time::EpochConverter, type: "integer", format: "Int64"
+
     # Associations
     ###############################################################################################
 
@@ -253,6 +257,11 @@ module PlaceOS::Model
 
       self.role = driver_ref.role
       self.name = driver_ref.module_name
+
+      unless self.running
+        has_runtime_error = false
+        error_timestamp = nil
+      end
     end
 
     private EDGE_HINT = "-edge"
