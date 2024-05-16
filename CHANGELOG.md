@@ -1,3 +1,9 @@
+## v9.47.0 (2024-05-16)
+
+### Feat
+
+- PPT-1321 Update module model ([#260](https://github.com/PlaceOS/models/pull/260))
+
 ## v9.46.0 (2024-05-15)
 
 ### Feat
