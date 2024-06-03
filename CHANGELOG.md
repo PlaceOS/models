@@ -1,3 +1,9 @@
+## v9.47.1 (2024-06-03)
+
+### Fix
+
+- **module**: make error indicator fields as read-only ([#262](https://github.com/PlaceOS/models/pull/262))
+
 ## v9.47.0 (2024-05-16)
 
 ### Feat
