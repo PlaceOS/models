@@ -43,8 +43,8 @@ module PlaceOS::Model
     attribute ignore_startstop : Bool = false
 
     # Runtime Error Indicators
-    attribute has_runtime_error : Bool = false
-    attribute error_timestamp : Time? = nil, converter: Time::EpochConverter, type: "integer", format: "Int64"
+    attribute has_runtime_error : Bool = false, mass_assignment: false
+    attribute error_timestamp : Time? = nil, converter: Time::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
 
     # Associations
     ###############################################################################################

@@ -61,6 +61,18 @@ module PlaceOS::Model
         end
       end
 
+      it "should discard read-only fields updates from json" do
+        mod = Generator.module
+        any = JSON.parse(mod.to_json)
+        puts any.to_pretty_json
+        any.as_h["has_runtime_error"] = JSON::Any.new(true)
+        any.as_h["error_timestamp"] = JSON::Any.new(0)
+        mod2 = Module.from_json(any.to_json)
+
+        mod2.has_runtime_error.should be_false
+        mod2.error_timestamp.should be_nil
+      end
+
       describe "validation mutation post-conditions" do
         it Driver::Role::SSH do
           driver = Generator.driver(role: Driver::Role::SSH)
