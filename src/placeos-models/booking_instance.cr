@@ -33,4 +33,5 @@ module PlaceOS::Model
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
     getter master_booking : Booking { Booking.find(self.booking_id) }
+  end
 end
