@@ -30,6 +30,13 @@ module PlaceOS::Model
       PUBLIC  # Open for everyone to join
     end
 
+    enum Recurrence
+      NONE
+      DAILY
+      WEEKLY
+      MONTHLY
+    end
+
     attribute booking_type : String
     attribute booking_start : Int64
     attribute booking_end : Int64
@@ -101,6 +108,17 @@ module PlaceOS::Model
     attribute permission : Permission = Permission::PRIVATE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Permission),
       description: "The permission level for the booking. Defaults to private. If set to private, attendees must be invited.If set to open, users in the same tenant can join. If set to public, the booking is open for everyone to join."
 
+    attribute recurrence_type : Recurrence = Recurrence::NONE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Recurrence),
+      description: "Is this a recurring booking. This field defines the type of recurrence"
+
+    attribute recurrence_days : Int32 = 31, description: "a bitmap of valid days of the week for booking recurrences to land on"
+
+    attribute recurrence_week_of_month : Int32 = 1, description: "which day index should a monthly recurrence land on. 1st Monday, 2nd Monday (used in conjunction with the days bitmap). -1 == last Monday, -2 Second last Monday etc"
+
+    attribute recurrence_interval : Int32 = 1, description: "1 == every occurance, 2 == every second occurance, etc"
+
+    attribute recurrence_end : Int64? = nil, description: "an optional end date for booking recurrances"
+
     belongs_to Tenant, pk_type: Int64
 
     has_many(
@@ -117,6 +135,10 @@ module PlaceOS::Model
       foreign_key: "id",
       serialize: true
     )
+
+    def booking_instances
+      BookingInstance.where(booking_id: self.id)
+    end
 
     macro finished
       def invoke_props

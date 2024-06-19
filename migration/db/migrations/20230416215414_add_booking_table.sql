@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS "bookings" (
     department text,
     event_id text,
     created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL    
+    updated_at TIMESTAMPTZ NOT NULL
 );
 
 CREATE SEQUENCE IF NOT EXISTS public.bookings_id_seq
