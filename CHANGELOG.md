@@ -1,3 +1,9 @@
+## v9.48.0 (2024-06-21)
+
+### Feat
+
+- PPT-1413 Add error flag to Repository model ([#264](https://github.com/PlaceOS/models/pull/264))
+
 ## v9.47.1 (2024-06-03)
 
 ### Fix
