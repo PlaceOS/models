@@ -41,6 +41,10 @@ module PlaceOS::Model
 
     attribute repo_type : Type = Type::Driver, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Repository::Type), es_type: "text"
 
+    # Error Indicators
+    attribute has_runtime_error : Bool = false, mass_assignment: false
+    attribute error_message : String? = nil, mass_assignment: false
+
     # Association
     ###############################################################################################
 
