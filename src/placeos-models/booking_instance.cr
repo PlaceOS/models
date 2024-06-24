@@ -17,6 +17,8 @@ module PlaceOS::Model
 
     table :booking_instances
 
+    alias History = Booking::History
+
     attribute booking_id : Int64
     attribute instance_start : Int64
 
