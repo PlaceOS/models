@@ -80,6 +80,8 @@ module PlaceOS::Model
     attribute parent_id : Int64?
     attribute event_id : Int64?, description: "provided if this booking is associated with a calendar event"
 
+    getter instance : Int64? = nil
+
     @[JSON::Field(ignore: true)]
     property render_event : Bool = true
 
@@ -115,7 +117,7 @@ module PlaceOS::Model
 
     attribute recurrence_week_of_month : Int32 = 1, description: "which day index should a monthly recurrence land on. 1st Monday, 2nd Monday (used in conjunction with the days bitmap). -1 == last Monday, -2 Second last Monday etc"
 
-    attribute recurrence_interval : Int32 = 1, description: "1 == every occurance, 2 == every second occurance, etc"
+    attribute recurrence_interval : Int32 = 1, description: "1 == every occurrence, 2 == every second occurrence, etc"
 
     attribute recurrence_end : Int64? = nil, description: "an optional end date for booking recurrances"
 
@@ -541,6 +543,78 @@ module PlaceOS::Model
       if meta_id = self.event_id
         EventMetadata.find?(meta_id)
       end
+    end
+
+    # ===
+    # Recurring booking expansion
+    # # TODO:: clashing count check query param
+    # ===
+
+    def recurring_booking? : Bool
+      !recurrence_type.none?
+    end
+
+    def recurring_instance? : Bool
+      !instance.nil?
+    end
+
+    def expand_bookings(starting : Time, ending : Time) : Array(Booking)
+      return [] of Booking unless recurring_booking?
+
+      [] of Booking
+    end
+
+    DAY_BITS = {
+      Time::DayOfWeek::Sunday    => 1,
+      Time::DayOfWeek::Monday    => 1 << 1,
+      Time::DayOfWeek::Tuesday   => 1 << 2,
+      Time::DayOfWeek::Wednesday => 1 << 3,
+      Time::DayOfWeek::Thursday  => 1 << 4,
+      Time::DayOfWeek::Friday    => 1 << 5,
+      Time::DayOfWeek::Saturday  => 1 << 6,
+    }
+
+    @[JSON::Field(ignore: true)]
+    getter recurrence_on : Array(Time::DayOfWeek) do
+      bitmap = self.recurrence_days
+      DAY_BITS.compact_map do |(day, bit)|
+        (bitmap & bit) > 0 ? day : nil
+      end
+    end
+
+    def calculate_daily(start_date : Time, end_date : Time) : Array(Time)
+      occurrences = [] of Time
+      end_date = end_date.in(time_zone)
+      start_date = start_date.in(time_zone)
+      interval = self.recurrence_interval || 1
+      parent_booking_end = Time.unix(booking_end).in(time_zone)
+      parent_booking_start = Time.unix(booking_start).in(time_zone)
+      occurrence_end = self.recurrence_end ? Time.unix(self.recurrence_end.as(Int64)) : nil
+
+      # ensure we capture any meeting that overlaps with the start of this time period
+      booking_period = (self.booking_end - self.booking_start).seconds
+      adjusted_start_date = start_date - booking_period
+
+      # calculate the first occurrence after start_date
+      days_since_start = ((adjusted_start_date - parent_booking_start) / 1.day).to_i
+      intervals_since_start = days_since_start / interval
+      first_occurrence_after_start = parent_booking_start + (intervals_since_start * interval).days
+
+      # generate the occurrences
+      current_start = first_occurrence_after_start > parent_booking_start ? first_occurrence_after_start : (parent_booking_start + 1.day)
+      while current_start < end_date
+        break if occurrence_end && current_start >= occurrence_end
+        current_end = current_start + booking_period
+
+        if current_start >= start_date &&
+           current_end >= start_date &&
+           self.recurrence_on.includes?(current_start.day_of_week)
+          occurrences << current_start
+        end
+        current_start += interval.days
+      end
+
+      occurrences
     end
   end
 end

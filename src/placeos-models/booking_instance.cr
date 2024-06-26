@@ -34,6 +34,11 @@ module PlaceOS::Model
     attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new)
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
-    getter master_booking : Booking { Booking.find(self.booking_id) }
+    # property so we can set this if we've already fetched the parent
+    property parent_booking : Booking { Booking.find(self.booking_id) }
+
+    # returns a booking object that represents this instance
+    def hydrate_booking(main : Booking = parent_booking) : Booking
+    end
   end
 end
