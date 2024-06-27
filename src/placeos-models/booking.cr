@@ -113,7 +113,7 @@ module PlaceOS::Model
     attribute recurrence_type : Recurrence = Recurrence::NONE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Recurrence),
       description: "Is this a recurring booking. This field defines the type of recurrence"
 
-    attribute recurrence_days : Int32 = 31, description: "a bitmap of valid days of the week for booking recurrences to land on"
+    attribute recurrence_days : Int32 = 0b0111110, description: "a bitmap of valid days of the week for booking recurrences to land on, defaults to weekdays"
 
     attribute recurrence_week_of_month : Int32 = 1, description: "which day index should a monthly recurrence land on. 1st Monday, 2nd Monday (used in conjunction with the days bitmap). -1 == last Monday, -2 Second last Monday etc"
 
@@ -582,8 +582,19 @@ module PlaceOS::Model
       end
     end
 
+    # reset recurrence_on when the bitmap changes
+    macro finished
+      def recurrence_days=(bitmap : Int32)
+        previous_def(bitmap)
+        @recurrence_on = nil
+        bitmap
+      end
+    end
+
     def calculate_daily(start_date : Time, end_date : Time) : Array(Time)
       occurrences = [] of Time
+
+      time_zone = Time::Location.load(self.timezone.as(String))
       end_date = end_date.in(time_zone)
       start_date = start_date.in(time_zone)
       interval = self.recurrence_interval || 1
@@ -597,7 +608,7 @@ module PlaceOS::Model
 
       # calculate the first occurrence after start_date
       days_since_start = ((adjusted_start_date - parent_booking_start) / 1.day).to_i
-      intervals_since_start = days_since_start / interval
+      intervals_since_start = days_since_start // interval
       first_occurrence_after_start = parent_booking_start + (intervals_since_start * interval).days
 
       # generate the occurrences
