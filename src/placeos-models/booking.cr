@@ -591,13 +591,13 @@ module PlaceOS::Model
       end
     end
 
-    def calculate_daily(start_date : Time, end_date : Time) : Array(Time)
+    def calculate_daily(start_date : Time, end_date : Time, multiplier : Int32 = 1) : Array(Time)
       occurrences = [] of Time
 
       time_zone = Time::Location.load(self.timezone.as(String))
       end_date = end_date.in(time_zone)
       start_date = start_date.in(time_zone)
-      interval = self.recurrence_interval || 1
+      interval = (self.recurrence_interval || 1) * multiplier
       parent_booking_end = Time.unix(booking_end).in(time_zone)
       parent_booking_start = Time.unix(booking_start).in(time_zone)
       occurrence_end = self.recurrence_end ? Time.unix(self.recurrence_end.as(Int64)) : nil
@@ -612,7 +612,7 @@ module PlaceOS::Model
       first_occurrence_after_start = parent_booking_start + (intervals_since_start * interval).days
 
       # generate the occurrences
-      current_start = first_occurrence_after_start > parent_booking_start ? first_occurrence_after_start : (parent_booking_start + 1.day)
+      current_start = first_occurrence_after_start > parent_booking_start ? first_occurrence_after_start : (parent_booking_start + interval.days)
       while current_start < end_date
         break if occurrence_end && current_start >= occurrence_end
         current_end = current_start + booking_period
@@ -626,6 +626,10 @@ module PlaceOS::Model
       end
 
       occurrences
+    end
+
+    def calculate_weekly(start_date : Time, end_date : Time)
+      calculate_daily(start_date, end_date, multiplier: 7)
     end
   end
 end
