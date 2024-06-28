@@ -115,7 +115,7 @@ module PlaceOS::Model
 
     attribute recurrence_days : Int32 = 0b0111110, description: "a bitmap of valid days of the week for booking recurrences to land on, defaults to weekdays"
 
-    attribute recurrence_week_of_month : Int32 = 1, description: "which day index should a monthly recurrence land on. 1st Monday, 2nd Monday (used in conjunction with the days bitmap). -1 == last Monday, -2 Second last Monday etc"
+    attribute recurrence_nth_of_month : Int32 = 1, description: "which day index should a monthly recurrence land on. 1st Monday, 2nd Monday (used in conjunction with the days bitmap). -1 == last Monday, -2 Second last Monday etc"
 
     attribute recurrence_interval : Int32 = 1, description: "1 == every occurrence, 2 == every second occurrence, etc"
 
@@ -609,10 +609,10 @@ module PlaceOS::Model
       # calculate the first occurrence after start_date
       days_since_start = ((adjusted_start_date - parent_booking_start) / 1.day).to_i
       intervals_since_start = days_since_start // interval
-      first_occurrence_after_start = parent_booking_start + (intervals_since_start * interval).days
+      first_occurrence_after_start = parent_booking_start.shift(days: intervals_since_start * interval)
 
       # generate the occurrences
-      current_start = first_occurrence_after_start > parent_booking_start ? first_occurrence_after_start : (parent_booking_start + interval.days)
+      current_start = first_occurrence_after_start > parent_booking_start ? first_occurrence_after_start : (parent_booking_start.shift(days: interval))
       while current_start < end_date
         break if occurrence_end && current_start >= occurrence_end
         current_end = current_start + booking_period
@@ -622,14 +622,91 @@ module PlaceOS::Model
            self.recurrence_on.includes?(current_start.day_of_week)
           occurrences << current_start
         end
-        current_start += interval.days
+        current_start = current_start.shift(days: interval)
       end
 
       occurrences
     end
 
-    def calculate_weekly(start_date : Time, end_date : Time)
+    def calculate_weekly(start_date : Time, end_date : Time) : Array(Time)
+      self.recurrence_days = 0b1111111 unless self.recurrence_days == 0b1111111
       calculate_daily(start_date, end_date, multiplier: 7)
+    end
+
+    def calculate_monthly(start_date : Time, end_date : Time) : Array(Time)
+      occurrences = [] of Time
+
+      time_zone = Time::Location.load(self.timezone.as(String))
+      end_date = end_date.in(time_zone)
+      start_date = start_date.in(time_zone)
+      interval = self.recurrence_interval || 1
+      parent_booking_end = Time.unix(booking_end).in(time_zone)
+      parent_booking_start = Time.unix(booking_start).in(time_zone)
+      occurrence_end = self.recurrence_end ? Time.unix(self.recurrence_end.as(Int64)) : nil
+
+      # ensure we capture any meeting that overlaps with the start of this time period
+      booking_period = (self.booking_end - self.booking_start).seconds
+      adjusted_start_date = start_date - booking_period
+
+      # calculate the first occurrence after start_date
+      if adjusted_start_date > parent_booking_start
+        starting_year = adjusted_start_date.year
+        first_month = first_recurrence_month(parent_booking_start, interval, starting_year)
+        day_of_month = get_nth_weekday_of_month(starting_year, first_month, self.recurrence_nth_of_month, recurrence_on, time_zone)
+        current_start = Time.local(starting_year, first_month, day_of_month, parent_booking_start.hour, parent_booking_start.minute, parent_booking_start.second, location: time_zone)
+      else
+        current_start = Time.local(parent_booking_start.year, parent_booking_start.month, 1, parent_booking_start.hour, parent_booking_start.minute, parent_booking_start.second, location: time_zone).shift(months: interval)
+        day_of_month = get_nth_weekday_of_month(current_start.year, current_start.month, self.recurrence_nth_of_month, recurrence_on, time_zone)
+        current_start = Time.local(current_start.year, current_start.month, day_of_month, parent_booking_start.hour, parent_booking_start.minute, parent_booking_start.second, location: time_zone)
+      end
+
+      while current_start < end_date
+        break if occurrence_end && current_start >= occurrence_end
+
+        # add booking
+        current_end = current_start + booking_period
+        if current_start >= start_date && current_end >= start_date
+          occurrences << current_start
+        end
+
+        # calculate next occurrence
+        current_start = current_start.at_beginning_of_month.shift(months: interval)
+        day_of_month = get_nth_weekday_of_month(current_start.year, current_start.month, self.recurrence_nth_of_month, recurrence_on, time_zone)
+        current_start = Time.local(current_start.year, current_start.month, day_of_month, parent_booking_start.hour, parent_booking_start.minute, parent_booking_start.second, location: time_zone)
+      end
+
+      occurrences
+    end
+
+    def first_recurrence_month(start_date : Time, interval_months : Int32, year : Int32) : Int32
+      # Calculate the total months difference from start_date to the beginning of the target year
+      start_year = start_date.year
+      start_month = start_date.month
+      total_months_from_start = (year - start_year) * 12 + (1 - start_month)
+
+      # Find the first meeting month in the target year
+      months_to_first_meeting = interval_months - (total_months_from_start % interval_months)
+      start_date.shift(months: total_months_from_start + months_to_first_meeting).month
+    end
+
+    # Helper function to find the nth day of a month
+    def get_nth_weekday_of_month(year : Int32, month : Int32, nth : Int32, valid_days : Array(Time::DayOfWeek), time_zone : Time::Location) : Int32
+      if nth > 0
+        current_day = Time.local(year, month, 1, location: time_zone)
+        # find the first valid day
+        loop do
+          break if valid_days.includes? current_day.day_of_week
+          current_day = current_day.shift days: 1
+        end
+        current_day.shift(days: (nth - 1) * 7).day
+      else
+        current_day = Time.local(year, month, Time.days_in_month(year, month), location: time_zone)
+        loop do
+          break if valid_days.includes? current_day.day_of_week
+          current_day = current_day.shift days: -1
+        end
+        current_day.shift(days: (nth + 1) * 7).day
+      end
     end
   end
 end

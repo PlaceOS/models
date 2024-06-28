@@ -30,7 +30,7 @@ ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_type public.booking_r
 ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_days INTEGER DEFAULT 31;
 
 -- 1st, 2nd, 3rd, 4th monday of the month etc (also -1, -2 etc) for last monday of the month
-ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_week_of_month INTEGER DEFAULT 1;
+ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_nth_of_month INTEGER DEFAULT 1;
 
 -- gap between bookings
 ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_interval INTEGER DEFAULT 1;
