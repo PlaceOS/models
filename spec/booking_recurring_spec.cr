@@ -231,5 +231,32 @@ module PlaceOS::Model
       times.each { |time| time.hour.should eq 10 }
       times.map { |time| time.day }.should eq [16, 22, 19]
     end
+
+    it "should hydrate a booking instance" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :monthly
+      booking.recurrence_days = 0b0100000
+      booking.recurrence_nth_of_month = -2
+      booking.save!
+
+      other = booking.hydrate_instance(20_i64)
+      other.booking_start.should eq 20_i64
+      other.instance.should eq 20_i64
+      booking.booking_start.should eq start_time.to_unix
+      booking.instance.should eq nil
+    end
+
+    it "should generate a hydrated bookings responses" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11, 12]
+    end
   end
 end

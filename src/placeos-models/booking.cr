@@ -80,7 +80,7 @@ module PlaceOS::Model
     attribute parent_id : Int64?
     attribute event_id : Int64?, description: "provided if this booking is associated with a calendar event"
 
-    getter instance : Int64? = nil
+    property instance : Int64? = nil
 
     @[JSON::Field(ignore: true)]
     property render_event : Bool = true
@@ -140,6 +140,14 @@ module PlaceOS::Model
 
     def booking_instances
       BookingInstance.where(booking_id: self.id)
+    end
+
+    def starting_tz : Time
+      time = Time.unix(self.booking_start)
+      if tz = self.timezone
+        time = time.in(Time::Location.load tz)
+      end
+      time
     end
 
     macro finished
@@ -551,17 +559,60 @@ module PlaceOS::Model
     # ===
 
     def recurring_booking? : Bool
-      !recurrence_type.none?
+      !recurrence_type.none? && !deleted
     end
 
     def recurring_instance? : Bool
       !instance.nil?
     end
 
-    def expand_bookings(starting : Time, ending : Time) : Array(Booking)
-      return [] of Booking unless recurring_booking?
+    # modifies the array, injecting the recurrences
+    def self.expand_bookings!(starting : Time, ending : Time, parents : Array(Booking)) : Array(Booking)
+      recurring = parents.select(&.recurring_booking?)
+      return parents if recurring.empty?
+      parent_ids = recurring.map(&.id.as(Int64))
 
-      [] of Booking
+      instance_override = BookingInstance.where(
+        %["booking_start" < ? AND "booking_end" > ? AND booking_id IN ('#{parent_ids.join("', '")}')],
+        ending, starting
+      ).to_a.group_by(&.booking_id.as(Int64))
+
+      recurring.each do |booking|
+        instances = case booking.recurrence_type
+                    in .daily?
+                      booking.calculate_daily(starting, ending)
+                    in .weekly?
+                      booking.calculate_weekly(starting, ending)
+                    in .monthly?
+                      booking.calculate_monthly(starting, ending)
+                    in .none?
+                      next
+                    end
+
+        overrides = instance_override[booking.id]? || [] of BookingInstance
+        instances = instances.map do |start_time|
+          starting_at = start_time.to_unix
+          if override = overrides.find { |inst| inst.instance_start == starting_at }
+            override.hydrate_booking(booking)
+          else
+            booking.hydrate_instance(starting_at)
+          end
+        end
+
+        parents.concat instances
+      end
+
+      parents.sort! { |a, b| a.booking_start <=> b.booking_start }
+      parents
+    end
+
+    def hydrate_instance(starting_at : Int64) : Booking
+      booking_length = self.booking_end - self.booking_start
+      other = self.dup
+      other.booking_start = starting_at
+      other.booking_end = starting_at + booking_length
+      other.instance = starting_at
+      other
     end
 
     DAY_BITS = {

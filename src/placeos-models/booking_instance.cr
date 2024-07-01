@@ -20,8 +20,10 @@ module PlaceOS::Model
     alias History = Booking::History
 
     attribute booking_id : Int64
+    # the original starting time of the instance
     attribute instance_start : Int64
 
+    # the new start and end times
     attribute booking_start : Int64
     attribute booking_end : Int64
 
@@ -39,6 +41,18 @@ module PlaceOS::Model
 
     # returns a booking object that represents this instance
     def hydrate_booking(main : Booking = parent_booking) : Booking
+      instance = main.dup
+      instance.booking_start = self.booking_start
+      instance.booking_end = self.booking_end
+      instance.instance = self.instance_start
+      instance.checked_in = self.checked_in
+      instance.checked_in_at = self.checked_in_at
+      instance.checked_out_at = self.checked_out_at
+      instance.deleted = self.deleted
+      instance.deleted_at = self.deleted_at
+      instance.extension_data = self.extension_data
+      instance.history = self.history
+      instance
     end
   end
 end
