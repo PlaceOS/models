@@ -1,3 +1,4 @@
+require "set"
 require "json"
 require "./base/model"
 require "./attendee"
@@ -139,7 +140,7 @@ module PlaceOS::Model
     )
 
     def booking_instances
-      BookingInstance.where(booking_id: self.id)
+      BookingInstance.where(id: self.id)
     end
 
     def starting_tz : Time
@@ -555,7 +556,6 @@ module PlaceOS::Model
 
     # ===
     # Recurring booking expansion
-    # # TODO:: clashing count check query param
     # ===
 
     def recurring_booking? : Bool
@@ -572,11 +572,9 @@ module PlaceOS::Model
       return parents if recurring.empty?
       parent_ids = recurring.map(&.id.as(Int64))
 
-      instance_override = BookingInstance.where(
-        %["booking_start" < ? AND "booking_end" > ? AND booking_id IN ('#{parent_ids.join("', '")}')],
-        ending, starting
-      ).to_a.group_by(&.booking_id.as(Int64))
-
+      # calculate all the occurances in range
+      booking_recurrences = {} of Int64 => Array(Int64)
+      all_recurrences = Set(Int64).new
       recurring.each do |booking|
         instances = case booking.recurrence_type
                     in .daily?
@@ -589,11 +587,27 @@ module PlaceOS::Model
                       next
                     end
 
+        instances = instances.map(&.to_unix)
+        booking_recurrences[booking.id.as(Int64)] = instances
+        all_recurrences.concat instances
+      end
+
+      # find any manual adjustments
+      instance_override = BookingInstance.where(
+        %[id IN (#{parent_ids.join(", ")}) AND instance_start IN (#{all_recurrences.join(", ")})]
+      ).to_a.group_by(&.id.as(Int64))
+
+      # apply the overrides
+      starting_unix = starting.to_unix
+      ending_unix = ending.to_unix
+      recurring.each do |booking|
+        instances = booking_recurrences[booking.id]
         overrides = instance_override[booking.id]? || [] of BookingInstance
-        instances = instances.map do |start_time|
-          starting_at = start_time.to_unix
+
+        instances = instances.compact_map do |starting_at|
           if override = overrides.find { |inst| inst.instance_start == starting_at }
-            override.hydrate_booking(booking)
+            # ensure the override is within the queried range
+            override.hydrate_booking(booking) if override.booking_start < ending_unix && override.booking_end > starting_unix
           else
             booking.hydrate_instance(starting_at)
           end
@@ -613,6 +627,25 @@ module PlaceOS::Model
       other.booking_end = starting_at + booking_length
       other.instance = starting_at
       other
+    end
+
+    def to_instance(starting_at : Int64 = self.booking_start)
+      booking_length = self.booking_end - self.booking_start
+      instance = BookingInstance.new(
+        id: self.id.as(Int64),
+        instance_start: starting_at,
+        booking_start: starting_at,
+        booking_end: starting_at + booking_length,
+        checked_in: self.checked_in,
+        checked_in_at: self.checked_in_at,
+        checked_out_at: self.checked_out_at,
+        deleted: self.deleted,
+        deleted_at: self.deleted_at,
+        extension_data: self.extension_data,
+        history: self.history
+      )
+      instance.parent_booking = self
+      instance
     end
 
     DAY_BITS = {

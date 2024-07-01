@@ -1,7 +1,7 @@
 require "./helper"
 
 module PlaceOS::Model
-  describe Booking, focus: true do
+  describe Booking do
     timezone = Time::Location.load("Europe/Berlin")
     start_time = Time.local(2020, 1, 10, 10, 0, 0, location: timezone)
     end_time = start_time + 1.hour
@@ -257,6 +257,50 @@ module PlaceOS::Model
       bookings = [booking]
       Booking.expand_bookings!(start_query, end_query, bookings)
       bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11, 12]
+    end
+
+    it "should generate a hydrated bookings responses with modified instances" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query)
+      # times.map { |time| time.day }.should eq [11, 12]
+
+      booking_instance = booking.to_instance(times.first.to_unix)
+      booking_instance.booking_start += 1.hour.total_seconds.to_i64
+      booking_instance.booking_end += 1.hour.total_seconds.to_i64
+      booking_instance.save!
+
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11, 12]
+      bookings.map { |booking| booking.starting_tz.hour }.should eq [10, 11, 10]
+    end
+
+    it "should generate a hydrated bookings responses with modified instances out of the query range" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query)
+      # times.map { |time| time.day }.should eq [11, 12]
+
+      booking_instance = booking.to_instance(times.last.to_unix)
+      booking_instance.booking_start += 25.hour.total_seconds.to_i64
+      booking_instance.booking_end += 25.hour.total_seconds.to_i64
+      booking_instance.save!
+
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11]
+      bookings.map { |booking| booking.starting_tz.hour }.should eq [10, 10]
     end
   end
 end

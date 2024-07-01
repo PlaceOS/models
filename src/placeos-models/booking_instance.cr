@@ -3,23 +3,12 @@ require "./base/model"
 require "./booking"
 
 module PlaceOS::Model
-  class BookingInstance < PgORM::Base
-    include Neuroplastic
-
-    macro inherited
-      Log = ::Log.for(self)
-      include OpenAPI::Generator::Serializable::Adapters::ActiveModel
-      extend OpenAPI::Generator::Serializable
-    end
-
-    include Model::Associations
-    include Model::Timestamps
-
+  class BookingInstance < ModelWithAutoKey
     table :booking_instances
 
     alias History = Booking::History
 
-    attribute booking_id : Int64
+    attribute id : Int64
     # the original starting time of the instance
     attribute instance_start : Int64
 
@@ -37,7 +26,7 @@ module PlaceOS::Model
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
     # property so we can set this if we've already fetched the parent
-    property parent_booking : Booking { Booking.find(self.booking_id) }
+    property parent_booking : Booking { Booking.find(self.id) }
 
     # returns a booking object that represents this instance
     def hydrate_booking(main : Booking = parent_booking) : Booking

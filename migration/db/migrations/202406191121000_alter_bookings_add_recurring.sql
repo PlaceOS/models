@@ -39,7 +39,7 @@ ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_interval INTEGER DEFA
 ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_end bigint;
 
 CREATE TABLE IF NOT EXISTS "booking_instances" (
-  booking_id bigint NOT NULL,
+  id bigint NOT NULL,
   instance_start bigint NOT NULL,
 
   booking_start bigint,
@@ -52,16 +52,13 @@ CREATE TABLE IF NOT EXISTS "booking_instances" (
   history jsonb DEFAULT '[]'::jsonb,
   extension_data jsonb DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL,
-  updated_at TIMESTAMPTZ NOT NULL
+  updated_at TIMESTAMPTZ NOT NULL,
 
-  PRIMARY KEY (booking_id, instance_start)
-)
-
-CREATE INDEX IF NOT EXISTS booking_instances_booking_id_index ON "booking_instances" USING HASH (booking_id);
+  PRIMARY KEY (id, instance_start)
+);
 
 ALTER TABLE ONLY "booking_instances"
-    ADD CONSTRAINT booking_instances_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES "bookings"(id) ON DELETE CASCADE;
-
+    ADD CONSTRAINT booking_instances_id_fkey FOREIGN KEY (id) REFERENCES "bookings"(id) ON DELETE CASCADE;
 
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
