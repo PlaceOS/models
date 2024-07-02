@@ -23,20 +23,28 @@ $$
 LANGUAGE plpgsql;
 -- +micrate StatementEnd
 
--- none, daily, weekly, monthly
-ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_type public.booking_recurrence_pattern_type DEFAULT 'NONE'::public.booking_recurrence_pattern_type;
+ALTER TABLE bookings
+  -- none, daily, weekly, monthly
+  ADD COLUMN IF NOT EXISTS recurrence_type public.booking_recurrence_pattern_type DEFAULT 'NONE'::public.booking_recurrence_pattern_type,
 
--- days of week it's valid (bitmask default weekdays 0b0011111)
-ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_days INTEGER DEFAULT 31;
+  -- days of week it's valid (bitmask default weekdays 0b0011111)
+  ADD COLUMN IF NOT EXISTS recurrence_days INTEGER DEFAULT 31,
 
--- 1st, 2nd, 3rd, 4th monday of the month etc (also -1, -2 etc) for last monday of the month
-ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_nth_of_month INTEGER DEFAULT 1;
+  -- 1st, 2nd, 3rd, 4th monday of the month etc (also -1, -2 etc) for last monday of the month
+  ADD COLUMN IF NOT EXISTS recurrence_nth_of_month INTEGER DEFAULT 1,
 
--- gap between bookings
-ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_interval INTEGER DEFAULT 1;
+  -- gap between bookings
+  ADD COLUMN IF NOT EXISTS recurrence_interval INTEGER DEFAULT 1,
 
--- end date for bookings
-ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS recurrence_end bigint;
+  -- end date for bookings
+  ADD COLUMN IF NOT EXISTS recurrence_end bigint,
+
+  -- allow for querying times of days
+  ADD COLUMN starting_time TIME GENERATED ALWAYS AS (TO_TIMESTAMP(start_time::BIGINT) AT TIME ZONE 'UTC'::TIME) STORED,
+  ADD COLUMN ending_time TIME GENERATED ALWAYS AS (TO_TIMESTAMP(end_time::BIGINT) AT TIME ZONE 'UTC'::TIME) STORED;
+
+CREATE INDEX idx_bookings_starting_time ON bookings (starting_time);
+CREATE INDEX idx_bookings_ending_time ON bookings (ending_time);
 
 CREATE TABLE IF NOT EXISTS "booking_instances" (
   id bigint NOT NULL,

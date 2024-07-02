@@ -41,6 +41,8 @@ module PlaceOS::Model
       instance.deleted_at = self.deleted_at
       instance.extension_data = self.extension_data
       instance.history = self.history
+      instance.created_at = self.created_at
+      instance.updated_at = self.updated_at
       instance
     end
   end

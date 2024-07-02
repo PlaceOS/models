@@ -47,7 +47,7 @@ module PlaceOS::Model
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
       times = booking.calculate_daily(start_query, end_query)
       times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [11, 12]
+      times.map { |time| time.day }.should eq [10, 11, 12]
     end
 
     it "checks for bookings where the query starts in the past (no overlap)" do
@@ -73,7 +73,7 @@ module PlaceOS::Model
       end_query = Time.local(2020, 1, 20, 5, 0, 0, location: timezone)
       times = booking.calculate_daily(start_query, end_query)
       times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [12, 14, 16, 18]
+      times.map { |time| time.day }.should eq [10, 12, 14, 16, 18]
 
       start_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 5, 0, 0, location: timezone)
@@ -131,7 +131,7 @@ module PlaceOS::Model
       end_query = Time.local(2020, 2, 1, 0, 0, 0, location: timezone)
       times = booking.calculate_weekly(start_query, end_query)
       times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [8, 15, 22, 29]
+      times.map { |time| time.day }.should eq [1, 8, 15, 22, 29]
     end
 
     it "should allow a booking every month" do
@@ -173,7 +173,7 @@ module PlaceOS::Model
       end_query = Time.local(2020, 5, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_monthly(start_query, end_query)
       times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [14, 13, 10, 8]
+      times.map { |time| time.day }.should eq [10, 14, 13, 10, 8]
     end
 
     it "should allow booking the 2nd friday of each month, much in the future" do
@@ -270,7 +270,7 @@ module PlaceOS::Model
       times = booking.calculate_daily(start_query, end_query)
       # times.map { |time| time.day }.should eq [11, 12]
 
-      booking_instance = booking.to_instance(times.first.to_unix)
+      booking_instance = booking.to_instance(times[1].to_unix)
       booking_instance.booking_start += 1.hour.total_seconds.to_i64
       booking_instance.booking_end += 1.hour.total_seconds.to_i64
       booking_instance.save!
@@ -301,6 +301,42 @@ module PlaceOS::Model
       Booking.expand_bookings!(start_query, end_query, bookings)
       bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11]
       bookings.map { |booking| booking.starting_tz.hour }.should eq [10, 10]
+    end
+
+    # NOTE:: when modifying a future instance and applying to all
+    # we should be ending the old recurring instance and creating a new one
+    # so that we preserve the history of past events
+    it "should reset modified instances if the parent start time is changed" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query)
+      # times.map { |time| time.day }.should eq [11, 12]
+
+      booking_instance = booking.to_instance(times[1].to_unix)
+      booking_instance.booking_start += 1.hour.total_seconds.to_i64
+      booking_instance.booking_end += 1.hour.total_seconds.to_i64
+      booking_instance.save!
+
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11, 12]
+      bookings.map { |booking| booking.starting_tz.hour }.should eq [10, 11, 10]
+
+      booking.booking_start += 2.hours.total_seconds.to_i64
+      booking.booking_end += 2.hours.total_seconds.to_i64
+      booking.save!
+
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11, 12]
+      bookings.map { |booking| booking.starting_tz.hour }.should eq [12, 12, 12]
+
+      BookingInstance.where(id: booking.id.as(Int64)).count.should eq 0
     end
   end
 end
