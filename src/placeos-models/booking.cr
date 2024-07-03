@@ -477,9 +477,42 @@ module PlaceOS::Model
 
       if recurring_booking?
         # we need to check for clashes against each recurrence
+        starting = self.booking_start
+        ending = self.booking_end
 
-        # TODO:: FIX
-        [] of Booking
+        # calculate the period we want to check for clashes
+        max_period = 90.days
+        if rec_ending = self.recurrence_end
+          time_period = rec_ending - starting
+          rec_ending = max_period.from_now.to_unix if time_period > max_period.total_seconds.to_i64
+        else
+          rec_ending = max_period.from_now.to_unix
+        end
+
+        rec_ending_tz = Time.unix(rec_ending)
+        if tz = self.timezone
+          rec_ending_tz = rec_ending_tz.in(Time::Location.load tz)
+        end
+
+        # 24 time -- 08:23:00, 13:30:00 etc
+        start_time = Time.unix(starting).to_s("%T")
+        end_time = Time.unix(booking_end).to_s("%T")
+
+        expanded = Booking.expand_bookings!(starting_tz, rec_ending_tz, [self])
+
+        query = Booking
+          .by_tenant(tenant_id)
+          .where(
+            "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_start >= ? AND booking_start < ? AND checked_out_at IS NULL)) AND starting_time < ? AND ending_time > ? AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
+            starting, starting, rec_ending, end_time, start_time, booking_type
+          )
+        query = query.where("id != ?", id) unless id.nil?
+
+        res = query.to_a
+        puts "\n\n\nRESULTS: #{res.size}\n\n\n"
+        Booking.expand_bookings!(starting_tz, rec_ending_tz, res).select! do |other_booking|
+          expanded.find { |this_booking| this_booking.booking_start < other_booking.booking_end && this_booking.booking_end > other_booking.booking_start }
+        end
       else
         # we only need to check if anything clashes with this single booking
         starting = self.booking_start
@@ -489,8 +522,8 @@ module PlaceOS::Model
         query = Booking
           .by_tenant(tenant_id)
           .where(
-            "((recurrence_end > ? AND booking_start < ?) OR (booking_start < ? AND booking_end > ? AND checked_out_at IS NULL)) AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
-            starting, ending, ending, starting, booking_type
+            "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_start < ? AND booking_end > ? AND checked_out_at IS NULL)) AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
+            starting, ending, starting, booking_type
           )
         query = query.where("id != ?", id) unless id.nil?
         Booking.expand_bookings!(starting_tz, ending_tz, query.to_a)
@@ -578,7 +611,7 @@ module PlaceOS::Model
     # ===
 
     def recurring_booking? : Bool
-      !recurrence_type.none? && !deleted
+      !recurrence_type.none? && !deleted && !rejected && instance.nil?
     end
 
     def recurring_instance? : Bool
@@ -589,7 +622,7 @@ module PlaceOS::Model
     def self.expand_bookings!(starting : Time, ending : Time, parents : Array(Booking)) : Array(Booking)
       recurring = parents.select(&.recurring_booking?)
       return parents if recurring.empty?
-      parent_ids = recurring.map(&.id.as(Int64))
+      parent_ids = recurring.map(&.id).compact
       recurring.each { |booking| parents.delete booking }
 
       # calculate all the occurances in range
@@ -608,21 +641,26 @@ module PlaceOS::Model
                     end
 
         instances = instances.map(&.to_unix)
-        booking_recurrences[booking.id.as(Int64)] = instances
+        booking_recurrences[booking.id || 0_i64] = instances
         all_recurrences.concat instances
       end
 
       # find any manual adjustments
-      instance_override = BookingInstance.where(
-        %[id IN (#{parent_ids.join(", ")}) AND instance_start IN (#{all_recurrences.join(", ")})]
-      ).to_a.group_by(&.id.as(Int64))
+      instance_override = if parent_ids.empty? || all_recurrences.empty?
+                            {} of Int64 => Array(BookingInstance)
+                          else
+                            BookingInstance.where(
+                              %[id IN (#{parent_ids.join(", ")}) AND instance_start IN (#{all_recurrences.join(", ")})]
+                            ).to_a.group_by(&.id.as(Int64))
+                          end
 
       # apply the overrides
       starting_unix = starting.to_unix
       ending_unix = ending.to_unix
       recurring.each do |booking|
-        instances = booking_recurrences[booking.id]
-        overrides = instance_override[booking.id]? || [] of BookingInstance
+        booking_id = booking.id || 0_i64
+        instances = booking_recurrences[booking_id]
+        overrides = instance_override[booking_id]? || [] of BookingInstance
 
         instances = instances.compact_map do |starting_at|
           if override = overrides.find { |inst| inst.instance_start == starting_at }
@@ -724,8 +762,7 @@ module PlaceOS::Model
         break if occurrence_end && current_start >= occurrence_end
         current_end = current_start + booking_period
 
-        if current_start >= start_date &&
-           current_end >= start_date &&
+        if current_end >= start_date &&
            self.recurrence_on.includes?(current_start.day_of_week)
           occurrences << current_start
         end
@@ -771,7 +808,7 @@ module PlaceOS::Model
 
         # add booking
         current_end = current_start + booking_period
-        if current_start >= start_date && current_end >= start_date
+        if current_end >= start_date
           occurrences << current_start
         end
 

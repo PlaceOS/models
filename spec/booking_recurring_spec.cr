@@ -338,5 +338,65 @@ module PlaceOS::Model
 
       BookingInstance.where(id: booking.id.as(Int64)).count.should eq 0
     end
+
+    it "should not save a regular booking that clashes with a recurring booking" do
+      tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.tenant_id = tenant_id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      clashing = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: start_time + 24.5.hours,
+        ending: end_time + 24.5.hours,
+      )
+      clashing.timezone = "Europe/Berlin"
+
+      times = booking.calculate_daily(clashing.starting_tz, clashing.ending_tz)
+      times.size.should eq 1
+
+      clashing.save.should eq false
+    end
+
+    it "should not save a recurring booking that clashes with a regular booking" do
+      tenant_id = Generator.tenant(domain: "recurrence.dev").id
+
+      clashing = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: start_time + 24.5.hours,
+        ending: end_time + 24.5.hours,
+      )
+      clashing.timezone = "Europe/Berlin"
+      clashing.save.should eq true
+
+      booking.tenant_id = tenant_id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save.should eq false
+    end
+
+    it "should not save a recurring booking that clashes with another recurring booking", focus: true do
+      tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.tenant_id = tenant_id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      clashing = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: start_time - 48.5.hours,
+        ending: end_time - 48.5.hours,
+      )
+      clashing.timezone = "Europe/Berlin"
+      booking.recurrence_type = :weekly
+      clashing.save.should eq false
+    end
+
+    it "should not save a recurring booking that clashes with a custom recurring instance" do
+    end
   end
 end
