@@ -1,3 +1,9 @@
+## v9.49.0 (2024-07-04)
+
+### Feat
+
+- **bookings**: add recurring support to bookings ([#263](https://github.com/PlaceOS/models/pull/263))
+
 ## v9.48.0 (2024-06-21)
 
 ### Feat
