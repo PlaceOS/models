@@ -572,6 +572,25 @@ module PlaceOS::Model
       Tenant.create(**params)
     end
 
+    def self.tenant(
+      *,
+      name = "Toby",
+      platform = "office365",
+      domain = "toby.staff-api.dev",
+      credentials = %({"tenant":"bb89674a-238b-4b7d-91ec-6bebad83553a","client_id":"6316bc86-b615-49e0-ad24-985b39898cb7","client_secret": "k8S1-0c5PhIh:[XcrmuAIsLo?YA[=-GS"}),
+      delegated = false,
+      outlook_config = Tenant::OutlookConfig.from_json(%({"app_id": "0114c179-de01-4707-b558-b4b535551b91"}))
+    )
+      Tenant.create(
+        name: name,
+        platform: platform,
+        domain: domain,
+        credentials: credentials,
+        delegated: delegated,
+        outlook_config: outlook_config
+      )
+    end
+
     def self.storage(type = Storage::Type::S3, bucket : String? = nil, authority_id : String? = nil)
       Storage.new(storage_type: type, bucket_name: bucket || Faker::Hacker.noun,
         access_key: Faker::Hacker.noun, access_secret: Faker::Hacker.noun,

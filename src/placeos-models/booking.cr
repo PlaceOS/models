@@ -1,3 +1,4 @@
+require "set"
 require "json"
 require "./base/model"
 require "./attendee"
@@ -28,6 +29,13 @@ module PlaceOS::Model
       PRIVATE # Default, attendees must be invited
       OPEN    # Users in the same tenant can join
       PUBLIC  # Open for everyone to join
+    end
+
+    enum Recurrence
+      NONE
+      DAILY
+      WEEKLY
+      MONTHLY
     end
 
     attribute booking_type : String
@@ -73,6 +81,8 @@ module PlaceOS::Model
     attribute parent_id : Int64?
     attribute event_id : Int64?, description: "provided if this booking is associated with a calendar event"
 
+    property instance : Int64? = nil
+
     @[JSON::Field(ignore: true)]
     property render_event : Bool = true
 
@@ -101,6 +111,17 @@ module PlaceOS::Model
     attribute permission : Permission = Permission::PRIVATE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Permission),
       description: "The permission level for the booking. Defaults to private. If set to private, attendees must be invited.If set to open, users in the same tenant can join. If set to public, the booking is open for everyone to join."
 
+    attribute recurrence_type : Recurrence = Recurrence::NONE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Recurrence),
+      description: "Is this a recurring booking. This field defines the type of recurrence"
+
+    attribute recurrence_days : Int32 = 0b0111110, description: "a bitmap of valid days of the week for booking recurrences to land on, defaults to weekdays"
+
+    attribute recurrence_nth_of_month : Int32 = 1, description: "which day index should a monthly recurrence land on. 1st Monday, 2nd Monday (used in conjunction with the days bitmap). -1 == last Monday, -2 Second last Monday etc"
+
+    attribute recurrence_interval : Int32 = 1, description: "1 == every occurrence, 2 == every second occurrence, etc"
+
+    attribute recurrence_end : Int64? = nil, description: "an optional end date for booking recurrances"
+
     belongs_to Tenant, pk_type: Int64
 
     has_many(
@@ -117,6 +138,26 @@ module PlaceOS::Model
       foreign_key: "id",
       serialize: true
     )
+
+    def booking_instances
+      BookingInstance.where(id: self.id)
+    end
+
+    def starting_tz : Time
+      time = Time.unix(self.booking_start)
+      if tz = self.timezone
+        time = time.in(Time::Location.load tz)
+      end
+      time
+    end
+
+    def ending_tz : Time
+      time = Time.unix(self.booking_end)
+      if tz = self.timezone
+        time = time.in(Time::Location.load tz)
+      end
+      time
+    end
 
     macro finished
       def invoke_props
@@ -153,6 +194,8 @@ module PlaceOS::Model
       update_assets
       survey_trigger
     end
+
+    before_update :cleanup_recurring_instances
 
     def update_assets
       if asset_ids.size == 1 && !@asset_ids_changed && @asset_id_changed
@@ -426,23 +469,90 @@ module PlaceOS::Model
 
     def clashing? : Bool
       return false if self.deleted || self.rejected || self.checked_out_at
-      clashing_bookings.count > 0
+      clashing_bookings.size > 0
     end
 
-    def clashing_bookings
+    def clashing_bookings : Array(Booking)
       update_assets
+
+      # we need to check for clashes against each recurrence
       starting = self.booking_start
       ending = self.booking_end
 
-      # gets all the clashing bookings
-      query = Booking
-        .by_tenant(tenant_id)
-        .where(
-          "booking_start < ? AND booking_end > ? AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE AND checked_out_at IS NULL",
-          ending, starting, booking_type
-        )
-      query = query.where("id != ?", id) unless id.nil?
-      query
+      # find any overrides that might clash with the bookings
+      if recurring_booking?
+        # 24 time -- 08:23:00, 13:30:00 etc
+        start_time = Time.unix(starting).to_s("%T")
+        end_time = Time.unix(ending).to_s("%T")
+
+        # calculate the period we want to check for clashes
+        max_period = 90.days
+        if rec_ending = self.recurrence_end
+          time_period = rec_ending - starting
+          rec_ending = max_period.from_now.to_unix if time_period > max_period.total_seconds.to_i64
+        else
+          rec_ending = max_period.from_now.to_unix
+        end
+
+        overrides = Booking.find_all_by_sql(<<-SQL, tenant_id, rec_ending, starting, end_time, start_time, booking_type)
+          SELECT b.* FROM "bookings" b
+          JOIN booking_instances i ON b.id = i.id
+          WHERE b.tenant_id = $1
+            AND i.booking_start < $2
+            AND i.booking_end > $3
+            AND i.starting_time < $4
+            AND i.ending_time > $5
+            AND i.checked_out_at IS NULL
+            AND b.booking_type = $6
+            AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}
+            AND b.rejected <> TRUE
+            AND i.deleted <> TRUE
+        SQL
+
+        rec_ending_tz = Time.unix(rec_ending)
+        if tz = self.timezone
+          rec_ending_tz = rec_ending_tz.in(Time::Location.load tz)
+        end
+
+        expanded = Booking.expand_bookings!(starting_tz, rec_ending_tz, [self])
+
+        # starting - booking_length ensures we capture overlaps
+        query = Booking
+          .by_tenant(tenant_id)
+          .where(
+            "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_end > ? AND booking_start < ? AND checked_out_at IS NULL)) AND starting_time < ? AND ending_time > ? AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
+            starting, starting, rec_ending, end_time, start_time, booking_type
+          )
+        query = query.where("id != ?", id) unless id.nil?
+        Booking.expand_bookings!(starting_tz, rec_ending_tz, query.to_a + overrides).select! do |other_booking|
+          expanded.find { |this_booking| this_booking.booking_start < other_booking.booking_end && this_booking.booking_end > other_booking.booking_start }
+        end
+      else
+        clashing = BookingInstance.find_one_by_sql?(<<-SQL, tenant_id, ending, starting, booking_type)
+            SELECT i.* FROM "booking_instances" i
+            JOIN bookings b ON i.id = b.id
+            WHERE i.tenant_id = $1
+              AND i.booking_start < $2
+              AND i.booking_end > $3
+              AND i.checked_out_at IS NULL
+              AND b.booking_type = $4
+              AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}
+              AND b.rejected <> TRUE
+              AND i.deleted <> TRUE
+            LIMIT 1
+          SQL
+        return [clashing.hydrate_booking] if clashing
+
+        # find any valid recurring bookings in the time period
+        query = Booking
+          .by_tenant(tenant_id)
+          .where(
+            "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_start < ? AND booking_end > ? AND checked_out_at IS NULL)) AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
+            starting, ending, starting, booking_type
+          )
+        query = query.where("id != ?", id) unless id.nil?
+        Booking.expand_bookings!(starting_tz, ending_tz, query.to_a)
+      end
     end
 
     def as_h(include_attendees : Bool = true)
@@ -519,6 +629,256 @@ module PlaceOS::Model
       if meta_id = self.event_id
         EventMetadata.find?(meta_id)
       end
+    end
+
+    # ===
+    # Recurring booking expansion
+    # ===
+
+    def recurring_booking? : Bool
+      !recurrence_type.none? && !deleted && !rejected && instance.nil?
+    end
+
+    def recurring_instance? : Bool
+      !instance.nil?
+    end
+
+    # modifies the array, injecting the recurrences
+    # ameba:disable Metrics/CyclomaticComplexity
+    def self.expand_bookings!(starting : Time, ending : Time, parents : Array(Booking)) : Array(Booking)
+      recurring = parents.select(&.recurring_booking?)
+      return parents if recurring.empty?
+      parent_ids = recurring.compact_map(&.id)
+      recurring.each { |booking| parents.delete booking }
+
+      # calculate all the occurances in range
+      booking_recurrences = {} of Int64 => Array(Int64)
+      all_recurrences = Set(Int64).new
+      recurring.each do |booking|
+        instances = case booking.recurrence_type
+                    in .daily?
+                      booking.calculate_daily(starting, ending)
+                    in .weekly?
+                      booking.calculate_weekly(starting, ending)
+                    in .monthly?
+                      booking.calculate_monthly(starting, ending)
+                    in .none?
+                      next
+                    end
+
+        instances = instances.map(&.to_unix)
+        booking_recurrences[booking.id || 0_i64] = instances
+        all_recurrences.concat instances
+      end
+
+      # find any manual adjustments
+      instance_override = if parent_ids.empty? || all_recurrences.empty?
+                            {} of Int64 => Array(BookingInstance)
+                          else
+                            BookingInstance.where(
+                              %[id IN (#{parent_ids.join(", ")}) AND instance_start IN (#{all_recurrences.join(", ")})]
+                            ).to_a.group_by(&.id.as(Int64))
+                          end
+
+      # apply the overrides
+      starting_unix = starting.to_unix
+      ending_unix = ending.to_unix
+      recurring.each do |booking|
+        booking_id = booking.id || 0_i64
+        instances = booking_recurrences[booking_id]
+        overrides = instance_override[booking_id]? || [] of BookingInstance
+
+        instances = instances.compact_map do |starting_at|
+          if override = overrides.find { |inst| inst.instance_start == starting_at }
+            # ensure the override is within the queried range
+            override.hydrate_booking(booking) if override.booking_start < ending_unix && override.booking_end > starting_unix
+          else
+            booking.hydrate_instance(starting_at)
+          end
+        end
+
+        parents.concat instances
+      end
+
+      # remove anything not in the range, sort on creation date
+      parents.select! { |booking|
+        booking.booking_start < ending_unix && booking.booking_end > starting_unix
+      }.sort! { |a, b| a.booking_start <=> b.booking_start }
+      parents
+    end
+
+    def hydrate_instance(starting_at : Int64) : Booking
+      booking_length = self.booking_end - self.booking_start
+      other = self.dup
+      other.booking_start = starting_at
+      other.booking_end = starting_at + booking_length
+      other.instance = starting_at
+      other
+    end
+
+    def to_instance(starting_at : Int64 = self.booking_start)
+      booking_length = self.booking_end - self.booking_start
+      instance = BookingInstance.new(
+        id: self.id.as(Int64),
+        instance_start: starting_at,
+        tenant_id: tenant_id.as(Int64),
+        booking_start: starting_at,
+        booking_end: starting_at + booking_length,
+        checked_in: self.checked_in,
+        checked_in_at: self.checked_in_at,
+        checked_out_at: self.checked_out_at,
+        deleted: self.deleted,
+        deleted_at: self.deleted_at
+      )
+      instance.parent_booking = self
+      instance
+    end
+
+    DAY_BITS = {
+      Time::DayOfWeek::Sunday    => 1,
+      Time::DayOfWeek::Monday    => 1 << 1,
+      Time::DayOfWeek::Tuesday   => 1 << 2,
+      Time::DayOfWeek::Wednesday => 1 << 3,
+      Time::DayOfWeek::Thursday  => 1 << 4,
+      Time::DayOfWeek::Friday    => 1 << 5,
+      Time::DayOfWeek::Saturday  => 1 << 6,
+    }
+
+    @[JSON::Field(ignore: true)]
+    getter recurrence_on : Array(Time::DayOfWeek) do
+      bitmap = self.recurrence_days
+      DAY_BITS.compact_map do |(day, bit)|
+        (bitmap & bit) > 0 ? day : nil
+      end
+    end
+
+    # reset recurrence_on when the bitmap changes
+    macro finished
+      def recurrence_days=(bitmap : Int32)
+        previous_def(bitmap)
+        @recurrence_on = nil
+        bitmap
+      end
+    end
+
+    def calculate_daily(start_date : Time, end_date : Time, multiplier : Int32 = 1) : Array(Time)
+      occurrences = [] of Time
+
+      time_zone = Time::Location.load(self.timezone.as(String))
+      end_date = end_date.in(time_zone)
+      start_date = start_date.in(time_zone)
+      interval = (self.recurrence_interval || 1) * multiplier
+      parent_booking_start = Time.unix(booking_start).in(time_zone)
+      occurrence_end = self.recurrence_end ? Time.unix(self.recurrence_end.as(Int64)) : nil
+
+      # ensure we capture any meeting that overlaps with the start of this time period
+      booking_period = (self.booking_end - self.booking_start).seconds
+      adjusted_start_date = start_date - booking_period
+
+      # calculate the first occurrence after start_date
+      days_since_start = ((adjusted_start_date - parent_booking_start) / 1.day).to_i
+      intervals_since_start = days_since_start // interval
+      first_occurrence_after_start = parent_booking_start.shift(days: intervals_since_start * interval)
+
+      # generate the occurrences
+      current_start = first_occurrence_after_start > parent_booking_start ? first_occurrence_after_start : parent_booking_start
+      while current_start < end_date
+        break if occurrence_end && current_start >= occurrence_end
+        current_end = current_start + booking_period
+
+        if current_end >= start_date &&
+           self.recurrence_on.includes?(current_start.day_of_week)
+          occurrences << current_start
+        end
+        current_start = current_start.shift(days: interval)
+      end
+
+      occurrences
+    end
+
+    def calculate_weekly(start_date : Time, end_date : Time) : Array(Time)
+      self.recurrence_days = 0b1111111 unless self.recurrence_days == 0b1111111
+      calculate_daily(start_date, end_date, multiplier: 7)
+    end
+
+    def calculate_monthly(start_date : Time, end_date : Time) : Array(Time)
+      occurrences = [] of Time
+
+      time_zone = Time::Location.load(self.timezone.as(String))
+      end_date = end_date.in(time_zone)
+      start_date = start_date.in(time_zone)
+      interval = self.recurrence_interval || 1
+      parent_booking_start = Time.unix(booking_start).in(time_zone)
+      occurrence_end = self.recurrence_end ? Time.unix(self.recurrence_end.as(Int64)) : nil
+
+      # ensure we capture any meeting that overlaps with the start of this time period
+      booking_period = (self.booking_end - self.booking_start).seconds
+      adjusted_start_date = start_date - booking_period
+
+      # calculate the first occurrence after start_date
+      if adjusted_start_date > parent_booking_start
+        starting_year = adjusted_start_date.year
+        first_month = first_recurrence_month(parent_booking_start, interval, starting_year)
+        day_of_month = get_nth_weekday_of_month(starting_year, first_month, self.recurrence_nth_of_month, recurrence_on, time_zone)
+        current_start = Time.local(starting_year, first_month, day_of_month, parent_booking_start.hour, parent_booking_start.minute, parent_booking_start.second, location: time_zone)
+      else
+        current_start = parent_booking_start
+        day_of_month = parent_booking_start.day
+      end
+
+      while current_start < end_date
+        break if occurrence_end && current_start >= occurrence_end
+
+        # add booking
+        current_end = current_start + booking_period
+        if current_end >= start_date
+          occurrences << current_start
+        end
+
+        # calculate next occurrence
+        current_start = current_start.at_beginning_of_month.shift(months: interval)
+        day_of_month = get_nth_weekday_of_month(current_start.year, current_start.month, self.recurrence_nth_of_month, recurrence_on, time_zone)
+        current_start = Time.local(current_start.year, current_start.month, day_of_month, parent_booking_start.hour, parent_booking_start.minute, parent_booking_start.second, location: time_zone)
+      end
+
+      occurrences
+    end
+
+    def first_recurrence_month(start_date : Time, interval_months : Int32, year : Int32) : Int32
+      # Calculate the total months difference from start_date to the beginning of the target year
+      start_year = start_date.year
+      start_month = start_date.month
+      total_months_from_start = (year - start_year) * 12 + (1 - start_month)
+
+      # Find the first meeting month in the target year
+      months_to_first_meeting = interval_months - (total_months_from_start % interval_months)
+      start_date.shift(months: total_months_from_start + months_to_first_meeting).month
+    end
+
+    # Helper function to find the nth day of a month
+    def get_nth_weekday_of_month(year : Int32, month : Int32, nth : Int32, valid_days : Array(Time::DayOfWeek), time_zone : Time::Location) : Int32
+      if nth > 0
+        current_day = Time.local(year, month, 1, location: time_zone)
+        # find the first valid day
+        loop do
+          break if valid_days.includes? current_day.day_of_week
+          current_day = current_day.shift days: 1
+        end
+        current_day.shift(days: (nth - 1) * 7).day
+      else
+        current_day = Time.local(year, month, Time.days_in_month(year, month), location: time_zone)
+        loop do
+          break if valid_days.includes? current_day.day_of_week
+          current_day = current_day.shift days: -1
+        end
+        current_day.shift(days: (nth + 1) * 7).day
+      end
+    end
+
+    # remove any instance overrides if start times have changed
+    def cleanup_recurring_instances : Nil
+      return unless self.booking_start_changed?
+      BookingInstance.where(id: self.id).delete_all
     end
   end
 end
