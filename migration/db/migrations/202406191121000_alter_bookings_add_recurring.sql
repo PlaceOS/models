@@ -53,6 +53,7 @@ CREATE INDEX idx_bookings_ending_time ON bookings (ending_time);
 CREATE TABLE IF NOT EXISTS "booking_instances" (
   id bigint NOT NULL,
   instance_start bigint NOT NULL,
+  tenant_id bigint NOT NULL,
 
   booking_start bigint,
   booking_end bigint,
@@ -62,7 +63,7 @@ CREATE TABLE IF NOT EXISTS "booking_instances" (
   deleted_at bigint,
   deleted boolean DEFAULT false,
   history jsonb DEFAULT '[]'::jsonb,
-  extension_data jsonb DEFAULT '{}'::jsonb,
+  extension_data jsonb,
   created_at TIMESTAMPTZ NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL,
 
@@ -71,6 +72,7 @@ CREATE TABLE IF NOT EXISTS "booking_instances" (
 
 ALTER TABLE ONLY "booking_instances"
     ADD CONSTRAINT booking_instances_id_fkey FOREIGN KEY (id) REFERENCES "bookings"(id) ON DELETE CASCADE,
+    ADD CONSTRAINT booking_instances_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES "tenants"(id) ON DELETE CASCADE,
     -- allow for querying times of days
     ADD COLUMN starting_time TIME GENERATED ALWAYS AS ((
       TO_TIMESTAMP(booking_start::BIGINT) AT TIME ZONE 'UTC'
@@ -79,8 +81,9 @@ ALTER TABLE ONLY "booking_instances"
       TO_TIMESTAMP(booking_end::BIGINT) AT TIME ZONE 'UTC'
     )::TIME) STORED;
 
-CREATE INDEX idx_booking_instances_starting_time ON booking_instances (starting_time);
-CREATE INDEX idx_booking_instances_ending_time ON booking_instances (ending_time);
+CREATE INDEX idx_booking_instances_starting_ending_time ON booking_instances (starting_time, ending_time);
+CREATE INDEX idx_booking_instances_booking_start_end ON booking_instances USING btree (booking_start, booking_end);
+CREATE INDEX idx_booking_instances_tenant_id ON booking_instances (tenant_id);
 
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
@@ -99,7 +102,8 @@ ALTER TABLE ONLY "bookings"
 
 DROP TYPE IF EXISTS public.booking_recurrence_pattern_type;
 
-DROP INDEX idx_booking_instances_ending_time;
-DROP INDEX idx_booking_instances_starting_time;
+DROP INDEX idx_booking_instances_tenant_id;
+DROP INDEX idx_booking_instances_booking_start_end;
+DROP INDEX idx_booking_instances_starting_ending_time;
 
 DROP TABLE IF EXISTS "booking_instances"

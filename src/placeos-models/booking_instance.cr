@@ -11,6 +11,7 @@ module PlaceOS::Model
     attribute id : Int64
     # the original starting time of the instance
     attribute instance_start : Int64
+    attribute tenant_id : Int64
 
     # the new start and end times
     attribute booking_start : Int64
@@ -22,11 +23,15 @@ module PlaceOS::Model
     attribute deleted : Bool = false
     attribute deleted_at : Int64?
 
-    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new)
+    attribute extension_data : JSON::Any? = nil
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
     # property so we can set this if we've already fetched the parent
     property parent_booking : Booking { Booking.find(self.id) }
+
+    scope :by_tenant do |tenant_id|
+      where(tenant_id: tenant_id)
+    end
 
     # returns a booking object that represents this instance
     def hydrate_booking(main : Booking = parent_booking) : Booking
@@ -39,7 +44,9 @@ module PlaceOS::Model
       instance.checked_out_at = self.checked_out_at
       instance.deleted = self.deleted
       instance.deleted_at = self.deleted_at
-      instance.extension_data = self.extension_data
+      if ext_data = self.extension_data
+        instance.extension_data = ext_data
+      end
       instance.history = self.history
       instance.created_at = self.created_at
       instance.updated_at = self.updated_at

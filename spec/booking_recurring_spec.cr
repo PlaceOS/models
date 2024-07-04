@@ -378,7 +378,25 @@ module PlaceOS::Model
       booking.save.should eq false
     end
 
-    it "should not save a recurring booking that clashes with another recurring booking", focus: true do
+    it "should not save a recurring booking that clashes with a regular booking, rear offset" do
+      tenant_id = Generator.tenant(domain: "recurrence.dev").id
+
+      clashing = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: start_time - 0.5.hours,
+        ending: end_time - 0.5.hours,
+      )
+      clashing.timezone = "Europe/Berlin"
+      clashing.save.should eq true
+
+      booking.tenant_id = tenant_id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save.should eq false
+    end
+
+    it "should not save a recurring booking that clashes with another recurring booking" do
       tenant_id = Generator.tenant(domain: "recurrence.dev").id
       booking.tenant_id = tenant_id
       booking.recurrence_type = :daily
@@ -388,15 +406,91 @@ module PlaceOS::Model
       clashing = Generator.booking(
         tenant_id,
         asset_id: "desk-1234",
-        start: start_time - 48.5.hours,
-        ending: end_time - 48.5.hours,
+        start: start_time - 48.hours,
+        ending: end_time - 48.hours,
       )
       clashing.timezone = "Europe/Berlin"
-      booking.recurrence_type = :weekly
+      clashing.recurrence_type = :weekly
+      clashing.recurrence_days = 0b1111111
       clashing.save.should eq false
     end
 
     it "should not save a recurring booking that clashes with a custom recurring instance" do
+      tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.tenant_id = tenant_id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query)
+      # times.map { |time| time.day }.should eq [11, 12]
+
+      booking_instance = booking.to_instance(times[1].to_unix)
+      booking_instance.booking_start += 2.hour.total_seconds.to_i64
+      booking_instance.booking_end += 2.hour.total_seconds.to_i64
+      booking_instance.save!
+      inst = booking_instance.hydrate_booking
+
+      clashing = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: inst.starting_tz - 48.hours,
+        ending: inst.ending_tz - 48.hours,
+      )
+      clashing.timezone = "Europe/Berlin"
+      clashing.recurrence_type = :daily
+      clashing.recurrence_days = 0b1111111
+      clashing.save.should eq false
+
+      clashing = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: inst.starting_tz - 47.hours,
+        ending: inst.ending_tz - 47.hours,
+      )
+      clashing.timezone = "Europe/Berlin"
+      clashing.recurrence_type = :daily
+      clashing.recurrence_days = 0b1111111
+      clashing.save.should eq true
+    end
+
+    it "should not save a regular booking that clashes with a custom recurring instance" do
+      tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.tenant_id = tenant_id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query)
+      # times.map { |time| time.day }.should eq [11, 12]
+
+      booking_instance = booking.to_instance(times[1].to_unix)
+      booking_instance.booking_start += 2.hour.total_seconds.to_i64
+      booking_instance.booking_end += 2.hour.total_seconds.to_i64
+      booking_instance.save!
+      inst = booking_instance.hydrate_booking
+
+      clashing = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: inst.starting_tz,
+        ending: inst.ending_tz,
+      )
+      clashing.timezone = "Europe/Berlin"
+      clashing.save.should eq false
+
+      clashing = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: inst.starting_tz - 1.hour,
+        ending: inst.ending_tz - 1.hour,
+      )
+      clashing.timezone = "Europe/Berlin"
+      clashing.save.should eq true
     end
   end
 end
