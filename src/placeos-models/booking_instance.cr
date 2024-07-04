@@ -8,7 +8,6 @@ module PlaceOS::Model
 
     alias History = Booking::History
 
-    attribute id : Int64
     # the original starting time of the instance
     attribute instance_start : Int64
     attribute tenant_id : Int64
