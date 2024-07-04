@@ -33,8 +33,8 @@ module PlaceOS::Model
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_daily(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [15, 16, 17, 18, 19]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [15, 16, 17, 18, 19]
     end
 
     it "checks for bookings where the query starts in the past (overlapping)" do
@@ -46,8 +46,8 @@ module PlaceOS::Model
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
       times = booking.calculate_daily(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [10, 11, 12]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [10, 11, 12]
     end
 
     it "checks for bookings where the query starts in the past (no overlap)" do
@@ -72,14 +72,14 @@ module PlaceOS::Model
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 5, 0, 0, location: timezone)
       times = booking.calculate_daily(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [10, 12, 14, 16, 18]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [10, 12, 14, 16, 18]
 
       start_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 5, 0, 0, location: timezone)
       times = booking.calculate_daily(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [14, 16, 18]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [14, 16, 18]
     end
 
     it "checks for bookings that should only land on weekdays" do
@@ -92,8 +92,8 @@ module PlaceOS::Model
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_daily(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [15, 16, 17]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [15, 16, 17]
     end
 
     it "checks bookings cut off on recurrence end date" do
@@ -106,8 +106,8 @@ module PlaceOS::Model
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_daily(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [15, 16]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [15, 16]
     end
 
     it "generates correct times for weekly recurring bookings" do
@@ -123,15 +123,15 @@ module PlaceOS::Model
       start_query = Time.local(2020, 1, 5, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 2, 1, 0, 0, 0, location: timezone)
       times = booking.calculate_weekly(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [8, 15, 22, 29]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [8, 15, 22, 29]
 
       # should have a booking every week overlap query
       start_query = Time.local(2019, 12, 10, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 2, 1, 0, 0, 0, location: timezone)
       times = booking.calculate_weekly(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [1, 8, 15, 22, 29]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [1, 8, 15, 22, 29]
     end
 
     it "should allow a booking every month" do
@@ -144,8 +144,8 @@ module PlaceOS::Model
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 5, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_monthly(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [8, 8, 8, 8]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [8, 8, 8, 8]
     end
 
     it "should allow a booking the 2nd friday of each month" do
@@ -158,8 +158,8 @@ module PlaceOS::Model
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 5, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_monthly(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [14, 13, 10, 8]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [14, 13, 10, 8]
     end
 
     it "should allow booking the 2nd friday of each month, query overlap" do
@@ -172,8 +172,8 @@ module PlaceOS::Model
       start_query = Time.local(2019, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 5, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_monthly(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [10, 14, 13, 10, 8]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [10, 14, 13, 10, 8]
     end
 
     it "should allow booking the 2nd friday of each month, much in the future" do
@@ -186,8 +186,8 @@ module PlaceOS::Model
       start_query = Time.local(2024, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2024, 5, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_monthly(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [9, 8, 12, 10]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [9, 8, 12, 10]
     end
 
     it "should allow a booking the 2nd friday of each month, recurrence ending" do
@@ -201,8 +201,8 @@ module PlaceOS::Model
       start_query = Time.local(2024, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2024, 5, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_monthly(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [9, 8]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [9, 8]
     end
 
     it "checks for monthly bookings where the query is in the past" do
@@ -228,8 +228,8 @@ module PlaceOS::Model
       start_query = Time.local(2024, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2024, 5, 20, 0, 0, 0, location: timezone)
       times = booking.calculate_monthly(start_query, end_query)
-      times.each { |time| time.hour.should eq 10 }
-      times.map { |time| time.day }.should eq [16, 22, 19]
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [16, 22, 19]
     end
 
     it "should hydrate a booking instance" do
@@ -256,7 +256,7 @@ module PlaceOS::Model
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
       bookings = [booking]
       Booking.expand_bookings!(start_query, end_query, bookings)
-      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11, 12]
+      bookings.map(&.starting_tz.day).should eq [10, 11, 12]
     end
 
     it "should generate a hydrated bookings responses with modified instances" do
@@ -277,8 +277,8 @@ module PlaceOS::Model
 
       bookings = [booking]
       Booking.expand_bookings!(start_query, end_query, bookings)
-      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11, 12]
-      bookings.map { |booking| booking.starting_tz.hour }.should eq [10, 11, 10]
+      bookings.map(&.starting_tz.day).should eq [10, 11, 12]
+      bookings.map(&.starting_tz.hour).should eq [10, 11, 10]
     end
 
     it "should generate a hydrated bookings responses with modified instances out of the query range" do
@@ -299,8 +299,8 @@ module PlaceOS::Model
 
       bookings = [booking]
       Booking.expand_bookings!(start_query, end_query, bookings)
-      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11]
-      bookings.map { |booking| booking.starting_tz.hour }.should eq [10, 10]
+      bookings.map(&.starting_tz.day).should eq [10, 11]
+      bookings.map(&.starting_tz.hour).should eq [10, 10]
     end
 
     # NOTE:: when modifying a future instance and applying to all
@@ -324,8 +324,8 @@ module PlaceOS::Model
 
       bookings = [booking]
       Booking.expand_bookings!(start_query, end_query, bookings)
-      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11, 12]
-      bookings.map { |booking| booking.starting_tz.hour }.should eq [10, 11, 10]
+      bookings.map(&.starting_tz.day).should eq [10, 11, 12]
+      bookings.map(&.starting_tz.hour).should eq [10, 11, 10]
 
       booking.booking_start += 2.hours.total_seconds.to_i64
       booking.booking_end += 2.hours.total_seconds.to_i64
@@ -333,8 +333,8 @@ module PlaceOS::Model
 
       bookings = [booking]
       Booking.expand_bookings!(start_query, end_query, bookings)
-      bookings.map { |booking| booking.starting_tz.day }.should eq [10, 11, 12]
-      bookings.map { |booking| booking.starting_tz.hour }.should eq [12, 12, 12]
+      bookings.map(&.starting_tz.day).should eq [10, 11, 12]
+      bookings.map(&.starting_tz.hour).should eq [12, 12, 12]
 
       BookingInstance.where(id: booking.id.as(Int64)).count.should eq 0
     end

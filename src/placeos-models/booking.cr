@@ -644,10 +644,11 @@ module PlaceOS::Model
     end
 
     # modifies the array, injecting the recurrences
+    # ameba:disable Metrics/CyclomaticComplexity
     def self.expand_bookings!(starting : Time, ending : Time, parents : Array(Booking)) : Array(Booking)
       recurring = parents.select(&.recurring_booking?)
       return parents if recurring.empty?
-      parent_ids = recurring.map(&.id).compact
+      parent_ids = recurring.compact_map(&.id)
       recurring.each { |booking| parents.delete booking }
 
       # calculate all the occurances in range
@@ -767,7 +768,6 @@ module PlaceOS::Model
       end_date = end_date.in(time_zone)
       start_date = start_date.in(time_zone)
       interval = (self.recurrence_interval || 1) * multiplier
-      parent_booking_end = Time.unix(booking_end).in(time_zone)
       parent_booking_start = Time.unix(booking_start).in(time_zone)
       occurrence_end = self.recurrence_end ? Time.unix(self.recurrence_end.as(Int64)) : nil
 
@@ -808,7 +808,6 @@ module PlaceOS::Model
       end_date = end_date.in(time_zone)
       start_date = start_date.in(time_zone)
       interval = self.recurrence_interval || 1
-      parent_booking_end = Time.unix(booking_end).in(time_zone)
       parent_booking_start = Time.unix(booking_start).in(time_zone)
       occurrence_end = self.recurrence_end ? Time.unix(self.recurrence_end.as(Int64)) : nil
 
