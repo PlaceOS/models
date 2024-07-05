@@ -1,3 +1,9 @@
+## v9.50.0 (2024-07-05)
+
+### Feat
+
+- **bookings**: transparent booking instance modification
+
 ## v9.49.0 (2024-07-04)
 
 ### Feat
