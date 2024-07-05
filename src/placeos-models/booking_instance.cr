@@ -47,7 +47,8 @@ module PlaceOS::Model
         instance.extension_data = ext_data
       end
       instance.history = self.history
-      instance.created_at = self.created_at
+      # we'll use the parent's created at
+      # instance.created_at = self.created_at
       instance.updated_at = self.updated_at
       instance
     end

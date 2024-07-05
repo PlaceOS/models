@@ -81,7 +81,7 @@ module PlaceOS::Model
     attribute parent_id : Int64?
     attribute event_id : Int64?, description: "provided if this booking is associated with a calendar event"
 
-    property instance : Int64? = nil
+    attribute instance : Int64? = nil, persistence: false, show: true, description: "provided when this booking is an instance of recurring booking"
 
     @[JSON::Field(ignore: true)]
     property render_event : Bool = true
@@ -703,7 +703,13 @@ module PlaceOS::Model
       # remove anything not in the range, sort on creation date
       parents.select! { |booking|
         booking.booking_start < ending_unix && booking.booking_end > starting_unix
-      }.sort! { |a, b| a.booking_start <=> b.booking_start }
+      }.sort! do |a, b|
+        if a.created_at == b.created_at
+          a.booking_start <=> b.booking_start
+        else
+          a.created_at <=> b.created_at
+        end
+      end
       parents
     end
 
@@ -734,6 +740,43 @@ module PlaceOS::Model
       instance
     end
 
+    def as_instance
+      inst_id = self.instance
+      raise TypeCastError.new("Cast from Booking to BookingInstance failed. Not an instance") unless inst_id
+
+      if inst = BookingInstance.find_one_by_sql?(<<-SQL, self.id, inst_id)
+          SELECT i.* FROM "booking_instances" i
+          WHERE i.id = $1
+            AND i.instance_start = $2
+          LIMIT 1
+        SQL
+        inst.booking_start = self.booking_start if self.booking_start_changed?
+        inst.booking_end = self.booking_end if self.booking_end_changed?
+        inst.checked_in = self.checked_in if self.checked_in_changed?
+        inst.checked_in_at = self.checked_in_at if self.checked_in_at_changed?
+        inst.checked_out_at = self.checked_out_at if self.checked_out_at_changed?
+        inst.deleted = self.deleted if self.deleted_changed?
+        inst.deleted_at = self.deleted_at if self.deleted_at_changed?
+      else
+        inst = BookingInstance.new(
+          id: self.id.as(Int64),
+          instance_start: inst_id,
+          tenant_id: self.tenant_id.as(Int64),
+          booking_start: self.booking_start,
+          booking_end: self.booking_end,
+          checked_in: self.checked_in,
+          checked_in_at: self.checked_in_at,
+          checked_out_at: self.checked_out_at,
+          deleted: self.deleted,
+          deleted_at: self.deleted_at
+        )
+      end
+
+      inst.extension_data = self.extension_data if self.extension_data_changed?
+      inst.parent_booking = self
+      inst
+    end
+
     DAY_BITS = {
       Time::DayOfWeek::Sunday    => 1,
       Time::DayOfWeek::Monday    => 1 << 1,
@@ -758,6 +801,23 @@ module PlaceOS::Model
         previous_def(bitmap)
         @recurrence_on = nil
         bitmap
+      end
+
+      def save
+        if self.instance.nil?
+          super
+        else
+          as_instance.save
+        end
+      end
+
+      def save!
+        if self.instance.nil?
+          super
+        else
+          as_instance.save!
+          self
+        end
       end
     end
 

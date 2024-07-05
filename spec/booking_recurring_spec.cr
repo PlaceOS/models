@@ -279,6 +279,17 @@ module PlaceOS::Model
       Booking.expand_bookings!(start_query, end_query, bookings)
       bookings.map(&.starting_tz.day).should eq [10, 11, 12]
       bookings.map(&.starting_tz.hour).should eq [10, 11, 10]
+
+      # should serialize to JSON with the instance attribute
+      bookings_json = bookings.map(&.to_json)
+      bookings_json.map do |book|
+        JSON.parse(book)["instance"].as_i64
+      end.should eq bookings.map(&.instance)
+
+      # should de-serialize from JSON with the instance attribute
+      bookings_json.map do |book|
+        Booking.from_json(book).instance
+      end.should eq bookings.map(&.instance)
     end
 
     it "should generate a hydrated bookings responses with modified instances out of the query range" do
@@ -301,6 +312,17 @@ module PlaceOS::Model
       Booking.expand_bookings!(start_query, end_query, bookings)
       bookings.map(&.starting_tz.day).should eq [10, 11]
       bookings.map(&.starting_tz.hour).should eq [10, 10]
+
+      # should serialize to JSON with the instance attribute
+      bookings_json = bookings.map(&.to_json)
+      bookings_json.map do |book|
+        JSON.parse(book)["instance"].as_i64
+      end.should eq bookings.map(&.instance)
+
+      # should de-serialize from JSON with the instance attribute
+      bookings_json.map do |book|
+        Booking.from_json(book).instance
+      end.should eq bookings.map(&.instance)
     end
 
     # NOTE:: when modifying a future instance and applying to all
@@ -491,6 +513,36 @@ module PlaceOS::Model
       )
       clashing.timezone = "Europe/Berlin"
       clashing.save.should eq true
+    end
+
+    it "should should transparently save modified instances" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query)
+
+      # unmodified bookings
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map(&.starting_tz.day).should eq [10, 11, 12]
+      bookings.map(&.starting_tz.hour).should eq [10, 10, 10]
+
+      # save a booking object
+      booking_instance = bookings[1]
+      booking_instance.instance.should eq times[1].to_unix
+      booking_instance.booking_start += 1.hour.total_seconds.to_i64
+      booking_instance.booking_end += 1.hour.total_seconds.to_i64
+      booking_instance.save!
+
+      # check if it saved the instance
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map(&.starting_tz.day).should eq [10, 11, 12]
+      bookings.map(&.starting_tz.hour).should eq [10, 11, 10]
     end
   end
 end
