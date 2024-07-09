@@ -547,8 +547,8 @@ module PlaceOS::Model
         query = Booking
           .by_tenant(tenant_id)
           .where(
-            "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_start < ? AND booking_end > ? AND checked_out_at IS NULL)) AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
-            starting, ending, starting, booking_type
+            "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE' AND booking_start < ?) OR (booking_start < ? AND booking_end > ? AND checked_out_at IS NULL)) AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
+            starting, ending, ending, starting, booking_type
           )
         query = query.where("id != ?", id) unless id.nil?
         Booking.expand_bookings!(starting_tz, ending_tz, query.to_a).bookings
