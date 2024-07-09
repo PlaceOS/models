@@ -1,3 +1,9 @@
+## v9.51.0 (2024-07-09)
+
+### Feat
+
+- **booking**: add helpers for paginating recurrences
+
 ## v9.50.0 (2024-07-05)
 
 ### Feat
