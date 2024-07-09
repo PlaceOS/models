@@ -1,3 +1,9 @@
+## v9.51.1 (2024-07-09)
+
+### Fix
+
+- **booking**: ensure clash check is appropriately scoped
+
 ## v9.51.0 (2024-07-09)
 
 ### Feat
