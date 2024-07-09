@@ -32,7 +32,9 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      details = booking.calculate_daily(start_query, end_query)
+      details.limit_reached.should eq false
+      times = details.instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [15, 16, 17, 18, 19]
     end
@@ -45,7 +47,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [10, 11, 12]
     end
@@ -58,7 +60,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 1, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 10, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       times.size.should eq 0
     end
 
@@ -71,13 +73,13 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [10, 12, 14, 16, 18]
 
       start_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [14, 16, 18]
     end
@@ -91,7 +93,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [15, 16, 17]
     end
@@ -105,7 +107,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [15, 16]
     end
@@ -122,14 +124,14 @@ module PlaceOS::Model
       # should have a booking every week
       start_query = Time.local(2020, 1, 5, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 2, 1, 0, 0, 0, location: timezone)
-      times = booking.calculate_weekly(start_query, end_query)
+      times = booking.calculate_weekly(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [8, 15, 22, 29]
 
       # should have a booking every week overlap query
       start_query = Time.local(2019, 12, 10, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 2, 1, 0, 0, 0, location: timezone)
-      times = booking.calculate_weekly(start_query, end_query)
+      times = booking.calculate_weekly(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [1, 8, 15, 22, 29]
     end
@@ -143,7 +145,9 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 5, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_monthly(start_query, end_query)
+      details = booking.calculate_monthly(start_query, end_query)
+      details.limit_reached.should eq false
+      times = details.instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [8, 8, 8, 8]
     end
@@ -157,7 +161,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 5, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_monthly(start_query, end_query)
+      times = booking.calculate_monthly(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [14, 13, 10, 8]
     end
@@ -171,7 +175,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2019, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2020, 5, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_monthly(start_query, end_query)
+      times = booking.calculate_monthly(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [10, 14, 13, 10, 8]
     end
@@ -185,7 +189,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2024, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2024, 5, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_monthly(start_query, end_query)
+      times = booking.calculate_monthly(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [9, 8, 12, 10]
     end
@@ -200,7 +204,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2024, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2024, 5, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_monthly(start_query, end_query)
+      times = booking.calculate_monthly(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [9, 8]
     end
@@ -214,7 +218,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2019, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2019, 5, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_monthly(start_query, end_query)
+      times = booking.calculate_monthly(start_query, end_query).instances
       times.size.should eq 0
     end
 
@@ -227,7 +231,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2024, 1, 15, 0, 0, 0, location: timezone)
       end_query = Time.local(2024, 5, 20, 0, 0, 0, location: timezone)
-      times = booking.calculate_monthly(start_query, end_query)
+      times = booking.calculate_monthly(start_query, end_query).instances
       times.each(&.hour.should(eq(10)))
       times.map(&.day).should eq [16, 22, 19]
     end
@@ -255,7 +259,9 @@ module PlaceOS::Model
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
       bookings = [booking]
-      Booking.expand_bookings!(start_query, end_query, bookings)
+      details = Booking.expand_bookings!(start_query, end_query, bookings)
+      details.complete.should eq 1
+      details.next_idx.should eq 0
       bookings.map(&.starting_tz.day).should eq [10, 11, 12]
     end
 
@@ -267,7 +273,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       # times.map { |time| time.day }.should eq [11, 12]
 
       booking_instance = booking.to_instance(times[1].to_unix)
@@ -300,7 +306,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       # times.map { |time| time.day }.should eq [11, 12]
 
       booking_instance = booking.to_instance(times.last.to_unix)
@@ -336,7 +342,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       # times.map { |time| time.day }.should eq [11, 12]
 
       booking_instance = booking.to_instance(times[1].to_unix)
@@ -376,7 +382,7 @@ module PlaceOS::Model
       )
       clashing.timezone = "Europe/Berlin"
 
-      times = booking.calculate_daily(clashing.starting_tz, clashing.ending_tz)
+      times = booking.calculate_daily(clashing.starting_tz, clashing.ending_tz).instances
       times.size.should eq 1
 
       clashing.save.should eq false
@@ -446,7 +452,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       # times.map { |time| time.day }.should eq [11, 12]
 
       booking_instance = booking.to_instance(times[1].to_unix)
@@ -487,7 +493,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
       # times.map { |time| time.day }.should eq [11, 12]
 
       booking_instance = booking.to_instance(times[1].to_unix)
@@ -523,7 +529,7 @@ module PlaceOS::Model
 
       start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
       end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
-      times = booking.calculate_daily(start_query, end_query)
+      times = booking.calculate_daily(start_query, end_query).instances
 
       # unmodified bookings
       bookings = [booking]
@@ -543,6 +549,44 @@ module PlaceOS::Model
       Booking.expand_bookings!(start_query, end_query, bookings)
       bookings.map(&.starting_tz.day).should eq [10, 11, 12]
       bookings.map(&.starting_tz.hour).should eq [10, 11, 10]
+    end
+
+    it "should support limits" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
+      details = booking.calculate_daily(start_query, end_query, limit: 3)
+      details.limit_reached.should eq true
+      times = details.instances
+      times.each(&.hour.should(eq(10)))
+      times.map(&.day).should eq [15, 16, 17]
+    end
+
+    it "should hydrate bookings, supporting limits and skips" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      bookings = [booking]
+      details = Booking.expand_bookings!(start_query, end_query, bookings, limit: 1)
+      details.complete.should eq 0
+      details.next_idx.should eq 1
+      bookings.map(&.starting_tz.day).should eq [10]
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      bookings = [booking]
+      details = Booking.expand_bookings!(start_query, end_query, bookings, limit: 2, skip: 1)
+      details.complete.should eq 1
+      details.next_idx.should eq 0
+      bookings.map(&.starting_tz.day).should eq [11, 12]
     end
   end
 end

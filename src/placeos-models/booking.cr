@@ -514,7 +514,7 @@ module PlaceOS::Model
           rec_ending_tz = rec_ending_tz.in(Time::Location.load tz)
         end
 
-        expanded = Booking.expand_bookings!(starting_tz, rec_ending_tz, [self])
+        expanded = Booking.expand_bookings!(starting_tz, rec_ending_tz, [self]).bookings
 
         # starting - booking_length ensures we capture overlaps
         query = Booking
@@ -524,7 +524,7 @@ module PlaceOS::Model
             starting, starting, rec_ending, end_time, start_time, booking_type
           )
         query = query.where("id != ?", id) unless id.nil?
-        Booking.expand_bookings!(starting_tz, rec_ending_tz, query.to_a + overrides).select! do |other_booking|
+        Booking.expand_bookings!(starting_tz, rec_ending_tz, query.to_a + overrides).bookings.select! do |other_booking|
           expanded.find { |this_booking| this_booking.booking_start < other_booking.booking_end && this_booking.booking_end > other_booking.booking_start }
         end
       else
@@ -551,7 +551,7 @@ module PlaceOS::Model
             starting, ending, starting, booking_type
           )
         query = query.where("id != ?", id) unless id.nil?
-        Booking.expand_bookings!(starting_tz, ending_tz, query.to_a)
+        Booking.expand_bookings!(starting_tz, ending_tz, query.to_a).bookings
       end
     end
 
@@ -643,32 +643,63 @@ module PlaceOS::Model
       !instance.nil?
     end
 
+    record ExpansionDetails,
+      bookings : Array(Booking),
+      complete : Int32, # number of recurring bookings completed
+      next_idx : Int32  # number of recurring instances returned of current
+
+    DEFAULT_LIMIT = 100_000
+
     # modifies the array, injecting the recurrences
     # ameba:disable Metrics/CyclomaticComplexity
-    def self.expand_bookings!(starting : Time, ending : Time, parents : Array(Booking)) : Array(Booking)
+    def self.expand_bookings!(starting : Time, ending : Time, parents : Array(Booking), limit : Int32 = DEFAULT_LIMIT, skip : Int32 = 0) : ExpansionDetails
       recurring = parents.select(&.recurring_booking?)
-      return parents if recurring.empty?
+      return ExpansionDetails.new(parents, 0, 0) if recurring.empty?
       parent_ids = recurring.compact_map(&.id)
       recurring.each { |booking| parents.delete booking }
+
+      # track limits
+      remaining_limit = (limit - parents.size) + skip
+      complete = 0
+      next_idx = 0
 
       # calculate all the occurances in range
       booking_recurrences = {} of Int64 => Array(Int64)
       all_recurrences = Set(Int64).new
       recurring.each do |booking|
-        instances = case booking.recurrence_type
-                    in .daily?
-                      booking.calculate_daily(starting, ending)
-                    in .weekly?
-                      booking.calculate_weekly(starting, ending)
-                    in .monthly?
-                      booking.calculate_monthly(starting, ending)
-                    in .none?
-                      next
-                    end
+        details = case booking.recurrence_type
+                  in .daily?
+                    booking.calculate_daily(starting, ending, limit: remaining_limit)
+                  in .weekly?
+                    booking.calculate_weekly(starting, ending, limit: remaining_limit)
+                  in .monthly?
+                    booking.calculate_monthly(starting, ending, limit: remaining_limit)
+                  in .none?
+                    next
+                  end
 
-        instances = instances.map(&.to_unix)
+        instances = details.instances.map(&.to_unix)
+        next_idx = instances.size
+
+        # NOTE:: we can probably improve this skip by perfoming it as part of the
+        # recurrence calculations, if this turns out to be a bottle neck
+        if skip > 0
+          instances = instances.size > skip ? instances[skip..-1] : [] of Int64
+          skip = 0
+          remaining_limit = limit - parents.size - instances.size
+        else
+          remaining_limit -= instances.size
+        end
+
         booking_recurrences[booking.id || 0_i64] = instances
         all_recurrences.concat instances
+
+        if details.limit_reached
+          break
+        else
+          next_idx = 0
+          complete += 1
+        end
       end
 
       # find any manual adjustments
@@ -701,16 +732,10 @@ module PlaceOS::Model
       end
 
       # remove anything not in the range, sort on creation date
-      parents.select! { |booking|
+      parents.select! do |booking|
         booking.booking_start < ending_unix && booking.booking_end > starting_unix
-      }.sort! do |a, b|
-        if a.created_at == b.created_at
-          a.booking_start <=> b.booking_start
-        else
-          a.created_at <=> b.created_at
-        end
       end
-      parents
+      ExpansionDetails.new(parents, complete, next_idx)
     end
 
     def hydrate_instance(starting_at : Int64) : Booking
@@ -821,7 +846,9 @@ module PlaceOS::Model
       end
     end
 
-    def calculate_daily(start_date : Time, end_date : Time, multiplier : Int32 = 1) : Array(Time)
+    record RecurrenceDetails, instances : Array(Time), limit_reached : Bool
+
+    def calculate_daily(start_date : Time, end_date : Time, multiplier : Int32 = 1, limit : Int32 = Int32::MAX) : RecurrenceDetails
       occurrences = [] of Time
 
       time_zone = Time::Location.load(self.timezone.as(String))
@@ -842,26 +869,29 @@ module PlaceOS::Model
 
       # generate the occurrences
       current_start = first_occurrence_after_start > parent_booking_start ? first_occurrence_after_start : parent_booking_start
+      count = 0
       while current_start < end_date
         break if occurrence_end && current_start >= occurrence_end
+        return RecurrenceDetails.new(occurrences, true) if count >= limit
         current_end = current_start + booking_period
 
         if current_end >= start_date &&
            self.recurrence_on.includes?(current_start.day_of_week)
           occurrences << current_start
+          count += 1
         end
         current_start = current_start.shift(days: interval)
       end
 
-      occurrences
+      RecurrenceDetails.new(occurrences, false)
     end
 
-    def calculate_weekly(start_date : Time, end_date : Time) : Array(Time)
+    def calculate_weekly(start_date : Time, end_date : Time, limit : Int32 = Int32::MAX) : RecurrenceDetails
       self.recurrence_days = 0b1111111 unless self.recurrence_days == 0b1111111
-      calculate_daily(start_date, end_date, multiplier: 7)
+      calculate_daily(start_date, end_date, multiplier: 7, limit: limit)
     end
 
-    def calculate_monthly(start_date : Time, end_date : Time) : Array(Time)
+    def calculate_monthly(start_date : Time, end_date : Time, limit : Int32 = Int32::MAX) : RecurrenceDetails
       occurrences = [] of Time
 
       time_zone = Time::Location.load(self.timezone.as(String))
@@ -886,13 +916,16 @@ module PlaceOS::Model
         day_of_month = parent_booking_start.day
       end
 
+      count = 0
       while current_start < end_date
         break if occurrence_end && current_start >= occurrence_end
+        return RecurrenceDetails.new(occurrences, true) if count >= limit
 
         # add booking
         current_end = current_start + booking_period
         if current_end >= start_date
           occurrences << current_start
+          count += 1
         end
 
         # calculate next occurrence
@@ -901,7 +934,7 @@ module PlaceOS::Model
         current_start = Time.local(current_start.year, current_start.month, day_of_month, parent_booking_start.hour, parent_booking_start.minute, parent_booking_start.second, location: time_zone)
       end
 
-      occurrences
+      RecurrenceDetails.new(occurrences, false)
     end
 
     def first_recurrence_month(start_date : Time, interval_months : Int32, year : Int32) : Int32
