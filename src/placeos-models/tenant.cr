@@ -21,6 +21,7 @@ module PlaceOS::Model
     attribute service_account : String?
 
     attribute secret_expiry : Time?, converter: Time::EpochConverter
+    attribute early_checkin : Int64 = 3600
 
     has_many(
       child_class: Attendee,
@@ -116,13 +117,14 @@ module PlaceOS::Model
       getter credentials : JSON::Any? = nil
       getter booking_limits : JSON::Any? = nil
       getter outlook_config : OutlookConfig? = nil
+      getter early_checkin : Int64? = nil
 
-      def initialize(@id, @name, @domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil, @email_domain = nil)
+      def initialize(@id, @name, @domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil, @email_domain = nil, @early_checkin = nil)
       end
 
       def to_tenant(update : Bool = false)
         tenant = Tenant.new
-        {% for key in [:name, :domain, :email_domain, :platform, :delegated, :service_account, :outlook_config] %}
+        {% for key in [:name, :domain, :email_domain, :platform, :delegated, :service_account, :outlook_config, :early_checkin] %}
           tenant.{{key.id}} = self.{{key.id}}.not_nil! unless self.{{key.id}}.nil?
         {% end %}
 
@@ -156,6 +158,7 @@ module PlaceOS::Model
         delegated: is_delegated,
         booking_limits: limits,
         outlook_config: outlook_config,
+        early_checkin: self.early_checkin
       )
     end
 
