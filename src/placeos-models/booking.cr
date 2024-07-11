@@ -175,6 +175,19 @@ module PlaceOS::Model
 
     before_create :set_created
 
+    validate :timezone, "required for recurring bookings", ->(this : self) { this.recurrence_type.none? ? true : !this.timezone.presence.nil? }
+    validate :timezone, "must be a valid IANA timezone", ->(this : self) do
+      if tz = this.timezone.presence
+        begin
+          Time::Location.load(tz)
+          true
+        rescue
+          false
+        end
+      else
+        true
+      end
+    end
     validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.clashing? }
     validate :asset_ids, "must be unique", ->(this : self) { this.unique_ids? }
     validate :booking_end, "must be after booking_start", ->(this : self) { this.booking_end > this.booking_start }
@@ -481,6 +494,13 @@ module PlaceOS::Model
 
       # find any overrides that might clash with the bookings
       if recurring_booking?
+        # invalid booking, other validation will raise
+        begin
+          Time::Location.load self.timezone.as(String)
+        rescue
+          return [] of Booking
+        end
+
         # 24 time -- 08:23:00, 13:30:00 etc
         start_time = Time.unix(starting).to_s("%T")
         end_time = Time.unix(ending).to_s("%T")

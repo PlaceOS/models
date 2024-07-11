@@ -24,6 +24,23 @@ module PlaceOS::Model
       booking.timezone = "Europe/Berlin"
     end
 
+    it "recurring bookings require a timezone" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.timezone = ""
+      booking.save.should be_false
+
+      booking.timezone = nil
+      booking.save.should be_false
+
+      booking.timezone = "Berttty"
+      booking.save.should be_false
+
+      booking.timezone = "Europe/Berlin"
+      booking.save.should be_true
+    end
+
     it "should have a booking every day" do
       booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
       booking.recurrence_type = :daily
