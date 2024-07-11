@@ -207,4 +207,19 @@ module PlaceOS::Model
     tenant.save!
     Tenant.find!(tenant.id).secret_expiry.try &.to_unix.should eq date.to_unix
   end
+
+  it "should have default early_checkin value" do
+    tenant = Generator.tenant({
+      name:        "Jon",
+      platform:    "google",
+      domain:      "google.staff-api.dev",
+      credentials: %({"issuer":"1122121212","scopes":["http://example.com"],"signing_key":"-----BEGIN PRIVATE KEY-----SOMEKEY DATA-----END PRIVATE KEY-----","domain":"example.com.au","sub":"jon@example.com.au"}),
+    })
+
+    tenant.save!
+    Tenant.find!(tenant.id).early_checkin.should eq 3600
+
+    JSON.parse(tenant.to_json).as_h["early_checkin"].as_i.should eq(3600)
+    JSON.parse(tenant.as_json.to_json).as_h["early_checkin"].as_i.should eq(3600)
+  end
 end
