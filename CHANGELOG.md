@@ -1,3 +1,9 @@
+## v9.52.0 (2024-07-11)
+
+### Feat
+
+- PPT-1437 Add early_check field to Tenant model ([#265](https://github.com/PlaceOS/models/pull/265))
+
 ## v9.51.1 (2024-07-09)
 
 ### Fix
