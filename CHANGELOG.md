@@ -1,3 +1,9 @@
+## v9.52.1 (2024-07-11)
+
+### Fix
+
+- **booking**: add timezone validation
+
 ## v9.52.0 (2024-07-11)
 
 ### Feat
