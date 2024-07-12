@@ -6,6 +6,12 @@ module PlaceOS::Model
   class EventMetadata < ModelWithAutoKey
     table :event_metadatas
 
+    enum Permission
+      PRIVATE # Default, attendees must be invited
+      OPEN    # Users in the same tenant can join
+      PUBLIC  # Open for everyone to join
+    end
+
     attribute system_id : String
     attribute event_id : String
     attribute recurring_master_id : String?
@@ -27,6 +33,9 @@ module PlaceOS::Model
     attribute breakdown_time : Int64 = 0
     attribute setup_event_id : String? = nil
     attribute breakdown_event_id : String? = nil
+
+    attribute permission : Permission = Permission::PRIVATE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::EventMetadata::Permission),
+      description: "The permission level for the event. Defaults to private. If set to private, attendees must be invited.If set to open, users in the same tenant can join. If set to public, the event is open for everyone to join."
 
     belongs_to Tenant, pk_type: Int64
 
