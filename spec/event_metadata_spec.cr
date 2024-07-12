@@ -26,5 +26,19 @@ module PlaceOS::Model
         EventMetadata.by_tenant(tenant.id).by_events_or_master_ids([event.resource_master_id, "1234", event.ical_uid], [event.resource_master_id, "1234", event.ical_uid]).to_a.size.should eq 1
       end
     end
+
+    describe "event metadata permissions" do
+      it "sets the permission field to PRIVATE by default" do
+        tenant = get_tenant
+
+        event_start = 5.minutes.from_now
+        event_end = 10.minutes.from_now
+
+        event = Generator.event_metadata(tenant.id, event_start, event_end)
+        event.save!
+
+        EventMetadata.by_tenant(tenant.id).to_a.first.permission.should eq EventMetadata::Permission::PRIVATE
+      end
+    end
   end
 end
