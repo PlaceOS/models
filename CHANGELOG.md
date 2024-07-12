@@ -1,3 +1,9 @@
+## v9.53.0 (2024-07-12)
+
+### Feat
+
+- **event_metadata**: add permission field ([#266](https://github.com/PlaceOS/models/pull/266))
+
 ## v9.52.1 (2024-07-11)
 
 ### Fix
