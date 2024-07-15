@@ -66,7 +66,6 @@ module PlaceOS::Model
       description : String = "",
     ) do
       include JSON::Serializable
-      extend OpenAPI::Generator::Serializable
     end
 
     # Association

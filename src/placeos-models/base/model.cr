@@ -4,10 +4,6 @@ require "log"
 require "neuroplastic"
 require "pg-orm"
 
-require "openapi-generator"
-require "openapi-generator/serializable"
-require "openapi-generator/serializable/adapters/active-model"
-
 require "../utilities/encryption"
 require "../utilities/validation"
 require "../utilities/id_generator"
@@ -26,8 +22,6 @@ module PlaceOS::Model
       end
 
       Log = ::Log.for(self)
-      include OpenAPI::Generator::Serializable::Adapters::ActiveModel
-      extend OpenAPI::Generator::Serializable
     end
 
     before_create { self.id = Utilities::IdGenerator.next(self) unless self.id? }
@@ -47,8 +41,6 @@ module PlaceOS::Model
       end
 
       Log = ::Log.for(self)
-      include OpenAPI::Generator::Serializable::Adapters::ActiveModel
-      extend OpenAPI::Generator::Serializable
       include Model::Associations
       include Model::Scope
 
@@ -70,8 +62,6 @@ module PlaceOS::Model
 
     macro inherited
       Log = ::Log.for(self)
-      include OpenAPI::Generator::Serializable::Adapters::ActiveModel
-      extend OpenAPI::Generator::Serializable
     end
 
     # RethinkDB library serializes through JSON::Any

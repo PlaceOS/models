@@ -28,16 +28,6 @@ dependencies:
     github: spider-gazelle/neuroplastic
     version: ~> 1.6
 
-  # OpenAPI types
-  open_api:
-    github: elbywan/open_api.cr
-    version: ~> 1.3
-
-  # OpenAPI schema serialization
-  openapi-generator:
-    github: place-labs/openapi-generator
-    branch: master
-
   # Parser combinators
   pars:
     github: spider-gazelle/pars

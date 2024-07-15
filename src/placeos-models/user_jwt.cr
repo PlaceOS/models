@@ -137,7 +137,6 @@ module PlaceOS::Model
 
     struct Metadata
       include JSON::Serializable
-      extend OpenAPI::Generator::Serializable
 
       @[JSON::Field(key: "n")]
       getter name : String

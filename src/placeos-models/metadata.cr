@@ -1,6 +1,5 @@
 require "json"
 require "json-merge-patch/ext"
-require "openapi-generator/serializable"
 require "pars"
 
 require "pg-orm"
@@ -140,7 +139,6 @@ module PlaceOS::Model
       created_at : Time = Time.utc,
     ) do
       include JSON::Serializable
-      extend OpenAPI::Generator::Serializable
 
       @[JSON::Field(converter: Time::EpochConverter, type: "integer", format: "Int64")]
       @updated_at : Time

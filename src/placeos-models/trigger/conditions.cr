@@ -45,7 +45,6 @@ module PlaceOS::Model
         keys : Array(String)
       ) do
         include JSON::Serializable
-        extend OpenAPI::Generator::Serializable
       end
 
       enum Operator

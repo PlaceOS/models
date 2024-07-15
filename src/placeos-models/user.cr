@@ -248,7 +248,6 @@ module PlaceOS::Model
     # :nodoc:
     struct AdminAttributes
       include JSON::Serializable
-      extend OpenAPI::Generator::Serializable
 
       getter sys_admin : Bool?
       getter support : Bool?
