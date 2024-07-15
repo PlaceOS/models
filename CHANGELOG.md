@@ -1,3 +1,9 @@
+## v9.53.1 (2024-07-15)
+
+### Fix
+
+- remove openapi-generator
+
 ## v9.53.0 (2024-07-12)
 
 ### Feat
