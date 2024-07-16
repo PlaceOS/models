@@ -1,3 +1,9 @@
+## v9.53.2 (2024-07-16)
+
+### Fix
+
+- **base/associations**: macro type resolution error
+
 ## v9.53.1 (2024-07-15)
 
 ### Fix
