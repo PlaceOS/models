@@ -70,7 +70,7 @@ module PlaceOS::Model
         ]
       end
 
-      response = PgORM::Database.connection do |db|
+      response = ::PgORM::Database.connection do |db|
         db.exec(update_item_counts)
       end
       response.rows_affected

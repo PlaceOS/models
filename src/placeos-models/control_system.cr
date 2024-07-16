@@ -231,7 +231,7 @@ module PlaceOS::Model
         WHERE mod.id IS NULL;
       ]
 
-      remove_mods = PgORM::Database.connection do |conn|
+      remove_mods = ::PgORM::Database.connection do |conn|
         conn.query_one(sql_query, &.read(Array(String)?))
       end
 
@@ -307,7 +307,7 @@ module PlaceOS::Model
     end
 
     def self.add_module(control_system_id : String, module_id : String)
-      response = PgORM::Database.connection do |db|
+      response = ::PgORM::Database.connection do |db|
         db.exec(<<-SQL, control_system_id, [module_id])
           update #{ControlSystem.table_name} set modules = modules || $2, version = version + 1 where id = $1
         SQL
@@ -334,7 +334,7 @@ module PlaceOS::Model
     end
 
     def self.remove_module(control_system_id : String, module_id : String)
-      response = PgORM::Database.connection do |db|
+      response = ::PgORM::Database.connection do |db|
         db.exec(<<-SQL, control_system_id, [module_id])
           update #{ControlSystem.table_name} set modules=(select array(select unnest(modules) except select unnest($2::text[]))), version = version + 1 where id = $1
         SQL
@@ -407,7 +407,7 @@ module PlaceOS::Model
       playlists = {
         sys_id => self.playlists,
       }
-      PgORM::Database.connection do |conn|
+      ::PgORM::Database.connection do |conn|
         conn.query(sql_query, args: [sys_id]) do |rs|
           while rs.move_next
             playlists[rs.read(String)] = rs.read(Array(String))

@@ -57,7 +57,7 @@ module PlaceOS::Model
         WHERE playlist_items.id IS NULL;
       ]
 
-      remove_ids = PgORM::Database.connection do |conn|
+      remove_ids = ::PgORM::Database.connection do |conn|
         conn.query_one(sql_query, &.read(Array(String)?))
       end
 

@@ -89,7 +89,7 @@ module PlaceOS::Model
 
       # Same error as being unable to find the model
       if model.secret != OpenSSL::HMAC.hexdigest(:sha512, secret, id)
-        raise PgORM::Error::RecordNotFound.new("Key not present: #{id}")
+        raise ::PgORM::Error::RecordNotFound.new("Key not present: #{id}")
       end
 
       model

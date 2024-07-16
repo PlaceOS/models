@@ -99,7 +99,7 @@ module PlaceOS::Model
         WHERE parent_id IS NULL OR parent_id = '';
       ]
 
-      PgORM::Database.connection(&.query_one?(query, self.parent_id, &.read(String))).as(String)
+      ::PgORM::Database.connection(&.query_one?(query, self.parent_id, &.read(String))).as(String)
     end
 
     def root_zone

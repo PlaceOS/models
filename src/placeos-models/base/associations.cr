@@ -46,7 +46,7 @@ module PlaceOS::Model
         key = self.{{ foreign_key }}
 
         return parent if parent
-        raise PgORM::Error.new("No {{ foreign_key }} set") unless key
+        raise ::PgORM::Error.new("No {{ foreign_key }} set") unless key
 
         self.{{ assoc_var }} = {{ parent_class }}.find!(key)
       end
@@ -100,7 +100,7 @@ module PlaceOS::Model
         key = self.{{ foreign_key.id }}
         child = @{{ assoc_var }}
         return child unless child.nil?
-        raise PgORM::Error.new("No {{ foreign_key.id }} set") unless key
+        raise ::PgORM::Error.new("No {{ foreign_key.id }} set") unless key
 
         self.{{ assoc_var }} = {{ child_class }}.find!(key)
       end

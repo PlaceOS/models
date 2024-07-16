@@ -53,7 +53,7 @@ module PlaceOS::Model
 
     def save!(**options)
       super(**options)
-    rescue error : PgORM::Error
+    rescue error : ::PgORM::Error
       # Ensure api_key is cleaned up
       self.api_key.try(&.destroy)
       raise error

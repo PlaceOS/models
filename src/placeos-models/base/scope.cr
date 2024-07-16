@@ -14,7 +14,7 @@ module PlaceOS::Model::Scope
                 query.{{name.id}}({{parameters}})
               end
 
-              module PgORM::Query::Methods(T)
+              module ::PgORM::Query::Methods(T)
                 def {{name.id}}({{parameters}})
                   {{yield}}
                 end

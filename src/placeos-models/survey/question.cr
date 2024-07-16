@@ -31,7 +31,7 @@ module PlaceOS::Model
       end
 
       def soft_delete
-        PgORM::Database.exec_sql("UPDATE questions SET deleted_at = $1 WHERE id = $2", Time.local.to_unix, self.id)
+        ::PgORM::Database.exec_sql("UPDATE questions SET deleted_at = $1 WHERE id = $2", Time.local.to_unix, self.id)
       end
 
       def maybe_soft_delete

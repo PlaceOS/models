@@ -13,7 +13,7 @@ require "./scope"
 
 module PlaceOS::Model
   # Base class for all Engine models
-  abstract class ModelBase < PgORM::Base
+  abstract class ModelBase < ::PgORM::Base
     include Neuroplastic
 
     macro inherited
@@ -31,7 +31,7 @@ module PlaceOS::Model
 
   # Base class for all models which have auto-generated bigint as pk
   # and doesn't require string based auto generated pk
-  abstract class ModelWithAutoKey < PgORM::Base
+  abstract class ModelWithAutoKey < ::PgORM::Base
     include Neuroplastic
 
     macro inherited

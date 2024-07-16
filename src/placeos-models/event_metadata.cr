@@ -174,7 +174,7 @@ module PlaceOS::Model
     def self.migrate_recurring_metadata(system_id : String, recurrance : PlaceCalendar::Event, parent_metadata : EventMetadata)
       metadata = EventMetadata.new
 
-      PgORM::Database.transaction do
+      ::PgORM::Database.transaction do
         metadata.update!(
           ext_data: parent_metadata.ext_data,
           tenant_id: parent_metadata.tenant_id,

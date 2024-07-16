@@ -73,7 +73,7 @@ module PlaceOS::Model
 
       table_name = metadata.parent_id.as(String).partition('-').first
 
-      found = PgORM::Database.connection do |db|
+      found = ::PgORM::Database.connection do |db|
         db.scalar(<<-SQL, metadata.parent_id).as(Int64) > 0
           select count(*) from "#{table_name}" where id = $1
         SQL

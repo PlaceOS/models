@@ -41,7 +41,7 @@ module PlaceOS::Model
       count = @redirect_count || 0_i64
       @redirect_count = count + 1_i64
       short_id = self.id.as(String)
-      PgORM::Database.exec_sql(%(UPDATE shortener SET redirect_count = redirect_count + 1 WHERE id = '#{short_id}'))
+      ::PgORM::Database.exec_sql(%(UPDATE shortener SET redirect_count = redirect_count + 1 WHERE id = '#{short_id}'))
     rescue error
       Log.warn(exception: error) { "failed to increment short url redirect_count for #{self.id}" }
     end
