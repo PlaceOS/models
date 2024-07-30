@@ -498,4 +498,76 @@ module PlaceOS::Model
     booking.save.should be_false
     booking.persisted?.should be_false
   end
+
+  it "updates rejected/approved fields on child bookings" do
+    tenant_id = Generator.tenant.id
+    user_one_email = "one@example.com"
+
+    # parent booking
+    parent_booking = Booking.new(
+      booking_type: "room",
+      asset_ids: ["room-1"],
+      booking_start: 1.hour.from_now.to_unix,
+      booking_end: 2.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_one_email),
+      user_name: "One",
+      booked_by_email: PlaceOS::Model::Email.new(user_one_email),
+      booked_by_name: "One",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1",
+      history: [] of Booking::History
+    ).save!
+
+    # child booking
+    child_booking = Booking.new(
+      booking_type: "asset",
+      asset_ids: ["laptop-1"],
+      booking_start: 1.hour.from_now.to_unix,
+      booking_end: 2.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_one_email),
+      user_name: "One",
+      booked_by_email: PlaceOS::Model::Email.new(user_one_email),
+      booked_by_name: "One",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1",
+      history: [] of Booking::History,
+      parent_id: parent_booking.id
+    ).save!
+
+    parent_booking.approver_id = "user-2"
+    parent_booking.approver_email = "two@example.com"
+    parent_booking.approver_name = "Two"
+
+    # Approve the parent booking
+    approved_at_time = Time.utc.to_unix
+
+    parent_booking.approved = true
+    parent_booking.approved_at = approved_at_time
+    parent_booking.rejected = false
+    parent_booking.rejected_at = nil
+    parent_booking.save!
+
+    child_booking = Booking.find(child_booking.id)
+
+    child_booking.approved.should eq(true)
+    child_booking.approved_at.should eq(approved_at_time)
+    child_booking.rejected.should eq(false)
+    child_booking.rejected_at.should eq(nil)
+
+    # Reject the parent booking
+    rejected_at_time = Time.utc.to_unix
+
+    parent_booking.approved = false
+    parent_booking.approved_at = nil
+    parent_booking.rejected = true
+    parent_booking.rejected_at = rejected_at_time
+    parent_booking.save!
+
+    child_booking = Booking.find(child_booking.id)
+
+    child_booking.approved.should eq(false)
+    child_booking.approved_at.should eq(nil)
+    child_booking.rejected.should eq(true)
+    child_booking.rejected_at.should eq(rejected_at_time)
+  end
 end
