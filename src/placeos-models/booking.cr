@@ -618,6 +618,8 @@ module PlaceOS::Model
           Booking.where(parent_id: id).update_all({:booking_start => booking_start, :booking_end => booking_end})
         elsif deleted_changed? || deleted_at_changed?
           Booking.where(parent_id: id).update_all({:deleted => deleted, :deleted_at => deleted_at})
+        elsif approved_changed? || approved_at_changed? || rejected_changed? || rejected_at_changed? || approver_id_changed? || approver_name_changed? || approver_email_changed?
+          Booking.where(parent_id: id).update_all({:approved => approved, :approved_at => approved_at, :rejected => rejected, :rejected_at => rejected_at, :approver_id => approver_id, :approver_name => approver_name, :approver_email => approver_email})
         end
       end
     end
