@@ -1,3 +1,9 @@
+## v9.54.0 (2024-07-31)
+
+### Feat
+
+- **booking**: [PPT-1405] update approved/rejected fields on child bookings ([#267](https://github.com/PlaceOS/models/pull/267))
+
 ## v9.53.3 (2024-07-16)
 
 ### Fix
