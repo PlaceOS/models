@@ -1,3 +1,9 @@
+## v9.55.0 (2024-08-05)
+
+### Feat
+
+- PPT-1470 Add email domain feature to Authority model ([#269](https://github.com/PlaceOS/models/pull/269))
+
 ## v9.54.0 (2024-07-31)
 
 ### Feat
