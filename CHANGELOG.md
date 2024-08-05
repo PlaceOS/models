@@ -1,3 +1,9 @@
+## v9.56.1 (2024-08-05)
+
+### Fix
+
+- **migrations**: add default to email_domains
+
 ## v9.56.0 (2024-08-05)
 
 ### Feat
