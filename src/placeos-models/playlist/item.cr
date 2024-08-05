@@ -37,9 +37,6 @@ module PlaceOS::Model
     belongs_to Upload, foreign_key: "media_id", association_name: "media"
     belongs_to Upload, foreign_key: "thumbnail_id", association_name: "thumbnail"
 
-    attribute media_details : Upload? = nil, persistence: false, show: true, description: "details of the media_id specified"
-    attribute thumbnail_details : Upload? = nil, persistence: false, show: true, description: "details of the thumbnail_id specified"
-
     # other metadata
     attribute play_count : Int64 = 0
     attribute valid_from : Time? = nil, converter: Time::EpochConverter
