@@ -75,7 +75,9 @@ module PlaceOS::Model
 
     # Locates an authority by email domain
     def self.find_by_email(email : String) : Authority?
-      search_domain = email.split('@', 2)[1]
+      parts = email.split('@', 2)
+      return nil unless parts.size == 2
+      search_domain = parts[1].downcase
       Authority.where("email_domains @> ARRAY['#{search_domain}']").first?
     end
   end
