@@ -1,3 +1,9 @@
+## v9.56.0 (2024-08-05)
+
+### Feat
+
+- **playlist/item**: add video length ([#270](https://github.com/PlaceOS/models/pull/270))
+
 ## v9.55.0 (2024-08-05)
 
 ### Feat
