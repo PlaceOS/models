@@ -259,8 +259,8 @@ module PlaceOS::Model
       self.name = driver_ref.module_name
 
       unless self.running
-        has_runtime_error = false
-        error_timestamp = nil
+        self.has_runtime_error = false
+        self.error_timestamp = nil
       end
     end
 

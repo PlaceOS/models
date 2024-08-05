@@ -407,10 +407,11 @@ module PlaceOS::Model
       )
     end
 
-    def self.authority(domain : String = "http://localhost")
+    def self.authority(domain : String = "http://localhost", email_domains : Array(String) = [] of String)
       Authority.new(
         name: Faker::Hacker.noun,
         domain: domain,
+        email_domains: email_domains
       )
     end
 

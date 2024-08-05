@@ -29,6 +29,20 @@ module PlaceOS::Model
       found.try(&.id).should eq authority.id
     end
 
+    it "find_by_email" do
+      domain = "http://localhost:8080"
+      authority = Generator.authority(domain).save!
+
+      found = Authority.find_by_email("test@placeos.com")
+      found.should be_nil
+
+      authority.email_domains = ["placeos.com"]
+      authority.save!
+
+      found = Authority.find_by_email("test@placeos.com")
+      found.try(&.id).should eq authority.id
+    end
+
     describe "#destroy" do
       it "removes dependent saml authentications" do
         auth = Generator.authority.save!

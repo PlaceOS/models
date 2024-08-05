@@ -26,6 +26,8 @@ module PlaceOS::Model
       "default_app" => JSON::Any.new("/backoffice/"),
     }
 
+    attribute email_domains : Array(String) = [] of String
+
     macro finished
       # Ensure only the host is saved.
       #
@@ -69,6 +71,12 @@ module PlaceOS::Model
     def self.find_by_domain(domain : String) : Authority?
       host = URI.parse(domain).host || domain
       Authority.where(domain: host).first?
+    end
+
+    # Locates an authority by email domain
+    def self.find_by_email(email : String) : Authority?
+      search_domain = email.split('@', 2)[1]
+      Authority.where("email_domains @> ARRAY['#{search_domain}']").first?
     end
   end
 end
