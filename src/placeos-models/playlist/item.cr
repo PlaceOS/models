@@ -23,6 +23,7 @@ module PlaceOS::Model
     belongs_to Authority, foreign_key: "authority_id"
 
     # times in milliseconds (start time is for videos)
+    attribute video_length : Int32? = nil
     attribute start_time : Int32 = 0
     attribute play_time : Int32 = 0
     attribute animation : Animation? = nil, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Playlist::Animation)
