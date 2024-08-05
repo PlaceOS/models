@@ -1,3 +1,9 @@
+## v9.56.2 (2024-08-05)
+
+### Fix
+
+- **authority**: email_domains should handle nilable
+
 ## v9.56.1 (2024-08-05)
 
 ### Fix
