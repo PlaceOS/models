@@ -23,6 +23,7 @@ module PlaceOS::Model
     belongs_to Authority, foreign_key: "authority_id"
 
     # times in milliseconds (start time is for videos)
+    attribute video_length : Int32? = nil
     attribute start_time : Int32 = 0
     attribute play_time : Int32 = 0
     attribute animation : Animation? = nil, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Playlist::Animation)
@@ -35,6 +36,9 @@ module PlaceOS::Model
     attribute media_uri : String? = nil
     belongs_to Upload, foreign_key: "media_id", association_name: "media"
     belongs_to Upload, foreign_key: "thumbnail_id", association_name: "thumbnail"
+
+    attribute media_details : Upload? = nil, persistence: false, show: true, description: "details of the media_id specified"
+    attribute thumbnail_details : Upload? = nil, persistence: false, show: true, description: "details of the thumbnail_id specified"
 
     # other metadata
     attribute play_count : Int64 = 0
