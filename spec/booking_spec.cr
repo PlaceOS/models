@@ -238,6 +238,68 @@ module PlaceOS::Model
       list.map(&.id).should contain(bookings[4].id)
       list.map(&.id).should contain(bookings[5].id)
     end
+
+    it "returns bookings by_user_or_email including guest attendee" do
+      tenant_id = Generator.tenant.id
+
+      user_one_email = "one@example.com"
+      user_two_email = "two@example.com"
+
+      bookings = [] of Booking
+
+      bookings << Booking.new(
+        booking_type: "group-event",
+        asset_ids: ["room-1"],
+        booking_start: 1.hour.from_now.to_unix,
+        booking_end: 2.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_one_email),
+        user_name: "One",
+        booked_by_email: PlaceOS::Model::Email.new(user_one_email),
+        booked_by_name: "One",
+        tenant_id: tenant_id,
+        booked_by_id: "user-1",
+        history: [] of Booking::History,
+        permission: Booking::Permission::OPEN
+      ).save!
+
+      user_two_guest = Guest.new(
+        email: user_two_email,
+        name: "Two",
+        tenant_id: tenant_id
+      ).save!
+
+      user_two_attendee = Attendee.new(
+        booking_id: bookings[0].id,
+        guest_id: user_two_guest.id,
+        tenant_id: tenant_id,
+        checked_in: false,
+        visit_expected: true,
+      ).save!
+
+      bookings << Booking.new(
+        booking_type: "group-event",
+        asset_ids: ["room-2"],
+        booking_start: 2.hour.from_now.to_unix,
+        booking_end: 3.hours.from_now.to_unix,
+        user_email: PlaceOS::Model::Email.new(user_one_email),
+        user_name: "One",
+        booked_by_email: PlaceOS::Model::Email.new(user_one_email),
+        booked_by_name: "One",
+        tenant_id: tenant_id,
+        booked_by_id: "user-1",
+        history: [] of Booking::History,
+        permission: Booking::Permission::OPEN
+      ).save!
+
+      query = Booking
+        .by_tenant(tenant_id)
+        .by_user_or_email(nil, user_two_email, true, false, false, true)
+
+      list = query.to_a
+      list.size.should eq 1
+      list.map(&.id).should contain(bookings[0].id)
+      list.map(&.id).should_not contain(bookings[1].id)
+    end
   end
 
   it "successfully saves a booking" do
