@@ -26,7 +26,7 @@ module PlaceOS::Model
       "default_app" => JSON::Any.new("/backoffice/"),
     }
 
-    attribute email_domains : Array(String)? = [] of String
+    attribute email_domains : Array(String) = [] of String
 
     macro finished
       # Ensure only the host is saved.
