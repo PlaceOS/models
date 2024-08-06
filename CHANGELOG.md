@@ -1,3 +1,9 @@
+## v9.56.3 (2024-08-06)
+
+### Fix
+
+- **authority**: Add migration script to set defaults ([#271](https://github.com/PlaceOS/models/pull/271))
+
 ## v9.56.2 (2024-08-05)
 
 ### Fix
