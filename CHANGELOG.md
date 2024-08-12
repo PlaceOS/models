@@ -1,3 +1,9 @@
+## v9.56.4 (2024-08-12)
+
+### Fix
+
+- **playlist**: valid from and until field types
+
 ## v9.56.3 (2024-08-06)
 
 ### Fix
