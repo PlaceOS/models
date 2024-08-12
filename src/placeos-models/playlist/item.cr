@@ -39,8 +39,8 @@ module PlaceOS::Model
 
     # other metadata
     attribute play_count : Int64 = 0
-    attribute valid_from : Time? = nil, converter: Time::EpochConverter
-    attribute valid_until : Time? = nil, converter: Time::EpochConverter
+    attribute valid_from : Int64? = nil
+    attribute valid_until : Int64? = nil
 
     def self.items(item_ids : Array(String)) : Array(Playlist::Item)
       Playlist::Item.where(id: item_ids).to_a
@@ -86,11 +86,7 @@ module PlaceOS::Model
     validate ->(this : Playlist::Item) {
       case this.media_type
       when .image?, .video?
-        begin
-          raise "no media type" unless this.media
-        rescue
-          this.validation_error(:media_id, "must specify a media upload id")
-        end
+        this.validation_error(:media_id, "must specify a media upload id") unless this.media
       else
         if media_uri = this.media_uri.presence
           begin

@@ -43,15 +43,15 @@ module PlaceOS::Model
     attribute default_duration : Int32 = 10_000
 
     # conditions that can determine when a playlist is valid
-    attribute valid_from : Time? = nil, converter: Time::EpochConverter
-    attribute valid_until : Time? = nil, converter: Time::EpochConverter
+    attribute valid_from : Int64? = nil
+    attribute valid_until : Int64? = nil
 
     # hours in the timezone that the playlist should play
     attribute play_hours : String? = nil
 
     # start playing the playlist at exactly this time or on CRON schedule
     # play_at will ignore timezones
-    attribute play_at : Time? = nil, converter: Time::EpochConverter
+    attribute play_at : Int64? = nil
     attribute play_cron : String? = nil
 
     def systems
