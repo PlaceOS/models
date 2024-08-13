@@ -1,3 +1,9 @@
+## v9.56.5 (2024-08-13)
+
+### Fix
+
+- **booking**: prevent save if instance is set
+
 ## v9.56.4 (2024-08-12)
 
 ### Fix
