@@ -191,6 +191,7 @@ module PlaceOS::Model
     validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.clashing? }
     validate :asset_ids, "must be unique", ->(this : self) { this.unique_ids? }
     validate :booking_end, "must be after booking_start", ->(this : self) { this.booking_end > this.booking_start }
+    validate :instance, "must not be set", ->(this : self) { this.instance.nil? }
 
     before_save do
       @user_id ||= booked_by_id
