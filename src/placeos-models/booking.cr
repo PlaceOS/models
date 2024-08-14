@@ -38,6 +38,12 @@ module PlaceOS::Model
       MONTHLY
     end
 
+    enum Induction
+      TENTATIVE
+      ACCEPTED
+      DECLINED
+    end
+
     attribute booking_type : String
     attribute booking_start : Int64
     attribute booking_end : Int64
@@ -106,7 +112,8 @@ module PlaceOS::Model
 
     attribute images : Array(String) = [] of String
 
-    attribute induction : Bool = false
+    attribute induction : Induction = Induction::TENTATIVE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Induction),
+      description: "The induction status of the booking. Defaults to TENTATIVE."
 
     attribute permission : Permission = Permission::PRIVATE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Permission),
       description: "The permission level for the booking. Defaults to private. If set to private, attendees must be invited.If set to open, users in the same tenant can join. If set to public, the booking is open for everyone to join."
