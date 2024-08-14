@@ -1,3 +1,9 @@
+## v9.56.6 (2024-08-14)
+
+### Refactor
+
+- **booking**: change induction to an enum ([#272](https://github.com/PlaceOS/models/pull/272))
+
 ## v9.56.5 (2024-08-13)
 
 ### Fix
