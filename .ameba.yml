@@ -42,3 +42,9 @@ Naming/QueryBoolMethods:
   Description: Reports boolean properties without the `?` suffix
   Enabled: false
   Severity: Convention
+
+Style/PredicateName:
+  Enabled: false
+
+Style/QueryBoolMethods:
+  Enabled: false
