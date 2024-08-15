@@ -1,8 +1,50 @@
-Lint/NotNil:
+Lint/UselessAssign:
+  Description: Disallows useless variable assignments
   Enabled: false
+  Severity: Warning
+
+Naming/BlockParameterName:
+  Description: Disallows non-descriptive block parameter names
+  Enabled: false
+  Severity: Convention
+
+Lint/NotNil:
+  Description: Identifies usage of `not_nil!` calls
+  Enabled: false
+  Severity: Warning
+
+Lint/SpecFilename:
+  Description: Enforces spec filenames to have `_spec` suffix
+  Enabled: false
+  Severity: Warning
+
+Style/ParenthesesAroundCondition:
+  Description: Disallows redundant parentheses around control expressions
+  Enabled: false
+  Severity: Convention
+
+Naming/AccessorMethodName:
+  Description: Makes sure that accessor methods are named properly
+  Enabled: false
+  Severity: Convention
+
+Naming/PredicateName:
+  Description: Disallows tautological predicate names
+  Enabled: false
+  Severity: Convention
+
+Documentation/DocumentationAdmonition:
+  Description: Reports documentation admonitions
+  Enabled: false
+  Severity: Warning
+
+Naming/QueryBoolMethods:
+  Description: Reports boolean properties without the `?` suffix
+  Enabled: false
+  Severity: Convention
+
 Style/PredicateName:
   Enabled: false
-Style/ParenthesesAroundCondition:
-  Enabled: false
+
 Style/QueryBoolMethods:
   Enabled: false

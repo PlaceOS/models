@@ -20,7 +20,7 @@ module PlaceOS::Model
     attribute delegated : Bool = false
     attribute service_account : String?
 
-    attribute secret_expiry : Time?, converter: Time::EpochConverter
+    attribute secret_expiry : Time?, converter: Time::EpochConverterOptional
     attribute early_checkin : Int64 = 3600
 
     has_many(
