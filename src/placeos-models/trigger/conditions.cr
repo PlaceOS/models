@@ -12,7 +12,7 @@ module PlaceOS::Model
       end
 
       attribute type : Type
-      attribute time : Time?, converter: Time::EpochConverter, type: "integer", format: "Int64"
+      attribute time : Time?, converter: Time::EpochConverterOptional, type: "integer", format: "Int64"
       attribute cron : String?
       attribute timezone : String?
 

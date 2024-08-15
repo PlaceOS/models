@@ -15,7 +15,7 @@ module PlaceOS::Model
     attribute api_key_id : String, mass_assignment: false
 
     attribute user_id : String, mass_assignment: false
-    attribute last_seen : Time?, mass_assignment: false
+    attribute last_seen : Time?, converter: Time::EpochConverterOptional, mass_assignment: false
     attribute online : Bool = false, mass_assignment: false
 
     @[JSON::Field(ignore: true)]

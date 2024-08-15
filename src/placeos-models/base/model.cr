@@ -189,6 +189,36 @@ end
 # :nodoc:
 module Time::EpochConverter
   def self.from_rs(rs : DB::ResultSet)
+    rs.read(Time)
+  end
+end
+
+module Time::EpochConverterOptional
+  def self.from_rs(rs : DB::ResultSet)
     rs.read(Time?)
+  end
+
+  def self.from_json(value : JSON::PullParser) : Time?
+    str = value.read_raw
+    return nil unless str
+    if (val = str.to_i?)
+      Time.unix(val)
+    else
+      begin
+        Time.from_json(str)
+      rescue Time::Format::Error
+        fmt = "%FT%T"
+        fmt += ".%6N" if str.index('.')
+        Time.parse_utc(str.strip('"'), fmt)
+      end
+    end
+  end
+
+  def self.to_json(value : Time?, json : JSON::Builder) : Nil
+    if val = value
+      json.number(val.to_unix)
+    else
+      json.null
+    end
   end
 end
