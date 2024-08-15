@@ -1,3 +1,9 @@
+## v9.57.0 (2024-08-15)
+
+### Feat
+
+- PPT-1475 mark Trigger fields to ignore from ES index ([#273](https://github.com/PlaceOS/models/pull/273))
+
 ## v9.56.6 (2024-08-14)
 
 ### Refactor
