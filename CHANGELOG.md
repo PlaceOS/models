@@ -1,3 +1,9 @@
+## v9.57.1 (2024-08-16)
+
+### Fix
+
+- **playlist/item**: update playlists when media is deleted
+
 ## v9.57.0 (2024-08-15)
 
 ### Feat
