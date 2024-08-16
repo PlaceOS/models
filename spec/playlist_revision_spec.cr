@@ -25,7 +25,7 @@ module PlaceOS::Model
       revision = Playlist::Revision.find(revision.id.as(String))
       revision.items.should eq [item1_id, item2_id]
 
-      item.destroy
+      item.delete
       revision = Playlist::Revision.find(revision.id.as(String))
       revision.items.should eq [item1_id, item2_id]
       revision.save!
