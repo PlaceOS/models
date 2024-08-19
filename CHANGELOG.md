@@ -1,3 +1,9 @@
+## v9.57.2 (2024-08-19)
+
+### Fix
+
+- **control_system**: playlists_last_updated using created at
+
 ## v9.57.1 (2024-08-16)
 
 ### Fix
