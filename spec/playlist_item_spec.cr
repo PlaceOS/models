@@ -63,5 +63,32 @@ module PlaceOS::Model
 
       updated.should_not eq playlist.updated_at
     end
+
+    it "updates playlists when an item is modified" do
+      revision = Generator.revision
+
+      item = Generator.item
+      item.save!
+      item1_id = item.id.as(String)
+      item2 = Generator.item
+      item2.save!
+      item2_id = item2.id.as(String)
+
+      revision.items = [item1_id, item2_id]
+      revision.save!
+      revision = Playlist::Revision.find(revision.id.as(String))
+      revision.items.should eq [item1_id, item2_id]
+
+      playlist = revision.playlist.not_nil!
+      updated = playlist.updated_at
+      sleep 1
+      item.animation = Playlist::Animation::SlideTop
+      item.save!
+
+      revision = Playlist::Revision.find(revision.id.as(String))
+      playlist = revision.playlist.not_nil!
+
+      updated.should_not eq playlist.updated_at
+    end
   end
 end

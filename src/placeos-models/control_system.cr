@@ -364,6 +364,7 @@ module PlaceOS::Model
     def playlists_last_updated(playlists : Hash(String, Array(String)) = all_playlists) : Time
       playlist_ids = playlists.values.flatten.uniq!
       if !playlist_ids.empty?
+        play_updated_at = Playlist.where(id: playlist_ids).order(updated_at: :desc).limit(1).to_a.first?.try(&.updated_at)
         rev_updated_at = Playlist::Revision.where(playlist_id: playlist_ids).order(updated_at: :desc).limit(1).to_a.first?.try(&.updated_at)
       end
       trig_updated_at = TriggerInstance
@@ -372,7 +373,7 @@ module PlaceOS::Model
         .order(updated_at: :desc)
         .limit(1).to_a.first?.try(&.updated_at)
 
-      [rev_updated_at, trig_updated_at, self.updated_at].compact.max
+      [play_updated_at, rev_updated_at, trig_updated_at, self.updated_at].compact.max
     end
 
     def self.with_playlists(ids : Enumerable(String))
