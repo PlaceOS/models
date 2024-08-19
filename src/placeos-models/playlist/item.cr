@@ -135,5 +135,29 @@ module PlaceOS::Model
         WHERE id IN ('#{playlist_ids.join("', '")}')
       ])
     end
+
+    after_update :update_playlists
+
+    def update_playlists
+      # grab all the playlists that contain this item
+      sql_query = %[
+        SELECT array_agg(DISTINCT playlist_id) AS playlist_ids
+        FROM playlist_revisions
+        WHERE '#{self.id}' = ANY(items)
+      ]
+
+      playlist_ids = ::PgORM::Database.connection do |conn|
+        conn.query_one(sql_query, &.read(Array(String)?))
+      end
+
+      return unless playlist_ids
+      return if playlist_ids.empty?
+
+      ::PgORM::Database.exec_sql(%[
+        UPDATE playlists
+        SET updated_at = CURRENT_TIMESTAMP
+        WHERE id IN ('#{playlist_ids.join("', '")}')
+      ])
+    end
   end
 end
