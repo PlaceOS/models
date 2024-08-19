@@ -1,3 +1,9 @@
+## v9.57.4 (2024-08-19)
+
+### Fix
+
+- **control_system**: include playlist updated at in cache bust
+
 ## v9.57.3 (2024-08-19)
 
 ### Fix
