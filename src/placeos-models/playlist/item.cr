@@ -26,7 +26,7 @@ module PlaceOS::Model
     attribute video_length : Int32? = nil
     attribute start_time : Int32 = 0
     attribute play_time : Int32 = 0
-    attribute animation : Animation? = nil, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Playlist::Animation)
+    attribute animation : Animation = Animation::Default, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Playlist::Animation)
 
     # media details
     attribute media_type : MediaType = MediaType::Image, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Item::MediaType)

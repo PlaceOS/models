@@ -16,6 +16,7 @@ module PlaceOS::Model
     end
 
     enum Animation
+      Default
       Cut
       CrossFade
       SlideTop
