@@ -1,3 +1,9 @@
+## v9.57.5 (2024-08-19)
+
+### Fix
+
+- **playlist**: make 0 the default playlist animation
+
 ## v9.57.4 (2024-08-19)
 
 ### Fix
