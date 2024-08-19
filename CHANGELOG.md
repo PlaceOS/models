@@ -1,3 +1,9 @@
+## v9.57.3 (2024-08-19)
+
+### Fix
+
+- **playlist/item**: update playlists when an item is changed
+
 ## v9.57.2 (2024-08-19)
 
 ### Fix
