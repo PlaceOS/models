@@ -47,7 +47,7 @@ dependencies:
 
   ulid:
     github: place-labs/ulid
-    branch: master
+    version: ">= 0.1"
 
   # cron parser
   cron_parser:
