@@ -2,11 +2,50 @@
 -- SQL in section 'Up' is executed when this migration is applied
 
 -- Temporary function to transform work_preferences and work_overrides
-CREATE OR REPLACE FUNCTION transform_work_preferences(preferences jsonb)
-RETURNS jsonb AS $$ DECLARE result jsonb := '[]'::jsonb; pref jsonb; BEGIN FOR pref IN SELECT * FROM jsonb_array_elements(preferences) LOOP result := result || jsonb_build_object( 'day_of_week', (pref->>'day_of_week')::int, 'blocks', jsonb_build_array( jsonb_build_object( 'start_time', pref->'start_time', 'end_time', pref->'end_time', 'location', COALESCE(pref->>'location', '') ) ) ); END LOOP; RETURN result; END; $$ LANGUAGE plpgsql;
+CREATE 
+OR REPLACE FUNCTION transform_work_preferences(preferences jsonb) RETURNS jsonb AS $$ 
+DECLARE RESULT jsonb := '[]'::jsonb;
+preference jsonb;
+BEGIN
+  FOR preference IN 
+  SELECT
+    * 
+  FROM
+    jsonb_array_elements(preferences) LOOP RESULT := RESULT || jsonb_build_object( 'day_of_week', 
+    (
+      preference ->> 'day_of_week'
+    )
+    ::INT, 'blocks', jsonb_build_array( jsonb_build_object( 'start_time', preference -> 'start_time', 'end_time', preference -> 'end_time', 'location', COALESCE(preference ->> 'location', '') ) ) );
+END
+LOOP;
+RETURN RESULT;
+END
+;
+$$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION transform_work_overrides(overrides jsonb)
-RETURNS jsonb AS $$ DECLARE result jsonb := '{}'::jsonb; date text; override jsonb; BEGIN FOR date, override IN SELECT * FROM jsonb_each(overrides) LOOP result := result || jsonb_build_object( date, (SELECT transform_work_preferences(jsonb_build_array(override)))[0] ); END LOOP; RETURN result; END; $$ LANGUAGE plpgsql;
+CREATE 
+OR REPLACE FUNCTION transform_work_overrides(overrides jsonb) RETURNS jsonb AS $$ 
+DECLARE RESULT jsonb := '{}'::jsonb;
+DATE text;
+override jsonb;
+BEGIN
+  FOR DATE,
+  override IN 
+  SELECT
+    * 
+  FROM
+    jsonb_each(overrides) LOOP RESULT := RESULT || jsonb_build_object( DATE, 
+    (
+      SELECT
+        transform_work_preferences(jsonb_build_array(override))
+    )
+    [0] );
+END
+LOOP;
+RETURN RESULT;
+END
+;
+$$ LANGUAGE plpgsql;
 
 -- Update the work_preferences and work_overrides columns
 UPDATE "user" SET work_preferences = transform_work_preferences(work_preferences);
@@ -20,11 +59,52 @@ DROP FUNCTION transform_work_overrides(jsonb);
 -- SQL section 'Down' is executed when this migration is rolled back
 
 -- Temporary functions to revert work_preferences and work_overrides
-CREATE OR REPLACE FUNCTION revert_work_preferences(preferences jsonb)
-RETURNS jsonb AS $$ DECLARE result jsonb := '[]'::jsonb; pref jsonb; BEGIN FOR pref IN SELECT * FROM jsonb_array_elements(preferences) LOOP result := result || ( SELECT jsonb_agg( jsonb_build_object( 'day_of_week', (pref->>'day_of_week')::int, 'start_time', block->'start_time', 'end_time', block->'end_time', 'location', COALESCE(block->>'location', '') ) ) FROM jsonb_array_elements(pref->'blocks') AS block ); END LOOP; RETURN result; END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION revert_work_preferences(preferences jsonb) RETURNS jsonb AS $$ 
+DECLARE RESULT jsonb := '[]'::jsonb;
+preference jsonb;
+BEGIN
+  FOR preference IN 
+  SELECT
+    * 
+  FROM
+    jsonb_array_elements(preferences) LOOP RESULT := RESULT || ( 
+    SELECT
+      jsonb_agg( jsonb_build_object( 'day_of_week', 
+      (
+        preference ->> 'day_of_week'
+      )
+      ::INT, 'start_time', block -> 'start_time', 'end_time', block -> 'end_time', 'location', COALESCE(block ->> 'location', '') ) ) 
+    FROM
+      jsonb_array_elements(preference -> 'blocks') AS block );
+END
+LOOP;
+RETURN RESULT;
+END
+;
+$$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION revert_work_overrides(overrides jsonb)
-RETURNS jsonb AS $$ DECLARE result jsonb := '{}'::jsonb; date text; override jsonb; BEGIN FOR date, override IN SELECT * FROM jsonb_each(overrides) LOOP result := result || jsonb_build_object( date, (SELECT revert_work_preferences(jsonb_build_array(override)))[0] ); END LOOP; RETURN result; END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION revert_work_overrides(overrides jsonb) RETURNS jsonb AS $$ 
+DECLARE RESULT jsonb := '{}'::jsonb;
+DATE text;
+override jsonb;
+BEGIN
+  FOR DATE,
+  override IN 
+  SELECT
+    * 
+  FROM
+    jsonb_each(overrides) LOOP RESULT := RESULT || jsonb_build_object( DATE, 
+    (
+      SELECT
+        revert_work_preferences(jsonb_build_array(override))
+    )
+    [0] );
+END
+LOOP;
+RETURN RESULT;
+END
+;
+$$ LANGUAGE plpgsql;
 
 -- Revert the work_preferences column to its original format
 UPDATE "user" SET work_preferences = revert_work_preferences(work_preferences);
