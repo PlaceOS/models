@@ -14,12 +14,23 @@ module PlaceOS::Model
 
     table :user
 
-    # day_of_week: Index of the day of the week. `0` being Sunday
     # start_time: Start time of work hours. e.g. `7.5` being 7:30AM
     # end_time: End time of work hours. e.g. `18.5` being 6:30PM
     # location: Name of the location the work is being performed at
-    record WorktimePreference, day_of_week : Int64, start_time : Float64, end_time : Float64, location : String = "" do
+    struct WorktimeBlock
       include JSON::Serializable
+
+      property start_time : Float64
+      property end_time : Float64
+      property location : String = ""
+    end
+
+    # day_of_week: Index of the day of the week. `0` being Sunday
+    struct WorktimePreference
+      include JSON::Serializable
+
+      property day_of_week : Int32
+      property blocks : Array(WorktimeBlock) = [] of WorktimeBlock
     end
 
     attribute name : String, es_subfield: "keyword"
