@@ -1,3 +1,11 @@
+## v9.58.0 (2024-08-29)
+
+### Feat
+
+- **user**: [PPT-1484] format of work_preferences and work_overrides ([#274](https://github.com/PlaceOS/models/pull/274))
+
+## v9.57.6 (2024-08-21)
+
 ## v9.57.5 (2024-08-19)
 
 ### Fix
