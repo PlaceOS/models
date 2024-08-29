@@ -20,17 +20,17 @@ module PlaceOS::Model
     struct WorktimeBlock
       include JSON::Serializable
 
-      getter start_time : Float64
-      getter end_time : Float64
-      getter location : String = ""
+      property start_time : Float64
+      property end_time : Float64
+      property location : String = ""
     end
 
     # day_of_week: Index of the day of the week. `0` being Sunday
     struct WorktimePreference
       include JSON::Serializable
 
-      getter day_of_week : Int32
-      getter blocks : Array(WorktimeBlock) = [] of WorktimeBlock
+      property day_of_week : Int32
+      property blocks : Array(WorktimeBlock) = [] of WorktimeBlock
     end
 
     attribute name : String, es_subfield: "keyword"
