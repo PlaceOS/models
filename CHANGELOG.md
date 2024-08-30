@@ -1,3 +1,9 @@
+## v9.58.1 (2024-08-30)
+
+### Fix
+
+- **Booking**: clashing should not inspect checked out bookings
+
 ## v9.58.0 (2024-08-29)
 
 ### Feat
