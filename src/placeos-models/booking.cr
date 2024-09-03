@@ -368,7 +368,12 @@ module PlaceOS::Model
     scope :is_checked_in do |value|
       if !value.nil?
         check = value.in?({true, "true"})
-        where(checked_in: check)
+        if check
+          where(checked_in: check)
+        else
+          # checked_in defaults to false, so only checked out if checked_out_at is set
+          where("checked_out_at IS NOT NULL AND checked_in = ?", check)
+        end
       else
         self
       end
