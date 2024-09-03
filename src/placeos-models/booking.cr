@@ -687,7 +687,14 @@ module PlaceOS::Model
 
     # modifies the array, injecting the recurrences
     # ameba:disable Metrics/CyclomaticComplexity
-    def self.expand_bookings!(starting : Time, ending : Time, parents : Array(Booking), limit : Int32 = DEFAULT_LIMIT, skip : Int32 = 0) : ExpansionDetails
+    def self.expand_bookings!(
+      starting : Time,
+      ending : Time,
+      parents : Array(Booking),
+      limit : Int32 = DEFAULT_LIMIT,
+      skip : Int32 = 0,
+      is_checked_out : Bool? = nil
+    ) : ExpansionDetails
       recurring = parents.select(&.recurring_booking?)
       return ExpansionDetails.new(parents, 0, 0) if recurring.empty?
       parent_ids = recurring.compact_map(&.id)
@@ -761,6 +768,15 @@ module PlaceOS::Model
           else
             booking.hydrate_instance(starting_at)
           end
+        end
+
+        case is_checked_out
+        when nil
+          # we want to keep both checked in and out
+        when true
+          instances.select!(&.checked_out_at)
+        when false
+          instances.reject!(&.checked_out_at)
         end
 
         parents.concat instances
