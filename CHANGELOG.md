@@ -1,3 +1,9 @@
+## v9.58.2 (2024-09-03)
+
+### Fix
+
+- **booking**: fix is_checked_in query
+
 ## v9.58.1 (2024-08-30)
 
 ### Fix
