@@ -1,3 +1,9 @@
+## v9.58.3 (2024-09-03)
+
+### Fix
+
+- **booking**: provide a helper for filtering checked in/out instances
+
 ## v9.58.2 (2024-09-03)
 
 ### Fix
