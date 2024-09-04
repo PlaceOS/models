@@ -45,6 +45,8 @@ module PlaceOS::Model
     attribute images : Array(String) = [] of String
     attribute playlists : Array(String) = [] of String, es_type: "keyword"
 
+    attribute place_id : String?
+
     # Association
     ###############################################################################################
     belongs_to Zone, foreign_key: "parent_id", association_name: "parent"
