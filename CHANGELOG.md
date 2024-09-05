@@ -1,3 +1,9 @@
+## v9.59.0 (2024-09-05)
+
+### Feat
+
+- PPT-642 Added place_id attribute in zone model ([#275](https://github.com/PlaceOS/models/pull/275))
+
 ## v9.58.3 (2024-09-03)
 
 ### Fix
