@@ -1,3 +1,9 @@
+## v9.59.1 (2024-10-15)
+
+### Fix
+
+- **booking**: recurring booking clash check ([#276](https://github.com/PlaceOS/models/pull/276))
+
 ## v9.59.0 (2024-09-05)
 
 ### Feat
