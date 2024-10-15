@@ -16,6 +16,7 @@ module PlaceOS::Model
 
       booking = query.to_a.first
       booking.attendees.to_a.size.should eq 1
+      booking.attendees.first.persisted?.should be_true
 
       # ensure we didn't need a second query to fill this in
       guests = booking.__guests_rel
@@ -25,7 +26,8 @@ module PlaceOS::Model
       json_booking["guests"].as_a.first.as_h["checked_in"]?.should be_false
 
       check_no_guest = Booking.where(id: booking_id).to_a.first
-      JSON.parse(check_no_guest.to_json).as_h["guests"]?.should be_nil
+      json_payload = check_no_guest.to_json
+      JSON.parse(json_payload).as_h["guests"]?.should be_nil
 
       Attendee.clear
       query_check = Booking.where(id: booking_id).join(:left, Attendee, :booking_id).join(:left, Guest, "guests.id = attendees.guest_id").to_a.first
