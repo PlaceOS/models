@@ -538,6 +538,34 @@ module PlaceOS::Model
       clashing.save.should eq true
     end
 
+    it "should save a regular booking that clashes with a custom recurring instance that has been checked out" do
+      tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.tenant_id = tenant_id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query).instances
+      # times.map { |time| time.day }.should eq [11, 12]
+
+      booking_instance = booking.to_instance(times[0].to_unix)
+      booking_instance.checked_in = false
+      booking_instance.checked_out_at = Time.utc.to_unix
+      booking_instance.save!
+      inst = booking_instance.hydrate_booking
+
+      clashing = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: inst.starting_tz,
+        ending: inst.ending_tz,
+      )
+      clashing.timezone = "Europe/Berlin"
+      clashing.clashing_bookings.empty?.should be_true
+    end
+
     it "should should transparently save modified instances" do
       booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
       booking.recurrence_type = :daily

@@ -498,6 +498,96 @@ module PlaceOS::Model
       clashing_bookings.size > 0
     end
 
+    protected def recurring_clash_check : Array(Booking)
+      # we need to check for clashes against each recurrence
+      starting = self.booking_start
+      ending = self.booking_end
+
+      # invalid booking, other validation will raise
+      begin
+        Time::Location.load self.timezone.as(String)
+      rescue
+        return [] of Booking
+      end
+
+      # 24 time -- 08:23:00, 13:30:00 etc
+      start_time = Time.unix(starting).to_s("%T")
+      end_time = Time.unix(ending).to_s("%T")
+
+      # calculate the period we want to check for clashes
+      max_period = 90.days
+      if rec_ending = self.recurrence_end
+        time_period = rec_ending - starting
+        rec_ending = max_period.from_now.to_unix if time_period > max_period.total_seconds.to_i64
+      else
+        rec_ending = max_period.from_now.to_unix
+      end
+
+      overrides = Booking.find_all_by_sql(<<-SQL, tenant_id, rec_ending, starting, end_time, start_time, booking_type)
+        SELECT b.* FROM "bookings" b
+        JOIN booking_instances i ON b.id = i.id
+        WHERE b.tenant_id = $1
+          AND i.booking_start < $2
+          AND i.booking_end > $3
+          AND i.starting_time < $4
+          AND i.ending_time > $5
+          AND i.checked_out_at IS NULL
+          AND b.booking_type = $6
+          AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}
+          AND b.rejected <> TRUE
+          AND i.deleted <> TRUE
+      SQL
+
+      rec_ending_tz = Time.unix(rec_ending)
+      if tz = self.timezone
+        rec_ending_tz = rec_ending_tz.in(Time::Location.load tz)
+      end
+
+      expanded = Booking.expand_bookings!(starting_tz, rec_ending_tz, [self]).bookings
+
+      # starting - booking_length ensures we capture overlaps
+      query = Booking
+        .by_tenant(tenant_id)
+        .where(
+          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_end > ? AND booking_start < ?)) AND checked_out_at IS NULL AND starting_time < ? AND ending_time > ? AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
+          starting, starting, rec_ending, end_time, start_time, booking_type
+        )
+      query = query.where("id != ?", id) unless id.nil?
+      Booking.expand_bookings!(starting_tz, rec_ending_tz, query.to_a + overrides).bookings.select! do |other_booking|
+        expanded.find { |this_booking| this_booking.booking_start < other_booking.booking_end && this_booking.booking_end > other_booking.booking_start }
+      end
+    end
+
+    protected def regular_clash_check : Array(Booking)
+      starting = self.booking_start
+      ending = self.booking_end
+
+      clashing = BookingInstance.find_one_by_sql?(<<-SQL, tenant_id, ending, starting, booking_type)
+        SELECT i.* FROM "booking_instances" i
+        JOIN bookings b ON i.id = b.id
+        WHERE i.tenant_id = $1
+          AND i.booking_start < $2
+          AND i.booking_end > $3
+          AND i.checked_out_at IS NULL
+          AND b.booking_type = $4
+          AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}
+          AND b.rejected <> TRUE
+          AND i.deleted <> TRUE
+        LIMIT 1
+      SQL
+      return [clashing.hydrate_booking] if clashing
+
+      # find any valid recurring bookings in the time period
+      query = Booking
+        .by_tenant(tenant_id)
+        .where(
+          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE' AND booking_start < ?) OR (booking_start < ? AND booking_end > ?)) AND checked_out_at IS NULL AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
+          starting, ending, ending, starting, booking_type
+        )
+      query = query.where("id != ?", id) unless id.nil?
+      Booking.expand_bookings!(starting_tz, ending_tz, query.to_a).bookings
+    end
+
     def clashing_bookings : Array(Booking)
       update_assets
 
@@ -506,86 +596,15 @@ module PlaceOS::Model
       ending = self.booking_end
 
       # find any overrides that might clash with the bookings
-      if recurring_booking?
-        # invalid booking, other validation will raise
-        begin
-          Time::Location.load self.timezone.as(String)
-        rescue
-          return [] of Booking
-        end
+      candidates = if recurring_booking?
+                     recurring_clash_check
+                   else
+                     regular_clash_check
+                   end
 
-        # 24 time -- 08:23:00, 13:30:00 etc
-        start_time = Time.unix(starting).to_s("%T")
-        end_time = Time.unix(ending).to_s("%T")
-
-        # calculate the period we want to check for clashes
-        max_period = 90.days
-        if rec_ending = self.recurrence_end
-          time_period = rec_ending - starting
-          rec_ending = max_period.from_now.to_unix if time_period > max_period.total_seconds.to_i64
-        else
-          rec_ending = max_period.from_now.to_unix
-        end
-
-        overrides = Booking.find_all_by_sql(<<-SQL, tenant_id, rec_ending, starting, end_time, start_time, booking_type)
-          SELECT b.* FROM "bookings" b
-          JOIN booking_instances i ON b.id = i.id
-          WHERE b.tenant_id = $1
-            AND i.booking_start < $2
-            AND i.booking_end > $3
-            AND i.starting_time < $4
-            AND i.ending_time > $5
-            AND i.checked_out_at IS NULL
-            AND b.booking_type = $6
-            AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}
-            AND b.rejected <> TRUE
-            AND i.deleted <> TRUE
-        SQL
-
-        rec_ending_tz = Time.unix(rec_ending)
-        if tz = self.timezone
-          rec_ending_tz = rec_ending_tz.in(Time::Location.load tz)
-        end
-
-        expanded = Booking.expand_bookings!(starting_tz, rec_ending_tz, [self]).bookings
-
-        # starting - booking_length ensures we capture overlaps
-        query = Booking
-          .by_tenant(tenant_id)
-          .where(
-            "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_end > ? AND booking_start < ?)) AND checked_out_at IS NULL AND starting_time < ? AND ending_time > ? AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
-            starting, starting, rec_ending, end_time, start_time, booking_type
-          )
-        query = query.where("id != ?", id) unless id.nil?
-        Booking.expand_bookings!(starting_tz, rec_ending_tz, query.to_a + overrides).bookings.select! do |other_booking|
-          expanded.find { |this_booking| this_booking.booking_start < other_booking.booking_end && this_booking.booking_end > other_booking.booking_start }
-        end
-      else
-        clashing = BookingInstance.find_one_by_sql?(<<-SQL, tenant_id, ending, starting, booking_type)
-            SELECT i.* FROM "booking_instances" i
-            JOIN bookings b ON i.id = b.id
-            WHERE i.tenant_id = $1
-              AND i.booking_start < $2
-              AND i.booking_end > $3
-              AND i.checked_out_at IS NULL
-              AND b.booking_type = $4
-              AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}
-              AND b.rejected <> TRUE
-              AND i.deleted <> TRUE
-            LIMIT 1
-          SQL
-        return [clashing.hydrate_booking] if clashing
-
-        # find any valid recurring bookings in the time period
-        query = Booking
-          .by_tenant(tenant_id)
-          .where(
-            "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE' AND booking_start < ?) OR (booking_start < ? AND booking_end > ?)) AND checked_out_at IS NULL AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
-            starting, ending, ending, starting, booking_type
-          )
-        query = query.where("id != ?", id) unless id.nil?
-        Booking.expand_bookings!(starting_tz, ending_tz, query.to_a).bookings
-      end
+      # we need to do this as booking instances may only set checked out / deleted flags
+      # so the early clashing check misses these
+      candidates.reject! { |booking| booking.checked_out_at || booking.rejected || booking.deleted }
     end
 
     def as_h(include_attendees : Bool = true)
