@@ -1,3 +1,9 @@
+## v9.60.0 (2024-10-24)
+
+### Feat
+
+- PPT-1622 Add auth tokens cleanup code ([#277](https://github.com/PlaceOS/models/pull/277))
+
 ## v9.59.1 (2024-10-15)
 
 ### Fix
