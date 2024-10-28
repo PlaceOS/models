@@ -596,6 +596,44 @@ module PlaceOS::Model
       bookings.map(&.starting_tz.hour).should eq [10, 11, 10]
     end
 
+    it "should allow modified instances to have an overlapping time" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query).instances
+
+      # unmodified bookings
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map(&.ending_tz.minute).should eq [0, 0, 0]
+
+      # save a booking object
+      booking_instance = bookings[1]
+      booking_instance.instance.should eq times[1].to_unix
+      booking_instance.booking_end -= 30.minutes.total_seconds.to_i64
+      booking_instance.save!
+
+      # check if it saved the instance
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map(&.ending_tz.minute).should eq [0, 30, 0]
+
+      # re-save the instance
+      booking_instance = bookings[1]
+      booking_instance.instance.should eq times[1].to_unix
+      booking_instance.booking_end += 5.minutes.total_seconds.to_i64
+      booking_instance.save!
+
+      # check if it saved the instance
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+      bookings.map(&.ending_tz.minute).should eq [0, 35, 0]
+    end
+
     it "should support limits" do
       booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
       booking.recurrence_type = :daily
