@@ -81,6 +81,8 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    belongs_to Client, foreign_key: "client_id", association_name: "client"
+
     def root_zone_id : String
       raise "zone model not persisted and has no parent" unless persisted? || self.parent_id.presence
       return self.id.as(String) unless self.parent_id.presence
