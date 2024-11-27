@@ -777,7 +777,7 @@ module PlaceOS::Model
       ending_unix = ending.to_unix
       recurring.each do |booking|
         booking_id = booking.id || 0_i64
-        instances = booking_recurrences[booking_id]
+        instances = booking_recurrences[booking_id]? || [] of Int64
         overrides = instance_override[booking_id]? || [] of BookingInstance
 
         instances = instances.compact_map do |starting_at|
