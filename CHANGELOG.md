@@ -1,3 +1,9 @@
+## v9.60.1 (2024-11-27)
+
+### Fix
+
+- **bookings**: booking_recurrences may not be filled
+
 ## v9.60.0 (2024-10-24)
 
 ### Feat
