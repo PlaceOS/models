@@ -1,3 +1,9 @@
+## v9.61.0 (2024-12-31)
+
+### Feat
+
+- PPT-54 Add full text search capabilities to guest model ([#278](https://github.com/PlaceOS/models/pull/278))
+
 ## v9.60.1 (2024-11-27)
 
 ### Fix
