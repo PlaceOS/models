@@ -37,19 +37,6 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
-    # Save searchable information
-    before_save do
-      @email = email.strip.downcase
-      @searchable = String.build do |sb|
-        sb << email
-        sb << " #{name}" if name_assigned?
-        sb << " #{preferred_name}" if preferred_name_assigned?
-        sb << " #{organisation}" if organisation_assigned?
-        sb << " #{phone}" if phone_assigned?
-        sb << " #{id}" if id_assigned?
-      end.downcase
-    end
-
     def change_extension_data(data : JSON::Any)
       @extension_data = data
       @extension_data_changed = true
