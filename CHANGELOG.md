@@ -1,3 +1,9 @@
+## v9.61.1 (2025-01-13)
+
+### Fix
+
+- **bookings**: prefix checked_in with bookings in sql ([#279](https://github.com/PlaceOS/models/pull/279))
+
 ## v9.61.0 (2024-12-31)
 
 ### Feat
