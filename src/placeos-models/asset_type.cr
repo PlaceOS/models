@@ -12,7 +12,7 @@ module PlaceOS::Model
     attribute brand : String
     attribute description : String?
     attribute model_number : String?
-    attribute images : Array(String) = [] of String
+    attribute images : Array(String)? = [] of String
 
     belongs_to AssetCategory, foreign_key: "category_id", association_name: "category"
 
