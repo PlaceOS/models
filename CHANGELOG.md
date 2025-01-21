@@ -1,3 +1,9 @@
+## v9.62.1 (2025-01-21)
+
+### Fix
+
+- **asset_type**: images is nilable in the database ([#281](https://github.com/PlaceOS/models/pull/281))
+
 ## v9.62.0 (2025-01-21)
 
 ### Feat
