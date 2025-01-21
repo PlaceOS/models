@@ -1,3 +1,9 @@
+## v9.62.0 (2025-01-21)
+
+### Feat
+
+- **tenant**: delegate tenant configuration ([#280](https://github.com/PlaceOS/models/pull/280))
+
 ## v9.61.1 (2025-01-13)
 
 ### Fix
