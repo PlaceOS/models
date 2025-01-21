@@ -9,6 +9,8 @@ module PlaceOS::Model
   class Tenant < ModelWithAutoKey
     table :tenants
 
+    belongs_to Tenant, foreign_key: "parent_id", association_name: "parent"
+
     attribute name : String?
     attribute domain : String
     attribute email_domain : String? = nil
