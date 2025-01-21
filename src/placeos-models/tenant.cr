@@ -9,7 +9,15 @@ module PlaceOS::Model
   class Tenant < ModelWithAutoKey
     table :tenants
 
-    belongs_to Tenant, foreign_key: "parent_id", association_name: "parent"
+    # TODO:: resolve for 
+    # belongs_to Tenant, foreign_key: "parent_id", association_name: "parent"
+    attribute parent_id : Int64? = nil
+
+    def parent
+      if pid = self.parent_id
+        Tenant.find?(pid)
+      end
+    end
 
     attribute name : String?
     attribute domain : String
