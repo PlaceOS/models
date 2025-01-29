@@ -1,5 +1,5 @@
 name: placeos-models
-version: 9.62.2
+version: 9.62.3
 crystal: ~> 1.4
 
 dependencies:
