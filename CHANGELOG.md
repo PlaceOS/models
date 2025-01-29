@@ -1,3 +1,9 @@
+## v9.62.3 (2025-01-29)
+
+### Fix
+
+- **booking**: correct start and end times in instance
+
 ## v9.62.2 (2025-01-21)
 
 ### Fix
