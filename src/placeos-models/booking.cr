@@ -853,12 +853,27 @@ module PlaceOS::Model
         inst.deleted = self.deleted if self.deleted_changed?
         inst.deleted_at = self.deleted_at if self.deleted_at_changed?
       else
+        original_start = if change = self.booking_start_change
+                            (change[0] || change[1]).as(Int64)
+                          else
+                            self.booking_start.as(Int64)
+                          end
+        original_end = if change = self.booking_end_change
+                          (change[0] || change[1]).as(Int64)
+                        else
+                          self.booking_end.as(Int64)
+                        end
+        booking_length = original_end - original_start
+
+        starting = self.booking_start_changed? ? self.booking_start : inst_id
+        ending = self.booking_end_changed? ? self.booking_end : starting.as(Int64) + booking_length
+
         inst = BookingInstance.new(
           id: self.id.as(Int64),
           instance_start: inst_id,
           tenant_id: self.tenant_id.as(Int64),
-          booking_start: self.booking_start,
-          booking_end: self.booking_end,
+          booking_start: starting,
+          booking_end: ending,
           checked_in: self.checked_in,
           checked_in_at: self.checked_in_at,
           checked_out_at: self.checked_out_at,
