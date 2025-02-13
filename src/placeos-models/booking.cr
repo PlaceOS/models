@@ -127,7 +127,7 @@ module PlaceOS::Model
 
     attribute recurrence_interval : Int32 = 1, description: "1 == every occurrence, 2 == every second occurrence, etc"
 
-    attribute recurrence_end : Int64? = nil, description: "an optional end date for booking recurrances"
+    attribute recurrence_end : Int64? = nil, description: "an optional end date for booking recurrences"
 
     belongs_to Tenant, pk_type: Int64
 

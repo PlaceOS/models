@@ -71,9 +71,9 @@ module PlaceOS::Model
         unencrypted = Encryption.is_encrypted?(this.settings_string) ? this.decrypt : this.settings_string
         unless unencrypted.strip.empty?
           begin
-            Hash(String, YAML::Any).from_yaml(unencrypted)
-          rescue
-            this.validation_error(:settings_string, "is not a valid JSON or YAML object")
+            Hash(String, YAML::Any).from_yaml(unencrypted).to_json
+          rescue error
+            this.validation_error(:settings_string, "is not a valid JSON or YAML object: #{error.message}")
           end
         end
       end
