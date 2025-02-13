@@ -72,7 +72,13 @@ module PlaceOS::Model
     it "ensures settings_string cannot be an array" do
       settings = Generator.settings(settings_string: "['apple','orange']")
       settings.valid?.should be_false
-      settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object"
+      settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object: Expected mapping, not sequence at line 1, column 1"
+    end
+
+    it "ensures settings_string cannot have objects as keys" do
+      settings = Generator.settings(settings_string: "testing:\n  on: blah")
+      settings.valid?.should be_false
+      settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object: Can't convert Bool to a JSON object key"
     end
 
     it "accepts a valid settings_string" do
@@ -95,7 +101,7 @@ module PlaceOS::Model
         settings.parent_type = :zone
         settings.settings_string = "{"
         settings.valid?.should be_false
-        settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object"
+        settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object: did not find expected node content at line 2, column 1, while parsing a flow node at line 2, column 1"
       end
 
       it "rejects ill-formed YAML" do
@@ -103,7 +109,7 @@ module PlaceOS::Model
         settings.parent_type = :zone
         settings.settings_string = "hello:\n1"
         settings.valid?.should be_false
-        settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object"
+        settings.errors.first.to_s.should eq "settings_string is not a valid JSON or YAML object: could not find expected ':' at line 3, column 1, while scanning a simple key at line 2, column 1"
       end
     end
 
