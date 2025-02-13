@@ -127,7 +127,7 @@ module PlaceOS::Model
 
     attribute recurrence_interval : Int32 = 1, description: "1 == every occurrence, 2 == every second occurrence, etc"
 
-    attribute recurrence_end : Int64? = nil, description: "an optional end date for booking recurrances"
+    attribute recurrence_end : Int64? = nil, description: "an optional end date for booking recurrences"
 
     belongs_to Tenant, pk_type: Int64
 
@@ -854,15 +854,15 @@ module PlaceOS::Model
         inst.deleted_at = self.deleted_at if self.deleted_at_changed?
       else
         original_start = if change = self.booking_start_change
-                            (change[0] || change[1]).as(Int64)
-                          else
-                            self.booking_start.as(Int64)
-                          end
+                           (change[0] || change[1]).as(Int64)
+                         else
+                           self.booking_start.as(Int64)
+                         end
         original_end = if change = self.booking_end_change
-                          (change[0] || change[1]).as(Int64)
-                        else
-                          self.booking_end.as(Int64)
-                        end
+                         (change[0] || change[1]).as(Int64)
+                       else
+                         self.booking_end.as(Int64)
+                       end
         booking_length = original_end - original_start
 
         starting = self.booking_start_changed? ? self.booking_start : inst_id

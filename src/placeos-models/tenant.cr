@@ -9,7 +9,7 @@ module PlaceOS::Model
   class Tenant < ModelWithAutoKey
     table :tenants
 
-    # TODO:: resolve for 
+    # TODO:: resolve for
     # belongs_to Tenant, foreign_key: "parent_id", association_name: "parent"
     attribute parent_id : Int64? = nil
 
