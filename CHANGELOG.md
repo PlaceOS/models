@@ -1,3 +1,9 @@
+## v9.62.4 (2025-02-13)
+
+### Fix
+
+- **settings**: validate yaml to json conversion [PPT-1873] ([#282](https://github.com/PlaceOS/models/pull/282))
+
 ## v9.62.3 (2025-01-29)
 
 ### Fix
