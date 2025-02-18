@@ -25,7 +25,7 @@ module PlaceOS::Model
 
     # Room search meta-data
     # Building + Level are both filtered using zones
-    attribute features : Set(String) = ->{ Set(String).new }
+    attribute features : Set(String) = -> { Set(String).new }
     attribute email : Email?, converter: PlaceOS::Model::EmailConverter
     attribute bookable : Bool = false
     attribute public : Bool = false
@@ -36,7 +36,7 @@ module PlaceOS::Model
     attribute map_id : String?
 
     # Array of URLs to images for a system
-    attribute images : Array(String) = ->{ [] of String }
+    attribute images : Array(String) = -> { [] of String }
 
     attribute timezone : Time::Location?, converter: Time::Location::Converter, es_type: "text"
 

@@ -87,7 +87,7 @@ module PlaceOS::Model
     def self.playlist(
       name : String = Faker::Hacker.noun,
       description : String = "",
-      authority : Authority? = nil
+      authority : Authority? = nil,
     )
       unless authority
         # look up an existing authority
@@ -113,7 +113,7 @@ module PlaceOS::Model
     def self.shortener(
       uri : String = "https://google.com.au/maps",
       user : User = user.save!,
-      authority : Authority? = nil
+      authority : Authority? = nil,
     )
       unless authority
         # look up an existing authority
@@ -134,7 +134,7 @@ module PlaceOS::Model
       name : String = Faker::Hacker.noun,
       media_uri : String = "https://placeos.com/",
       media_id : String? = nil,
-      authority : Authority? = nil
+      authority : Authority? = nil,
     )
       unless authority
         # look up an existing authority
@@ -313,7 +313,7 @@ module PlaceOS::Model
     def self.metadata(
       name : String = Faker::Hacker.noun + RANDOM.base64(10),
       parent : String | User | Zone | ControlSystem? = nil,
-      modifier : User? = nil
+      modifier : User? = nil,
     )
       Metadata.new(name: name, details: JSON::Any.new({} of String => JSON::Any)).tap do |meta|
         case parent
@@ -324,9 +324,9 @@ module PlaceOS::Model
         in Nil
           # Generate a single parent for the metadata model
           {
-            ->{ meta.control_system = self.control_system.save! },
-            ->{ meta.zone = self.zone.save! },
-            ->{ meta.user = self.user.save! },
+            -> { meta.control_system = self.control_system.save! },
+            -> { meta.zone = self.zone.save! },
+            -> { meta.user = self.user.save! },
           }.sample.call
         end
 
@@ -343,7 +343,7 @@ module PlaceOS::Model
       control_system : ControlSystem? = nil,
       zone : Zone? = nil,
       parent : Union(Zone, ControlSystem, Driver, Module)? = nil,
-      modifier : User? = nil
+      modifier : User? = nil,
     ) : Settings
       Settings.new(
         settings_string: settings_string,
@@ -358,10 +358,10 @@ module PlaceOS::Model
         unless {parent, control_system, driver, mod, zone}.one?
           # Generate a single parent for the settings model
           {
-            ->{ settings.control_system = self.control_system.save! },
-            ->{ settings.driver = self.driver.save! },
-            ->{ settings.mod = self.module.save! },
-            ->{ settings.zone = self.zone.save! },
+            -> { settings.control_system = self.control_system.save! },
+            -> { settings.driver = self.driver.save! },
+            -> { settings.mod = self.module.save! },
+            -> { settings.zone = self.zone.save! },
           }.sample.call
         end
 
@@ -542,7 +542,7 @@ module PlaceOS::Model
       domain : String? = nil,
       name : String? = nil,
       email : String? = nil,
-      permission : UserJWT::Permissions? = nil
+      permission : UserJWT::Permissions? = nil,
     )
       meta = UserJWT::Metadata.new(
         name: name || Faker::Hacker.noun,
@@ -580,7 +580,7 @@ module PlaceOS::Model
       domain = "toby.staff-api.dev",
       credentials = %({"tenant":"bb89674a-238b-4b7d-91ec-6bebad83553a","client_id":"6316bc86-b615-49e0-ad24-985b39898cb7","client_secret": "k8S1-0c5PhIh:[XcrmuAIsLo?YA[=-GS"}),
       delegated = false,
-      outlook_config = Tenant::OutlookConfig.from_json(%({"app_id": "0114c179-de01-4707-b558-b4b535551b91"}))
+      outlook_config = Tenant::OutlookConfig.from_json(%({"app_id": "0114c179-de01-4707-b558-b4b535551b91"})),
     )
       Tenant.create(
         name: name,
@@ -634,7 +634,7 @@ module PlaceOS::Model
       trigger : Survey::TriggerType = Survey::TriggerType::NONE,
       zone_id : String = "",
       building_id = "",
-      pages : Array(Survey::Page) = [self.page]
+      pages : Array(Survey::Page) = [self.page],
     )
       Survey.new(
         title: title,
@@ -649,7 +649,7 @@ module PlaceOS::Model
     def self.page(
       title : String = Faker::Hacker.adjective,
       description : String = Faker::Hacker.say_something_smart,
-      question_order : Array(Int64) = [] of Int64
+      question_order : Array(Int64) = [] of Int64,
     )
       Survey::Page.new(
         title: title,
@@ -667,7 +667,7 @@ module PlaceOS::Model
       choices : JSON::Any = JSON::Any.new({} of String => JSON::Any),
       max_rating : Int32? = nil,
       tags : Array(String) = [] of String,
-      deleted_at : Int64? = nil
+      deleted_at : Int64? = nil,
     )
       Survey::Question.new(
         title: title,
@@ -685,7 +685,7 @@ module PlaceOS::Model
     def self.invitation(
       survey_id : Int64? = nil,
       email : String = Faker::Internet.email,
-      sent : Bool? = nil
+      sent : Bool? = nil,
     )
       id = survey_id || self.survey.save!.id
       Survey::Invitation.new(

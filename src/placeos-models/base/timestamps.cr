@@ -6,8 +6,8 @@ require "time"
 #
 module PlaceOS::Model::Timestamps
   macro included
-    attribute created_at : Time = ->{ Time.utc }, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
-    attribute updated_at : Time = ->{ Time.utc }, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
+    attribute created_at : Time = -> { Time.utc }, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
+    attribute updated_at : Time = -> { Time.utc }, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
 
     before_create do
       self.created_at = self.updated_at = Time.utc
