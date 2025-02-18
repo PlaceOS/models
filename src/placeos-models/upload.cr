@@ -30,7 +30,7 @@ module PlaceOS::Model
 
     attribute resumable_id : String?
     attribute resumable : Bool = false
-    attribute part_list : Array(Int32) = ->{ [] of Int32 }
+    attribute part_list : Array(Int32) = -> { [] of Int32 }
     attribute part_data : Hash(String, JSON::Any) = {} of String => JSON::Any
     attribute upload_complete : Bool = false
 

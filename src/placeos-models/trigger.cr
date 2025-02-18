@@ -14,8 +14,8 @@ module PlaceOS::Model
     attribute description : String = ""
 
     # Full path allows resolution in macros
-    attribute actions : PlaceOS::Model::Trigger::Actions = ->{ Actions.new }, es_ignore: true
-    attribute conditions : PlaceOS::Model::Trigger::Conditions = ->{ Conditions.new }, es_ignore: true
+    attribute actions : PlaceOS::Model::Trigger::Actions = -> { Actions.new }, es_ignore: true
+    attribute conditions : PlaceOS::Model::Trigger::Conditions = -> { Conditions.new }, es_ignore: true
 
     # In milliseconds
     attribute debounce_period : Int32 = 0

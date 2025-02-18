@@ -17,7 +17,7 @@ module PlaceOS::Model
 
     attribute permissions : UserJWT::Permissions? = UserJWT::Permissions::User, converter: Enum::ValueConverter(PlaceOS::Model::UserJWT::Permissions), es_type: "integer"
 
-    attribute secret : String = ->{ Random::Secure.urlsafe_base64(32) }, mass_assignment: false
+    attribute secret : String = -> { Random::Secure.urlsafe_base64(32) }, mass_assignment: false
 
     belongs_to User
     belongs_to Authority

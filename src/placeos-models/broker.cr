@@ -27,11 +27,11 @@ module PlaceOS::Model
     attribute username : String?
     attribute password : String?
     attribute certificate : String?
-    attribute secret : String = ->{ Random::Secure.hex(64) }
+    attribute secret : String = -> { Random::Secure.hex(64) }
 
     # Regex filters for sensitive data.
     # Matches will be replaced with a hmac_256(secret, match).
-    attribute filters : Array(String) = ->{ [] of String }
+    attribute filters : Array(String) = -> { [] of String }
 
     # Validation
     ###############################################################################################
