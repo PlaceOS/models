@@ -92,8 +92,8 @@ module PlaceOS::Model
       attribute right : Value
     end
 
-    attribute comparisons : Array(Comparison) = -> { [] of Comparison }
-    attribute time_dependents : Array(TimeDependent) = -> { [] of TimeDependent }
+    attribute comparisons : Array(Comparison) = ->{ [] of Comparison }
+    attribute time_dependents : Array(TimeDependent) = ->{ [] of TimeDependent }
 
     # Validation
     ###############################################################################################

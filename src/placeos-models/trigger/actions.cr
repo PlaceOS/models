@@ -17,7 +17,7 @@ module PlaceOS::Model
     class Function < SubModel
       attribute mod : String
       attribute method : String
-      attribute args : Hash(String, JSON::Any) = -> { {} of String => JSON::Any }
+      attribute args : Hash(String, JSON::Any) = ->{ {} of String => JSON::Any }
 
       # Validation
       #############################################################################################
@@ -26,8 +26,8 @@ module PlaceOS::Model
       validates :method, presence: true
     end
 
-    attribute functions : Array(Function) = -> { [] of Function }
-    attribute mailers : Array(Email) = -> { [] of Email }
+    attribute functions : Array(Function) = ->{ [] of Function }
+    attribute mailers : Array(Email) = ->{ [] of Email }
 
     # Validation
     ###############################################################################################

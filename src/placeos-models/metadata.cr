@@ -23,7 +23,7 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
     attribute details : JSON::Any
-    attribute editors : Set(String) = -> { Set(String).new }
+    attribute editors : Set(String) = ->{ Set(String).new }
 
     attribute parent_id : String, es_type: "keyword"
     attribute schema_id : String?, es_type: "keyword"

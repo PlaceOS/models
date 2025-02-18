@@ -18,7 +18,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
-    attribute tags : Set(String) = -> { Set(String).new }
+    attribute tags : Set(String) = ->{ Set(String).new }
 
     # =============================
     # Additional top level metadata that is fairly common
