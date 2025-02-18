@@ -52,7 +52,7 @@ module PlaceOS::Model
     attribute user_id : String?
     attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter
     attribute user_name : String
-    attribute zones : Array(String) = ->{ [] of String }
+    attribute zones : Array(String) = -> { [] of String }
     # used to hold information relating to the state of the booking process
     attribute process_state : String?
     attribute last_changed : Int64?
@@ -128,6 +128,8 @@ module PlaceOS::Model
     attribute recurrence_interval : Int32 = 1, description: "1 == every occurrence, 2 == every second occurrence, etc"
 
     attribute recurrence_end : Int64? = nil, description: "an optional end date for booking recurrences"
+
+    attribute all_day : Bool = false
 
     belongs_to Tenant, pk_type: Int64
 
@@ -712,7 +714,7 @@ module PlaceOS::Model
       parents : Array(Booking),
       limit : Int32 = DEFAULT_LIMIT,
       skip : Int32 = 0,
-      is_checked_out : Bool? = nil
+      is_checked_out : Bool? = nil,
     ) : ExpansionDetails
       recurring = parents.select(&.recurring_booking?)
       return ExpansionDetails.new(parents, 0, 0) if recurring.empty?
