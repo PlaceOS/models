@@ -1,3 +1,9 @@
+## v9.63.0 (2025-02-19)
+
+### Feat
+
+- **bookings**: [PPT-1846] add all_day bool flag ([#283](https://github.com/PlaceOS/models/pull/283))
+
 ## v9.62.4 (2025-02-13)
 
 ### Fix
