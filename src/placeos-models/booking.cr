@@ -496,7 +496,7 @@ module PlaceOS::Model
     end
 
     def clashing? : Bool
-      return false if self.deleted || self.rejected || self.checked_out_at
+      return false if self.deleted || self.rejected || self.checked_out_at || self.booking_type.downcase == "visitor"
       clashing_bookings.size > 0
     end
 
@@ -591,6 +591,8 @@ module PlaceOS::Model
     end
 
     def clashing_bookings : Array(Booking)
+      return [] of Booking if self.booking_type.downcase == "visitor"
+
       update_assets
 
       # we need to check for clashes against each recurrence
