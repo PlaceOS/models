@@ -1,3 +1,9 @@
+## v9.64.0 (2025-02-21)
+
+### Feat
+
+- **bookings**: [PPT-1781] ignore clash check forvisitor booking ([#284](https://github.com/PlaceOS/models/pull/284))
+
 ## v9.63.0 (2025-02-19)
 
 ### Feat
