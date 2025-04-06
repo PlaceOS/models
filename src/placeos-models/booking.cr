@@ -121,7 +121,7 @@ module PlaceOS::Model
     attribute recurrence_type : Recurrence = Recurrence::NONE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Booking::Recurrence),
       description: "Is this a recurring booking. This field defines the type of recurrence"
 
-    attribute recurrence_days : Int32 = 0b0111110, description: "a bitmap of valid days of the week for booking recurrences to land on, defaults to weekdays"
+    attribute recurrence_days : Int32 = 0b1111111, description: "a bitmap of valid days of the week for booking recurrences to land on, defaults to all days of the week"
 
     attribute recurrence_nth_of_month : Int32 = 1, description: "which day index should a monthly recurrence land on. 1st Monday, 2nd Monday (used in conjunction with the days bitmap). -1 == last Monday, -2 Second last Monday etc"
 
