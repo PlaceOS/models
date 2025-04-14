@@ -34,6 +34,7 @@ module PlaceOS::Model
     attribute type : String?
     attribute capacity : Int32 = 0
     attribute map_id : String?
+    attribute approval : Bool = false
 
     # Array of URLs to images for a system
     attribute images : Array(String) = -> { [] of String }
