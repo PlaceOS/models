@@ -1,3 +1,11 @@
+## v9.65.0 (2025-04-14)
+
+### Feat
+
+- **control_system**: [PPT-2004] add approval column ([#285](https://github.com/PlaceOS/models/pull/285))
+
+## v9.64.1 (2025-04-07)
+
 ## v9.64.0 (2025-02-21)
 
 ### Feat
