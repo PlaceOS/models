@@ -71,7 +71,7 @@ module PlaceOS::Model
       revision3 = Generator.revision.save!
 
       rev2_old_id = revision2.id.as(String)
-      sleep 2
+      sleep 2.seconds
       rev2_new = revision2.clone
       rev2_new.user = Generator.user.save!
       rev2_new.save!

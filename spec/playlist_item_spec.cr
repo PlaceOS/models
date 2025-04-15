@@ -54,7 +54,7 @@ module PlaceOS::Model
 
       playlist = revision.playlist.not_nil!
       updated = playlist.updated_at
-      sleep 1
+      sleep 1.second
       item.destroy
 
       revision = Playlist::Revision.find(revision.id.as(String))
@@ -81,7 +81,7 @@ module PlaceOS::Model
 
       playlist = revision.playlist.not_nil!
       updated = playlist.updated_at
-      sleep 1
+      sleep 1.second
       item.animation = Playlist::Animation::SlideTop
       item.save!
 

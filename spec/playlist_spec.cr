@@ -106,11 +106,11 @@ module PlaceOS::Model
 
     it "can calculate the last time the display was updated" do
       revision1 = Generator.revision.save!
-      sleep 0.5
+      sleep 500.milliseconds
       revision2 = Generator.revision.save!
-      sleep 0.5
+      sleep 500.milliseconds
       revision3 = Generator.revision.save!
-      sleep 0.5
+      sleep 500.milliseconds
 
       cs = Generator.control_system
       cs.playlists = [revision1.playlist_id.as(String), revision2.playlist_id.as(String), revision3.playlist_id.as(String)]
