@@ -694,5 +694,84 @@ module PlaceOS::Model
         sent: sent,
       )
     end
+
+    def self.client(parent : Client? = nil)
+      Client.new(name: Faker::Company.name, description: Faker::Lorem.sentence,
+        billing_address: Faker::Address.street_address, billing_contact: Faker::Name.name,
+        is_management: !parent.nil?, parent_id: parent.try &.id)
+    end
+
+    def self.survey(
+      title : String = Faker::Hacker.abbreviation,
+      description : String = Faker::Hacker.say_something_smart,
+      trigger : Survey::TriggerType = Survey::TriggerType::NONE,
+      zone_id : String = "",
+      building_id = "",
+      pages : Array(Survey::Page) = [self.page]
+    )
+      Survey.new(
+        title: title,
+        description: description,
+        trigger: trigger,
+        zone_id: zone_id,
+        building_id: building_id,
+        pages: pages,
+      )
+    end
+
+    def self.page(
+      title : String = Faker::Hacker.adjective,
+      description : String = Faker::Hacker.say_something_smart,
+      question_order : Array(Int64) = [] of Int64
+    )
+      Survey::Page.new(
+        title: title,
+        description: description,
+        question_order: question_order,
+      )
+    end
+
+    def self.question(
+      title : String = Faker::Hacker.noun,
+      description : String = Faker::Hacker.say_something_smart,
+      type : String = "text",
+      options : JSON::Any = JSON::Any.new({} of String => JSON::Any),
+      required : Bool = false,
+      choices : JSON::Any = JSON::Any.new({} of String => JSON::Any),
+      max_rating : Int32? = nil,
+      tags : Array(String) = [] of String,
+      deleted_at : Int64? = nil
+    )
+      Survey::Question.new(
+        title: title,
+        description: description,
+        type: type,
+        options: options,
+        required: required,
+        choices: choices,
+        max_rating: max_rating,
+        tags: tags,
+        deleted_at: deleted_at,
+      )
+    end
+
+    def self.invitation(
+      survey_id : Int64? = nil,
+      email : String = Faker::Internet.email,
+      sent : Bool? = nil
+    )
+      id = survey_id || self.survey.save!.id
+      Survey::Invitation.new(
+        survey_id: id,
+        email: email,
+        sent: sent,
+      )
+    end
+
+    def self.client(parent : Client? = nil)
+      Client.new(name: Faker::Company.name, description: Faker::Lorem.sentence,
+        billing_address: Faker::Address.street_address, billing_contact: Faker::Name.name,
+        is_management: !parent.nil?, parent_id: parent.try &.id)
+    end
   end
 end
