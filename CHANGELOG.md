@@ -1,3 +1,11 @@
+## v9.65.2 (2025-05-22)
+
+### Fix
+
+- **edge**: type for timestamp in openapi docs
+
+## v9.65.1 (2025-04-16)
+
 ## v9.65.0 (2025-04-14)
 
 ### Feat
