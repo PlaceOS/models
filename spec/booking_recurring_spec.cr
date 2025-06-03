@@ -671,5 +671,33 @@ module PlaceOS::Model
       details.next_idx.should eq 0
       bookings.map(&.starting_tz.day).should eq [11, 12]
     end
+
+    it "should reject recurring booking that clashes with regular all day or similar booking" do
+      tenant_id = Generator.tenant(domain: "recurrence.dev").id
+
+      all_day = Generator.booking(
+        tenant_id,
+        asset_id: "desk-1234",
+        start: Time.local(2025, 5, 28, location: timezone),
+        ending: Time.local(2025, 5, 28, location: timezone) + 8.hours
+      )
+      all_day.timezone = "Europe/Berlin"
+      all_day.all_day = true
+      all_day.save.should eq true
+
+      Booking.find?(all_day.id.not_nil!).should_not be_nil
+
+      recurring_booking = Generator.booking(
+        1_i64,
+        asset_id: "desk-1234",
+        start: Time.local(2025, 5, 24, location: timezone),
+        ending: Time.local(2025, 5, 31, location: timezone)
+      )
+      recurring_booking.tenant_id = tenant_id
+      recurring_booking.recurrence_type = :daily
+      recurring_booking.recurrence_days = 0b1111111
+      recurring_booking.timezone = "Europe/Berlin"
+      recurring_booking.save.should eq false
+    end
   end
 end
