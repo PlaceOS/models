@@ -1,3 +1,9 @@
+## v9.65.3 (2025-06-06)
+
+### Fix
+
+- **booking.cr**: PPT-2007 properly handle overlapping bookings ([#286](https://github.com/PlaceOS/models/pull/286))
+
 ## v9.65.2 (2025-05-22)
 
 ### Fix
