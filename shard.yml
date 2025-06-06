@@ -53,6 +53,10 @@ dependencies:
   cron_parser:
     github: kostya/cron_parser
 
+  # Upload signer
+  upload-signer:
+    github: spider-gazelle/upload-signer
+
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba

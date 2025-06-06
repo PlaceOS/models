@@ -1,4 +1,5 @@
 require "json"
+require "upload-signer"
 
 require "./base/model"
 require "./storage"
@@ -34,6 +35,10 @@ module PlaceOS::Model
     attribute part_data : Hash(String, JSON::Any) = {} of String => JSON::Any
     attribute upload_complete : Bool = false
 
+    # so we can tag which system the upload belongs to
+    # allowing us to filter for relevancy
+    attribute tags : Array(String) = -> { [] of String }
+
     belongs_to Storage
     belongs_to User, foreign_key: "uploaded_by", association_name: "user"
 
@@ -57,6 +62,16 @@ module PlaceOS::Model
 
     def part_data_changed(flag = true)
       @part_data_changed = flag
+    end
+
+    before_destroy :delete_data
+
+    protected def delete_data
+      cloud_fs = self.storage rescue nil
+      return unless cloud_fs
+
+      signer = UploadSigner.signer(UploadSigner::StorageType.from_value(cloud_fs.storage_type.value), cloud_fs.access_key, cloud_fs.decrypt_secret, cloud_fs.region, endpoint: cloud_fs.endpoint)
+      signer.delete_file(cloud_fs.bucket_name, self.object_key, self.resumable_id)
     end
   end
 end
