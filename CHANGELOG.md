@@ -1,3 +1,9 @@
+## v9.66.0 (2025-06-06)
+
+### Feat
+
+- user photo upload and locatable flag [PPT-2038] ([#287](https://github.com/PlaceOS/models/pull/287))
+
 ## v9.65.3 (2025-06-06)
 
 ### Fix
