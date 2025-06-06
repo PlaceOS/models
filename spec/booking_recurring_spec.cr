@@ -688,7 +688,7 @@ module PlaceOS::Model
       Booking.find?(all_day.id.not_nil!).should_not be_nil
 
       recurring_booking = Generator.booking(
-        1_i64,
+        tenant_id,
         asset_id: "desk-1234",
         start: Time.local(2025, 5, 24, location: timezone),
         ending: Time.local(2025, 5, 31, location: timezone)

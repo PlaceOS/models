@@ -513,8 +513,18 @@ module PlaceOS::Model
       end
 
       # 24 time -- 08:23:00, 13:30:00 etc
-      start_time = Time.unix(starting).to_s("%T")
-      end_time = Time.unix(ending).to_s("%T")
+      # starting time and ending times are the times of day
+      start_time_check = Time.unix(starting)
+      end_time_check = Time.unix(ending)
+
+      # we need to account for when a booking crosses a day boundry
+      if start_time_check.at_beginning_of_day != end_time_check.at_beginning_of_day
+        start_time = "00:00:00"
+        end_time = "23:59:59"
+      else
+        start_time = Time.unix(starting).to_s("%T")
+        end_time = Time.unix(ending).to_s("%T")
+      end
 
       # calculate the period we want to check for clashes
       max_period = 90.days
