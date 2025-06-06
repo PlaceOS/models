@@ -14,6 +14,10 @@ ALTER TABLE "user"
 ALTER TABLE uploads
   ADD COLUMN tags TEXT[] NOT NULL DEFAULT '{}';
 
+CREATE INDEX idx_uploads_tags
+  ON uploads
+  USING GIN (tags);
+
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
 
