@@ -66,6 +66,7 @@ module PlaceOS::Model
 
     attribute sys_admin : Bool = false, mass_assignment: false
     attribute support : Bool = false, mass_assignment: false
+    attribute locatable : Bool = true
 
     attribute login_count : Int64 = 0
     attribute last_login : Time? = nil, converter: Time::EpochConverterOptional, type: "integer", format: "Int64"
@@ -77,6 +78,7 @@ module PlaceOS::Model
     ################################################################################################
 
     belongs_to Authority
+    belongs_to Upload, foreign_key: :photo_upload_id
 
     has_many(
       child_class: UserAuthLookup,
@@ -291,7 +293,7 @@ module PlaceOS::Model
       :email_digest, :email, :nickname, :name, :first_name, :last_name, :groups,
       :country, :building, :image, :created_at, :authority_id, :deleted,
       :department, :preferred_language, :staff_id, :phone, :work_preferences,
-      :work_overrides, :login_count, :last_login,
+      :work_overrides, :login_count, :last_login, :photo_upload_id, :locatable,
     ]
 
     {% begin %}
