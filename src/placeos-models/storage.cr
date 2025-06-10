@@ -23,6 +23,7 @@ module PlaceOS::Model
     attribute access_secret : String
     attribute authority_id : String?
     attribute endpoint : String?
+    attribute is_default : Bool = true
 
     attribute ext_filter : Array(String) = [] of String
     attribute mime_filter : Array(String) = [] of String
@@ -50,7 +51,7 @@ module PlaceOS::Model
     end
 
     def self.storage_or_default(authority_id : String?) : Storage
-      model = Storage.find_by?(authority_id: authority_id) || Storage.find_by?(authority_id: nil)
+      model = Storage.order(is_default: :desc).find_by?(authority_id: authority_id) || Storage.order(is_default: :desc).find_by?(authority_id: nil)
       raise Model::Error.new("Could not find Default or authority '#{authority_id}' Storage") if model.nil?
       model
     end
