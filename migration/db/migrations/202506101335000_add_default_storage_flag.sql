@@ -4,30 +4,31 @@
 ALTER TABLE storages
   ADD COLUMN is_default BOOLEAN NOT NULL DEFAULT FALSE;
 
--- This will prevent more than one row per authority_id ever having is_default = TRUE.
 CREATE UNIQUE INDEX storages_authority_default_idx
-  ON storages(authority_id NULLS NOT DISTINCT)
+  ON storages (authority_id)
+  NULLS NOT DISTINCT
   WHERE is_default = TRUE;
 
+-- +micrate StatementBegin
 -- Trigger function to auto-unset any other storages with is_default = TRUE
 CREATE OR REPLACE FUNCTION storages_ensure_single_default()
   RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.is_default THEN
-    -- serialize per-authority with an advisory lock, handles null authority_id values
-    PERFORM pg_advisory_xact_lock(hashtext(NEW.authority_id)::bigint);
     UPDATE storages
       SET is_default = FALSE
-     WHERE authority_id IS NOT DISTINCT FROM NEW.authority_id
-       AND id <> NEW.id;
+    WHERE authority_id IS NOT DISTINCT FROM NEW.authority_id
+      AND id <> NEW.id;
   END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+-- +micrate StatementEnd
 
 -- it will automatically flip any other row for that same tenant back to FALSE
 CREATE TRIGGER trg_storages_single_default
-  BEFORE INSERT OR UPDATE ON storages
+  BEFORE INSERT OR UPDATE OF is_default
+  ON storages
   FOR EACH ROW
   WHEN (NEW.is_default = TRUE)
   EXECUTE FUNCTION storages_ensure_single_default();
