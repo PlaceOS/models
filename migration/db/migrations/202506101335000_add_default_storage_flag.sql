@@ -6,7 +6,7 @@ ALTER TABLE storages
 
 -- This will prevent more than one row per authority_id ever having is_default = TRUE.
 CREATE UNIQUE INDEX storages_authority_default_idx
-  ON storages(authority_id)
+  ON storages(authority_id NULLS NOT DISTINCT)
   WHERE is_default = TRUE;
 
 -- Trigger function to auto-unset any other storages with is_default = TRUE
@@ -14,11 +14,11 @@ CREATE OR REPLACE FUNCTION storages_ensure_single_default()
   RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.is_default THEN
-    -- serialize per-authority with an advisory lock
+    -- serialize per-authority with an advisory lock, handles null authority_id values
     PERFORM pg_advisory_xact_lock(hashtext(NEW.authority_id)::bigint);
     UPDATE storages
       SET is_default = FALSE
-     WHERE authority_id = NEW.authority_id
+     WHERE authority_id IS NOT DISTINCT FROM NEW.authority_id
        AND id <> NEW.id;
   END IF;
   RETURN NEW;
