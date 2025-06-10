@@ -1,3 +1,9 @@
+## v9.67.0 (2025-06-10)
+
+### Feat
+
+- **storage**: add default storage flag ([#288](https://github.com/PlaceOS/models/pull/288))
+
 ## v9.66.0 (2025-06-06)
 
 ### Feat
