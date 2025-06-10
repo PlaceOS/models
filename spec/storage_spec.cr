@@ -3,6 +3,7 @@ require "./helper"
 module PlaceOS::Model
   Spec.before_each do
     Storage.clear
+    Authority.clear
   end
 
   describe Storage do
@@ -42,6 +43,43 @@ module PlaceOS::Model
       s1 = Generator.storage.save!
       s1.authority_id.should be_nil
       Storage.storage_or_default("NOT-DEFINED-AUTHORITY").should_not be_nil
+    end
+
+    it "should return default storage when flagged" do
+      authority = Generator.authority.save!
+
+      def1 = Generator.storage.save!
+      def1.authority_id.should be_nil
+      def2 = Generator.storage.save!
+      def2.authority_id.should be_nil
+      def1.reload!
+      def2.reload!
+
+      def1.is_default.should be_false
+      def2.is_default.should be_true
+
+      s2 = Generator.storage
+      s2.authority_id = authority.id
+      s2.is_default = false
+      s2.save!
+      ret_store = Storage.storage_or_default(authority.id).id.should eq s2.id
+
+      s3 = Generator.storage
+      s3.authority_id = authority.id
+      s3.is_default = true
+      s3.save!
+      s3.reload!
+      s3.is_default.should be_true
+      Storage.storage_or_default(authority.id).id.should eq s3.id
+
+      s2.is_default = true
+      s2.save!
+      s2.reload!
+      s2.is_default.should be_true
+
+      s3.reload!
+      s3.is_default.should be_false
+      ret_store = Storage.storage_or_default(authority.id).id.should eq s2.id
     end
 
     it "should handle extension and mime whitelist" do
