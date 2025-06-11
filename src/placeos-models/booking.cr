@@ -98,6 +98,9 @@ module PlaceOS::Model
     @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
     getter(children : Array(Booking)?) { get_children }
 
+    @[JSON::Field(key: "linked_parent_booking", ignore_deserialize: true)]
+    getter(parent : Booking?) { get_parent }
+
     @[JSON::Field(key: "attendees", ignore_serialize: true)]
     property req_attendees : Array(PlaceCalendar::Event::Attendee)? = nil
 
@@ -629,6 +632,7 @@ module PlaceOS::Model
     def to_json(json : ::JSON::Builder)
       @current_state = booking_current_state
       @children = get_children
+      @parent = get_parent
       if render_event && (meta = get_event_metadata)
         meta.ext_data = nil
         meta.render_linked_bookings = false
@@ -673,6 +677,11 @@ module PlaceOS::Model
     private def get_children
       return nil unless parent?
       Booking.where(parent_id: id).to_a
+    end
+
+    private def get_parent
+      return nil unless !parent?
+      Booking.where(id: parent_id).to_a[0]
     end
 
     # ===
