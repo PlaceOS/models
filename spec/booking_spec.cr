@@ -609,7 +609,7 @@ module PlaceOS::Model
     ).save!
 
     child_booking = Booking.find(child_booking.id)
-    child_booking.parent
+    child_booking = Booking.hydrate_parents([child_booking])[0]
     child_booking_json = JSON.parse(child_booking.to_json).as_h
     child_booking_json["parent_id"].should eq(parent_booking.id)
     child_booking_json["linked_parent_booking"].as_h.should_not be_nil
