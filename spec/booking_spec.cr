@@ -573,7 +573,7 @@ module PlaceOS::Model
     child_booking.rejected_at.should eq(rejected_at_time)
   end
 
-  it "include parent booking in json", focus: true do
+  it "include parent booking in json" do
     tenant_id = Generator.tenant.id
     user_one_email = "one@example.com"
 
@@ -609,8 +609,10 @@ module PlaceOS::Model
     ).save!
 
     child_booking = Booking.find(child_booking.id)
+    child_booking.parent
     child_booking_json = JSON.parse(child_booking.to_json).as_h
     child_booking_json["parent_id"].should eq(parent_booking.id)
-    child_booking_json["parent"].as_h.should_not be_nil
+    child_booking_json["linked_parent_booking"].as_h.should_not be_nil
+    child_booking_json["linked_parent_booking"].as_h["id"].should eq(parent_booking.id)
   end
 end
