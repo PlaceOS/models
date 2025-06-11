@@ -632,7 +632,6 @@ module PlaceOS::Model
     def to_json(json : ::JSON::Builder)
       @current_state = booking_current_state
       @children = get_children
-      @parent = get_parent
       if render_event && (meta = get_event_metadata)
         meta.ext_data = nil
         meta.render_linked_bookings = false
