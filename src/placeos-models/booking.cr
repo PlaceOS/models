@@ -684,12 +684,12 @@ module PlaceOS::Model
     end
 
     def self.hydrate_parents(bookings : Array(Booking))
-      parent_ids = bookings.compact_map(&.parent_id).uniq
+      parent_ids = bookings.compact_map(&.parent_id).uniq!
       parents = Booking.where(id: parent_ids).to_a
       parents_by_id = parents.index_by(&.id)
       bookings.each do |booking|
         next if booking.parent_id.nil?
-        if parent = parents_by_id[booking.parent_id]
+        if parent = parents_by_id[booking.parent_id]?
           booking.parent = parent
         end
       end
