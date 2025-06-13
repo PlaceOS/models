@@ -98,6 +98,9 @@ module PlaceOS::Model
     @[JSON::Field(key: "linked_bookings", ignore_deserialize: true)]
     getter(children : Array(Booking)?) { get_children }
 
+    @[JSON::Field(key: "linked_parent_booking", ignore_deserialize: true)]
+    property(parent : Booking?) { get_parent }
+
     @[JSON::Field(key: "attendees", ignore_serialize: true)]
     property req_attendees : Array(PlaceCalendar::Event::Attendee)? = nil
 
@@ -673,6 +676,25 @@ module PlaceOS::Model
     private def get_children
       return nil unless parent?
       Booking.where(parent_id: id).to_a
+    end
+
+    private def get_parent
+      return nil unless !parent?
+      Booking.where(id: parent_id).to_a[0]
+    end
+
+    def self.hydrate_parents(bookings : Array(Booking))
+      parent_ids = bookings.compact_map(&.parent_id).uniq!
+      parents = Booking.where(id: parent_ids).to_a
+      parents_by_id = parents.index_by(&.id)
+      bookings.each do |booking|
+        next if booking.parent_id.nil?
+        if parent = parents_by_id[booking.parent_id]?
+          booking.parent = parent
+        end
+      end
+
+      bookings
     end
 
     # ===

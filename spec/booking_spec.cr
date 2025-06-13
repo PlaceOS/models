@@ -572,4 +572,47 @@ module PlaceOS::Model
     child_booking.rejected.should eq(true)
     child_booking.rejected_at.should eq(rejected_at_time)
   end
+
+  it "include parent booking in json" do
+    tenant_id = Generator.tenant.id
+    user_one_email = "one@example.com"
+
+    # parent booking
+    parent_booking = Booking.new(
+      booking_type: "room",
+      asset_ids: ["room-1"],
+      booking_start: 1.hour.from_now.to_unix,
+      booking_end: 2.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_one_email),
+      user_name: "One",
+      booked_by_email: PlaceOS::Model::Email.new(user_one_email),
+      booked_by_name: "One",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1",
+      history: [] of Booking::History
+    ).save!
+
+    # child booking
+    child_booking = Booking.new(
+      booking_type: "asset",
+      asset_ids: ["laptop-1"],
+      booking_start: 1.hour.from_now.to_unix,
+      booking_end: 2.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_one_email),
+      user_name: "One",
+      booked_by_email: PlaceOS::Model::Email.new(user_one_email),
+      booked_by_name: "One",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1",
+      history: [] of Booking::History,
+      parent_id: parent_booking.id
+    ).save!
+
+    child_booking = Booking.find(child_booking.id)
+    child_booking = Booking.hydrate_parents([child_booking])[0]
+    child_booking_json = JSON.parse(child_booking.to_json).as_h
+    child_booking_json["parent_id"].should eq(parent_booking.id)
+    child_booking_json["linked_parent_booking"].as_h.should_not be_nil
+    child_booking_json["linked_parent_booking"].as_h["id"].should eq(parent_booking.id)
+  end
 end
