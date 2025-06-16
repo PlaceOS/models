@@ -679,7 +679,7 @@ module PlaceOS::Model
     end
 
     private def get_parent
-      return nil unless !parent?
+      return nil if parent?
       Booking.where(id: parent_id).to_a[0]
     end
 
