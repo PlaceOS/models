@@ -25,6 +25,9 @@ module PlaceOS::Model
     attribute object_key : String
     attribute file_md5 : String
 
+    attribute cache_etag : String? = nil
+    attribute cache_modified : Time? = nil
+
     attribute public : Bool = false
     attribute permissions : Permissions = Permissions::None, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Upload::Permissions)
     attribute object_options : Hash(String, JSON::Any) = {} of String => JSON::Any
