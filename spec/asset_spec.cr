@@ -76,13 +76,14 @@ module PlaceOS::Model
       asset_id = asset.id.as(String)
       booking = Generator.booking(tenant.id, asset_id, event_start, event_end)
       booking.save!
+
       booking.asset_ids.size.should eq(1)
       booking.asset_ids.first.should eq(booking.asset_id)
 
       booking.asset_id = asset2.id.as(String)
       booking.save!
 
-      booking.asset_ids.size.should eq(1)
+      booking.asset_ids.size.should eq(2)
       booking.asset_id.should eq(asset2.id)
     end
 
