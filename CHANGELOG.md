@@ -1,3 +1,9 @@
+## v9.70.0 (2025-06-24)
+
+### Feat
+
+- **user**: add logged_out_at flag
+
 ## v9.69.0 (2025-06-16)
 
 ### Feat
