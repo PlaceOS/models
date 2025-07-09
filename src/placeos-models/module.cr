@@ -20,6 +20,10 @@ module PlaceOS::Model
     attribute udp : Bool = false
     attribute makebreak : Bool = false
 
+    # analytics configuration
+    attribute analytics_enabled : Bool = false
+    attribute analytics_interval_minutes : Int32 = 5
+
     # HTTP Service module
     attribute uri : String = "", es_type: "keyword"
 
