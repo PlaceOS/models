@@ -1,4 +1,8 @@
-## Unreleased
+## v9.71.0 (2025-07-13)
+
+### Feat
+
+- **module**: add analytics configuration fields ([#291](https://github.com/PlaceOS/models/pull/291))
 
 ## v9.70.0 (2025-06-24)
 
