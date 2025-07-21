@@ -386,26 +386,41 @@ module PlaceOS::Model
       # then construct a hash
       sys_id = self.id.as(String)
       sql_query = %[
-        WITH zone_ids AS (
-          SELECT UNNEST(zones) as zone_id
+        WITH settings AS (
+          SELECT
+            zones,
+            orientation
           FROM sys
           WHERE id = $1
         ),
-        zone_playlists AS (
-          SELECT z.id, z.playlists
+        all_playlists AS (
+          -- unnest() in the SELECT is implicitly lateral
+          SELECT
+            z.id                          AS source_id,
+            unnest(z.playlists)          AS playlist_id
           FROM zone z
-          INNER JOIN zone_ids zi ON z.id = zi.zone_id
-          WHERE cardinality(z.playlists) > 0
-        ),
-        trig_playlists AS (
-          SELECT t.id, t.playlists
-          FROM trig t
-          WHERE t.control_system_id = $1 AND cardinality(t.playlists) > 0
-        )
+          JOIN settings st
+            ON z.id = ANY(st.zones)
 
-        SELECT id, playlists FROM zone_playlists
-        UNION ALL
-        SELECT id, playlists FROM trig_playlists;
+          UNION ALL
+
+          SELECT
+            t.id,
+            unnest(t.playlists)
+          FROM trig t
+          WHERE t.control_system_id = $1
+        )
+        SELECT
+          ap.source_id,
+          array_agg(ap.playlist_id ORDER BY ap.playlist_id) AS playlists
+        FROM all_playlists ap
+        JOIN settings st   ON TRUE
+        JOIN playlists p    ON p.id = ap.playlist_id
+        WHERE
+            st.orientation = 'UNSPECIFIED'
+          OR p.orientation  = st.orientation
+          OR p.orientation  = 'UNSPECIFIED'
+        GROUP BY ap.source_id;
       ]
 
       playlists = {

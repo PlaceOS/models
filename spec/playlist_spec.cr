@@ -55,20 +55,24 @@ module PlaceOS::Model
       cs.playlists.size.should eq 0
     end
 
-    it "finds all the playlist ids associated with a system" do
+    it "finds all the playlist ids associated with a system", focus: true do
       playlist = Generator.playlist
       playlist.save!
       play_id = playlist.id.as(String)
 
+      playlist = Generator.playlist
+      playlist.save!
+      play_id2 = playlist.id.as(String)
+
       cs = Generator.control_system
-      cs.playlists = [play_id]
+      cs.playlists = [play_id2]
 
       zone = Generator.zone
       zone.playlists = [play_id]
       zone.save!
 
       zone2 = Generator.zone
-      zone2.playlists = [play_id]
+      zone2.playlists = [play_id2]
       zone2.save!
 
       cs.zones = [zone.id.as(String), zone2.id.as(String)]
@@ -80,16 +84,36 @@ module PlaceOS::Model
       trigger.save!
 
       trigger2 = Generator.trigger_instance control_system: cs
-      trigger2.playlists = [play_id]
+      trigger2.playlists = [play_id2]
       trigger2.save!
 
       cs = ControlSystem.find(cs_id)
       cs.all_playlists.should eq({
-        cs_id                  => [play_id],
+        cs_id                  => [play_id2],
         zone.id.as(String)     => [play_id],
-        zone2.id.as(String)    => [play_id],
+        zone2.id.as(String)    => [play_id2],
         trigger.id.as(String)  => [play_id],
-        trigger2.id.as(String) => [play_id],
+        trigger2.id.as(String) => [play_id2],
+      })
+
+      # playlists default to this orientation
+      cs.orientation = PlaceOS::Model::Playlist::Orientation::Portrait
+      cs.save!
+      cs.all_playlists.should eq({
+        cs_id                  => [play_id2],
+        zone.id.as(String)     => [play_id],
+        zone2.id.as(String)    => [play_id2],
+        trigger.id.as(String)  => [play_id],
+        trigger2.id.as(String) => [play_id2],
+      })
+
+      # playlists directly assigned to the display should not be filtered
+      playlist.orientation = PlaceOS::Model::Playlist::Orientation::Landscape
+      playlist.save!
+      cs.all_playlists.should eq({
+        cs_id                 => [play_id2],
+        zone.id.as(String)    => [play_id],
+        trigger.id.as(String) => [play_id],
       })
     end
 
