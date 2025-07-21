@@ -1,3 +1,9 @@
+## v9.71.1 (2025-07-21)
+
+### Fix
+
+- **signage**: playlist filtering using orientation
+
 ## v9.71.0 (2025-07-13)
 
 ### Feat
