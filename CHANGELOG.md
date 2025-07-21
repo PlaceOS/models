@@ -1,3 +1,9 @@
+## v9.72.0 (2025-07-21)
+
+### Feat
+
+- **signage**: add approval support
+
 ## v9.71.1 (2025-07-21)
 
 ### Fix
