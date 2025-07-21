@@ -11,6 +11,11 @@ module PlaceOS::Model
     attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter
     attribute user_name : String
 
+    attribute approved : Bool = false
+    attribute approved_by_id : String?
+    attribute approved_by_name : String?
+    attribute approved_by_email : PlaceOS::Model::Email?, format: "email", converter: PlaceOS::Model::EmailConverter
+
     attribute items : Array(String) = [] of String, es_type: "keyword"
     belongs_to Playlist, foreign_key: "playlist_id"
 
@@ -27,18 +32,43 @@ module PlaceOS::Model
 
     def user=(user)
       self.user_id = user.id.as(String)
-      self.user_email = user.email
       self.user_name = user.name
+      self.user_email = user.email
     end
 
-    def self.revisions(playlist_ids : Array(String))
+    def approver=(user)
+      self.approved_by_id = user.id.as(String)
+      self.approved_by_name = user.name
+      self.approved_by_email = user.email
+      self.approved = true
+    end
+
+    # finds the latest approved playlist revision for each of the playlist ids provided
+    def self.revisions(playlist_ids : Array(String), approved : Bool? = true)
       query = %[(playlist_id, created_at) IN (
         SELECT playlist_id, MAX(created_at) AS most_recent
         FROM playlist_revisions
         WHERE playlist_id = ANY(#{Associations.format_list_for_postgres(playlist_ids)})
         GROUP BY playlist_id
       )]
-      Playlist::Revision.where(query).to_a
+      results = Playlist::Revision.where(query)
+
+      case approved
+      in Bool
+        results.where(approved: approved).to_a
+      in Nil
+        results.to_a
+      end
+    end
+
+    # Cleanup and items that don't exist
+    ###############################################################################################
+    before_create :remove_old_draft_revisions
+
+    def remove_old_draft_revisions
+      if !self.approved
+        Playlist::Revision.where(approved: false, playlist_id: self.playlist_id).delete_all
+      end
     end
 
     # Cleanup and items that don't exist

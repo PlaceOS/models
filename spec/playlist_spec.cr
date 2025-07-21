@@ -55,7 +55,7 @@ module PlaceOS::Model
       cs.playlists.size.should eq 0
     end
 
-    it "finds all the playlist ids associated with a system", focus: true do
+    it "finds all the playlist ids associated with a system" do
       playlist = Generator.playlist
       playlist.save!
       play_id = playlist.id.as(String)

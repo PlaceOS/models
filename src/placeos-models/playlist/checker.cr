@@ -3,6 +3,8 @@ module PlaceOS::Model::Playlist::Checker
     before_save :check_playlists
   end
 
+  # this removes ids of playlists that have been deleted
+  # a lazy version of database consistency
   def check_playlists
     sql_query = %[
       WITH input_ids AS (

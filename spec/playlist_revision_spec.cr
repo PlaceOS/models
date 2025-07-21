@@ -81,11 +81,39 @@ module PlaceOS::Model
         revision1.playlist_id.as(String),
         revision2.playlist_id.as(String),
         revision3.playlist_id.as(String),
-      ]).map(&.id.as(String))
+      ], approved: nil).map(&.id.as(String))
 
       rev_ids.includes?(revision1.id).should be_true
       rev_ids.includes?(rev2_old_id).should be_false
       rev_ids.includes?(rev2_new_id).should be_true
+      rev_ids.includes?(revision3.id).should be_true
+
+      rev_ids = Playlist::Revision.revisions([
+        revision1.playlist_id.as(String),
+        revision2.playlist_id.as(String),
+        revision3.playlist_id.as(String),
+      ]).map(&.id.as(String))
+
+      rev_ids.includes?(revision1.id).should be_false
+      rev_ids.includes?(rev2_old_id).should be_false
+      rev_ids.includes?(rev2_new_id).should be_false
+      rev_ids.includes?(revision3.id).should be_false
+
+      approver = Generator.user.save!
+      revision1.approver = approver
+      revision1.save!
+      revision3.approver = approver
+      revision3.save!
+
+      rev_ids = Playlist::Revision.revisions([
+        revision1.playlist_id.as(String),
+        revision2.playlist_id.as(String),
+        revision3.playlist_id.as(String),
+      ]).map(&.id.as(String))
+
+      rev_ids.includes?(revision1.id).should be_true
+      rev_ids.includes?(rev2_old_id).should be_false
+      rev_ids.includes?(rev2_new_id).should be_false
       rev_ids.includes?(revision3.id).should be_true
     end
 

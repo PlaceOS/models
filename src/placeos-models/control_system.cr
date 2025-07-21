@@ -366,7 +366,7 @@ module PlaceOS::Model
       playlist_ids = playlists.values.flatten.uniq!
       if !playlist_ids.empty?
         play_updated_at = Playlist.where(id: playlist_ids).order(updated_at: :desc).limit(1).to_a.first?.try(&.updated_at)
-        rev_updated_at = Playlist::Revision.where(playlist_id: playlist_ids).order(updated_at: :desc).limit(1).to_a.first?.try(&.updated_at)
+        rev_updated_at = Playlist::Revision.where(playlist_id: playlist_ids, approved: true).order(updated_at: :desc).limit(1).to_a.first?.try(&.updated_at)
       end
       trig_updated_at = TriggerInstance
         .where(control_system_id: self.id.as(String))
