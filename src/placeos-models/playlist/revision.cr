@@ -7,14 +7,14 @@ module PlaceOS::Model
 
     table :playlist_revisions
 
-    attribute user_id : String
-    attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter
-    attribute user_name : String
+    attribute user_id : String, mass_assignment: false
+    attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter, mass_assignment: false
+    attribute user_name : String, mass_assignment: false
 
-    attribute approved : Bool = false
-    attribute approved_by_id : String?
-    attribute approved_by_name : String?
-    attribute approved_by_email : PlaceOS::Model::Email?, format: "email", converter: PlaceOS::Model::EmailConverter
+    attribute approved : Bool = false, mass_assignment: false
+    attribute approved_by_id : String?, mass_assignment: false
+    attribute approved_by_name : String?, mass_assignment: false
+    attribute approved_by_email : PlaceOS::Model::Email?, format: "email", converter: PlaceOS::Model::EmailConverter, mass_assignment: false
 
     attribute items : Array(String) = [] of String, es_type: "keyword"
     belongs_to Playlist, foreign_key: "playlist_id"
