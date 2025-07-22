@@ -1,3 +1,9 @@
+## v9.72.2 (2025-07-22)
+
+### Fix
+
+- **signage/revision**: user_id is nullable
+
 ## v9.72.1 (2025-07-22)
 
 ### Fix
