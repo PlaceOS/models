@@ -141,5 +141,44 @@ module PlaceOS::Model
       Playlist::Item.find(item1_id).play_count.should eq 7
       Playlist::Item.find(item2_id).play_count.should eq 4
     end
+
+    it "only maintains a single unapproved revision" do
+      revision = Generator.revision
+
+      item = Generator.item
+      item.save!
+      item1_id = item.id.as(String)
+      item2 = Generator.item
+      item2.save!
+      item2_id = item2.id.as(String)
+
+      revision.items = [item1_id, item2_id]
+      revision.approved = true
+      revision.save!
+
+      playlist = revision.playlist.as(Model::Playlist)
+      playlist.revisions.to_a.map(&.id).should eq [revision.id]
+      playlist.revision.id.should eq revision.id
+
+      revision2 = revision.clone
+      revision2.user_id = revision.user_id
+      revision2.user_email = revision.user_email
+      revision2.user_name = revision.user_name
+      revision2.save!
+      revision2.approved.should eq false
+
+      playlist.revisions.to_a.map(&.id).should eq [revision2.id, revision.id]
+      playlist.revision.id.should eq revision2.id
+
+      revision3 = revision2.clone
+      revision3.user_id = revision.user_id
+      revision3.user_email = revision.user_email
+      revision3.user_name = revision.user_name
+      revision3.save!
+      revision3.approved.should eq false
+
+      playlist.revisions.to_a.map(&.id).should eq [revision3.id, revision.id]
+      playlist.revision.id.should eq revision3.id
+    end
   end
 end

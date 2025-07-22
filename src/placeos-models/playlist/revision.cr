@@ -7,7 +7,7 @@ module PlaceOS::Model
 
     table :playlist_revisions
 
-    attribute user_id : String, mass_assignment: false
+    attribute user_id : String?, mass_assignment: false
     attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter, mass_assignment: false
     attribute user_name : String, mass_assignment: false
 
