@@ -1,3 +1,9 @@
+## v9.72.1 (2025-07-22)
+
+### Fix
+
+- **signage/revision**: protect some fields
+
 ## v9.72.0 (2025-07-21)
 
 ### Feat
