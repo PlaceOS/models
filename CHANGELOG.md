@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Fix
+
+- bump version
+
 ## v9.72.2 (2025-07-22)
 
 ### Fix
