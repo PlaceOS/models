@@ -120,7 +120,11 @@ module PlaceOS::Model
 
     # ensure crons valid
     validate ->(this : Playlist) {
-      return if (cron = this.play_cron).nil?
+      if (cron = this.play_cron.presence).nil?
+        this.play_cron = nil
+        return
+      end
+
       begin
         CronParser.new(cron)
       rescue error
