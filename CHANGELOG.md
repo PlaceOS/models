@@ -1,4 +1,10 @@
-## Unreleased
+## v9.72.4 (2025-08-05)
+
+### Fix
+
+- **playlist**: removal of cron via API
+
+## v9.72.3 (2025-08-04)
 
 ### Fix
 
