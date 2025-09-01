@@ -40,6 +40,7 @@ module PlaceOS::Model
     end
 
     attribute repo_type : Type = Type::Driver, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Repository::Type), es_type: "text"
+    attribute root_path : String?
 
     # Error Indicators
     attribute has_runtime_error : Bool = false, mass_assignment: false
