@@ -1,3 +1,9 @@
+## v9.73.0 (2025-09-01)
+
+### Feat
+
+- [PPT-2172] Added root_path to repo model ([#293](https://github.com/PlaceOS/models/pull/293))
+
 ## v9.72.4 (2025-08-05)
 
 ### Fix
