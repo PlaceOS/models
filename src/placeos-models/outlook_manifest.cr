@@ -24,7 +24,6 @@ module PlaceOS::Model
           xml.element("SupportUrl", "DefaultValue": "https://place.technology/contact")
           xml.element("AppDomains") do
             xml.element("AppDomain") { xml.text @app_domain }
-            xml.element("AppDomain") { xml.text "https://login.microsoftonline.com/" }
           end
           xml.element("Hosts") do
             xml.element("Host", "Name": "Mailbox")
