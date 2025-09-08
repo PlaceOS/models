@@ -1,3 +1,9 @@
+## v9.74.0 (2025-09-08)
+
+### Feat
+
+- **outlook-manifest**: [PPT-2078] remove default Microsoft login domain from app domains ([#294](https://github.com/PlaceOS/models/pull/294))
+
 ## v9.73.0 (2025-09-01)
 
 ### Feat
