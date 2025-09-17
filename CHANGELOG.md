@@ -1,3 +1,9 @@
+## v9.75.0 (2025-09-17)
+
+### Feat
+
+- [PPT-2077] Added alert & dashboard models ([#296](https://github.com/PlaceOS/models/pull/296))
+
 ## v9.74.0 (2025-09-08)
 
 ### Feat
