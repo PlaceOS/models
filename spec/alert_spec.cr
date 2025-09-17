@@ -36,7 +36,7 @@ module PlaceOS::Model
       alert.enabled.should be_true
       alert.severity.should eq Alert::Severity::MEDIUM
       alert.alert_type.should eq Alert::AlertType::THRESHOLD
-      alert.check_interval.should eq 60000
+      alert.debounce_period.should eq 60000
     end
 
     it "validates conditions" do

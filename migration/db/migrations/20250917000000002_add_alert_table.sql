@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS "alert"(
    conditions JSONB NOT NULL,
    severity public.alert_severity NOT NULL DEFAULT 'MEDIUM'::public.alert_severity,
    alert_type public.alert_type NOT NULL DEFAULT 'THRESHOLD'::public.alert_type,
-   check_interval INTEGER NOT NULL,
+   debounce_period INTEGER NOT NULL,
    alert_dashboard_id TEXT NOT NULL,
    id TEXT NOT NULL PRIMARY KEY,
    FOREIGN KEY (alert_dashboard_id) REFERENCES alert_dashboard(id) ON DELETE CASCADE

@@ -722,7 +722,7 @@ module PlaceOS::Model
       enabled : Bool = true,
       severity : Alert::Severity = Alert::Severity::MEDIUM,
       alert_type : Alert::AlertType = Alert::AlertType::THRESHOLD,
-      check_interval : Int32 = 60000,
+      debounce_period : Int32 = 60000,
       alert_dashboard_id : String? = nil,
     )
       unless alert_dashboard_id
@@ -737,7 +737,7 @@ module PlaceOS::Model
         enabled: enabled,
         severity: severity,
         alert_type: alert_type,
-        check_interval: check_interval,
+        debounce_period: debounce_period,
         alert_dashboard_id: alert_dashboard_id
       )
     end

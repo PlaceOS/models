@@ -31,8 +31,8 @@ module PlaceOS::Model
     attribute severity : Severity = Severity::MEDIUM, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::Severity)
     attribute alert_type : AlertType = AlertType::THRESHOLD, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::AlertType)
 
-    # In milliseconds - how often to check the condition
-    attribute check_interval : Int32 = 60000 # 1 minute default
+    # In milliseconds - delay before showing notification to prevent flapping
+    attribute debounce_period : Int32 = 15000 # 15 seconds default
 
     # Association
     ###############################################################################################
