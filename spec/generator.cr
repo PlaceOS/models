@@ -694,5 +694,52 @@ module PlaceOS::Model
         sent: sent,
       )
     end
+
+    def self.alert_dashboard(
+      name : String = Faker::Lorem.word,
+      description : String = Faker::Lorem.sentence,
+      enabled : Bool = true,
+      authority_id : String? = nil,
+    )
+      unless authority_id
+        # look up an existing authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+        authority_id = authority.id
+      end
+
+      AlertDashboard.new(
+        name: name,
+        description: description,
+        enabled: enabled,
+        authority_id: authority_id
+      )
+    end
+
+    def self.alert(
+      name : String = Faker::Lorem.word,
+      description : String = Faker::Lorem.sentence,
+      enabled : Bool = true,
+      severity : Alert::Severity = Alert::Severity::MEDIUM,
+      alert_type : Alert::AlertType = Alert::AlertType::THRESHOLD,
+      debounce_period : Int32 = 60000,
+      alert_dashboard_id : String? = nil,
+    )
+      unless alert_dashboard_id
+        # generate a dashboard if none provided
+        dashboard = self.alert_dashboard.save!
+        alert_dashboard_id = dashboard.id
+      end
+
+      Alert.new(
+        name: name,
+        description: description,
+        enabled: enabled,
+        severity: severity,
+        alert_type: alert_type,
+        debounce_period: debounce_period,
+        alert_dashboard_id: alert_dashboard_id
+      )
+    end
   end
 end
