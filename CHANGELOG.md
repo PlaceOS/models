@@ -1,3 +1,9 @@
+## v9.75.1 (2025-09-18)
+
+### Refactor
+
+- **alert**: marked fields to be indexable in ES ([#297](https://github.com/PlaceOS/models/pull/297))
+
 ## v9.75.0 (2025-09-17)
 
 ### Feat
