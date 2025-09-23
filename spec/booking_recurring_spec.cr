@@ -699,5 +699,370 @@ module PlaceOS::Model
       recurring_booking.timezone = "Europe/Berlin"
       recurring_booking.save.should eq false
     end
+
+    it "should generate correct number of daily recurrence instances" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.recurrence_interval = 1
+      booking.save!
+
+      # Test 5-day period starting from booking date
+      today = Time.local(2020, 1, 10, 10, 0, 0, location: timezone)
+      query_start = today
+      query_end = today + 5.days
+
+      # Should generate one instance per day for 5 days
+      details = booking.calculate_daily(query_start, query_end)
+      times = details.instances
+      times.size.should eq 5
+
+      # Verify consecutive days
+      times.each_with_index do |time, index|
+        expected_day = today + index.days
+        time.day.should eq expected_day.day
+        time.hour.should eq 10
+      end
+
+      # Test limit functionality
+      limited_2 = booking.calculate_daily(query_start, query_end, limit: 2)
+      limited_2.instances.size.should eq 2
+      limited_2.limit_reached.should be_true
+
+      limited_3 = booking.calculate_daily(query_start, query_end, limit: 3)
+      limited_3.instances.size.should eq 3
+      limited_3.limit_reached.should be_true
+    end
+
+    it "should validate expand_bookings behavior with limits" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.recurrence_interval = 1
+      booking.save!
+
+      # Test the specific scenario: original booking + 2 more occurrences
+      today = Time.local(2020, 1, 10, 10, 0, 0, location: timezone)
+      query_start = today
+      query_end = today + 3.days
+
+      # Test with expand_bookings (this is what the UI likely uses)
+      bookings = [booking]
+      expansion = Booking.expand_bookings!(query_start, query_end, bookings)
+
+      # Should generate 3 bookings total (original + 2 more)
+      bookings.size.should eq 3
+      expansion.complete.should eq 1
+      expansion.next_idx.should eq 0
+
+      # Verify the booking times are correct
+      bookings[0].starting_tz.day.should eq 10 # Original
+    end
+
+    it "should handle daily recurrence with custom intervals correctly" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111 # All days
+      booking.recurrence_interval = 3     # Every 3 days
+      booking.save!
+
+      start_query = Time.local(2020, 1, 10, 0, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 25, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_daily(start_query, end_query).instances
+      times.map(&.day).should eq [10, 13, 16, 19, 22]
+    end
+
+    it "should respect day-of-week restrictions in daily recurrence" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b0100010 # Only Monday and Friday (bits 1 and 5)
+      booking.recurrence_interval = 1
+      booking.save!
+
+      # Start on a Friday (Jan 10, 2020)
+      start_query = Time.local(2020, 1, 10, 0, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_daily(start_query, end_query).instances
+      # Should only include Friday 10th, Monday 13th, Friday 17th
+      times.map(&.day).should eq [10, 13, 17]
+      times.each { |time| [Time::DayOfWeek::Monday, Time::DayOfWeek::Friday].should contain(time.day_of_week) }
+    end
+
+    it "should handle edge case where query starts before booking start" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.recurrence_interval = 2
+      booking.save!
+
+      # Query starts before the booking
+      start_query = Time.local(2020, 1, 5, 0, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_daily(start_query, end_query).instances
+      # Should start from booking date (Jan 10) and follow interval
+      times.map(&.day).should eq [10, 12, 14, 16, 18]
+    end
+
+    it "should handle bi-weekly recurrence" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.booking_start = Time.local(2020, 1, 6, 10, 0, 0, location: timezone).to_unix # Monday
+      booking.booking_end = (Time.local(2020, 1, 6, 10, 0, 0, location: timezone) + 1.hour).to_unix
+      booking.recurrence_type = :weekly
+      booking.recurrence_days = 0b0000010 # Monday only
+      booking.recurrence_interval = 2     # Every 2 weeks
+      booking.save!
+
+      start_query = Time.local(2020, 1, 6, 0, 0, 0, location: timezone)
+      end_query = Time.local(2020, 3, 1, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_weekly(start_query, end_query).instances
+      # Should be every other Monday
+      times.map(&.day).should eq [6, 20, 3, 17] # Jan 6, Jan 20, Feb 3, Feb 17
+    end
+
+    it "should correctly calculate 2nd Friday of each month" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :monthly
+      booking.recurrence_days = 0b0100000 # Friday only
+      booking.recurrence_nth_of_month = 2 # 2nd occurrence
+      booking.recurrence_interval = 1
+      booking.save!
+
+      start_query = Time.local(2020, 1, 1, 0, 0, 0, location: timezone)
+      end_query = Time.local(2020, 6, 1, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_monthly(start_query, end_query).instances
+      # 2nd Friday of each month: Jan 10, Feb 14, Mar 13, Apr 10, May 8
+      times.map(&.day).should eq [10, 14, 13, 10, 8]
+      times.each { |time| time.day_of_week.should eq Time::DayOfWeek::Friday }
+    end
+
+    it "should handle quarterly recurrence (every 3 months)" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :monthly
+      booking.recurrence_days = 0b0000010 # Monday only
+      booking.recurrence_nth_of_month = 1 # 1st Monday
+      booking.recurrence_interval = 3     # Every 3 months
+      booking.save!
+
+      start_query = Time.local(2020, 1, 1, 0, 0, 0, location: timezone)
+      end_query = Time.local(2021, 1, 1, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_monthly(start_query, end_query).instances
+      times.map(&.day).should eq [10, 6, 6, 5]
+      times.map(&.month).should eq [1, 4, 7, 10]
+    end
+
+    it "should correctly handle monthly recurrence starting mid-year" do
+      # Booking starts in June
+      june_start = Time.local(2020, 6, 12, 10, 0, 0, location: timezone) # 2nd Friday of June
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.booking_start = june_start.to_unix
+      booking.booking_end = (june_start + 1.hour).to_unix
+      booking.recurrence_type = :monthly
+      booking.recurrence_days = 0b0100000 # Friday only
+      booking.recurrence_nth_of_month = 2 # 2nd Friday
+      booking.recurrence_interval = 1
+      booking.save!
+
+      # Query for rest of the year
+      start_query = Time.local(2020, 6, 1, 0, 0, 0, location: timezone)
+      end_query = Time.local(2021, 1, 1, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_monthly(start_query, end_query).instances
+      times.map(&.day).should eq [12, 10, 14, 11, 9, 13, 11]
+      times.map(&.month).should eq [6, 7, 8, 9, 10, 11, 12]
+    end
+
+    it "should handle recurrence end date correctly" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.recurrence_interval = 1
+      booking.recurrence_end = Time.local(2020, 1, 15, 0, 0, 0, location: timezone).to_unix
+      booking.save!
+
+      start_query = Time.local(2020, 1, 10, 0, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 20, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_daily(start_query, end_query).instances
+      # Should stop at recurrence_end date
+      times.map(&.day).should eq [10, 11, 12, 13, 14]
+    end
+
+    it "should handle timezone changes correctly" do
+      # Test with different timezone
+      ny_timezone = Time::Location.load("America/New_York")
+      ny_start = Time.local(2020, 1, 10, 10, 0, 0, location: ny_timezone)
+
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.booking_start = ny_start.to_unix
+      booking.booking_end = (ny_start + 1.hour).to_unix
+      booking.timezone = "America/New_York"
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.recurrence_interval = 1
+      booking.save!
+
+      start_query = Time.local(2020, 1, 10, 0, 0, 0, location: ny_timezone)
+      end_query = Time.local(2020, 1, 15, 0, 0, 0, location: ny_timezone)
+
+      times = booking.calculate_daily(start_query, end_query).instances
+      times.size.should eq 5
+      times.each(&.hour.should(eq(10)))
+    end
+
+    it "should handle empty recurrence_days gracefully" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b0000000 # No days selected
+      booking.recurrence_interval = 1
+      booking.save!
+
+      start_query = Time.local(2020, 1, 10, 0, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_daily(start_query, end_query).instances
+      # Should return no occurrences
+      times.size.should eq 0
+    end
+
+    it "should respect recurrence interval for daily bookings" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.recurrence_interval = 2 # Every 2 days
+      booking.save!
+
+      today = Time.local(2020, 1, 10, 10, 0, 0, location: timezone)
+      query_start = today
+      query_end = today + 10.days
+
+      times = booking.calculate_daily(query_start, query_end).instances
+
+      # Should generate instances every 2 days: 10th, 12th, 14th, 16th, 18th
+      times.size.should eq 5
+
+      # Verify the interval is working correctly
+      times.each_with_index do |time, index|
+        expected_day = 10 + (index * 2)
+        time.day.should eq expected_day
+        time.hour.should eq 10
+      end
+
+      # Verify consecutive instances are 2 days apart
+      (1...times.size).each do |i|
+        day_diff = times[i].day - times[i - 1].day
+        day_diff.should eq 2
+      end
+    end
+
+    it "should generate correct monthly recurrence on 2nd Friday" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :monthly
+      booking.recurrence_days = 0b0100000 # Friday only
+      booking.recurrence_nth_of_month = 2 # 2nd Friday
+      booking.recurrence_interval = 1
+      booking.save!
+
+      query_start = Time.local(2020, 1, 1, 0, 0, 0, location: timezone)
+      query_end = Time.local(2020, 6, 30, 0, 0, 0, location: timezone)
+
+      times = booking.calculate_monthly(query_start, query_end).instances
+
+      # Should find 2nd Friday of each month from Jan to June (6 months)
+      times.size.should eq 6
+
+      # Verify all are Fridays
+      times.each do |time|
+        time.day_of_week.should eq Time::DayOfWeek::Friday
+      end
+
+      # Verify specific dates for 2nd Friday of each month in 2020
+      expected_days = [10, 14, 13, 10, 8, 12] # 2nd Friday of Jan-Jun 2020
+      times.each_with_index do |time, index|
+        time.day.should eq expected_days[index]
+        time.month.should eq index + 1
+      end
+    end
+
+    it "should handle negative nth_of_month correctly" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :monthly
+      booking.recurrence_days = 0b0100000  # Friday only
+      booking.recurrence_nth_of_month = -1 # Last Friday
+      booking.save!
+
+      start_query = Time.local(2024, 1, 1, 0, 0, 0, location: timezone)
+      end_query = Time.local(2024, 3, 31, 0, 0, 0, location: timezone)
+      times = booking.calculate_monthly(start_query, end_query).instances
+
+      # Should find last Friday of each month
+      times.each do |time|
+        time.day_of_week.should eq Time::DayOfWeek::Friday
+        # Verify it's the last Friday by checking next Friday is in next month
+        next_friday = time + 7.days
+        next_friday.month.should_not eq time.month
+      end
+    end
+
+    it "should handle booking instances that extend beyond query range" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 10, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 12, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query).instances
+
+      # Create an instance that extends beyond the query range
+      booking_instance = booking.to_instance(times[0].to_unix)
+      booking_instance.booking_end += 25.hours.total_seconds.to_i64 # Extends to next day
+      booking_instance.save!
+
+      bookings = [booking]
+      Booking.expand_bookings!(start_query, end_query, bookings)
+
+      # Should handle instances that extend beyond range correctly
+      extended_booking = bookings.find { |b| b.instance == times[0].to_unix }
+      extended_booking.should_not be_nil
+    end
+
+    it "should validate recurrence_days bitmap correctly" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+
+      # Test valid bitmap
+      booking.recurrence_days = 0b0111110 # Weekdays only
+      booking.recurrence_on.size.should eq 5
+
+      # Test all days
+      booking.recurrence_days = 0b1111111 # All days
+      booking.recurrence_on.size.should eq 7
+
+      # Test single day
+      booking.recurrence_days = 0b0000010 # Monday only
+      booking.recurrence_on.size.should eq 1
+      booking.recurrence_on.should contain(Time::DayOfWeek::Monday)
+    end
+
+    it "should handle empty timezone string gracefully" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.timezone = ""
+
+      # Should not crash when calling timezone methods with empty string
+      # The .presence method should handle empty strings gracefully
+      booking.starting_tz.should be_a(Time)
+      booking.ending_tz.should be_a(Time)
+
+      # Should still work with nil timezone
+      booking.timezone = nil
+      booking.starting_tz.should be_a(Time)
+      booking.ending_tz.should be_a(Time)
+    end
   end
 end
