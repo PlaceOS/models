@@ -1,3 +1,9 @@
+## v9.76.0 (2025-09-23)
+
+### Feat
+
+- [PPT-2176] Added schema and respective model attributes ([#295](https://github.com/PlaceOS/models/pull/295))
+
 ## v9.75.2 (2025-09-23)
 
 ### Refactor
