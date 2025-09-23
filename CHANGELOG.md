@@ -1,3 +1,9 @@
+## v9.75.2 (2025-09-23)
+
+### Refactor
+
+- **booking_recurring_spec**: [PPT-1993] Added more tests to validate logic ([#292](https://github.com/PlaceOS/models/pull/292))
+
 ## v9.75.1 (2025-09-18)
 
 ### Refactor
