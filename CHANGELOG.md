@@ -1,3 +1,9 @@
+## v9.76.1 (2025-09-23)
+
+### Refactor
+
+- **asset_category**: mark hidden field to be ES indexable ([#298](https://github.com/PlaceOS/models/pull/298))
+
 ## v9.76.0 (2025-09-23)
 
 ### Feat
