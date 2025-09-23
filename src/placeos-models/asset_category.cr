@@ -10,7 +10,7 @@ module PlaceOS::Model
     # i.e. a tablet
     attribute name : String, es_subfield: "keyword"
     attribute description : String?
-    attribute hidden : Bool = false
+    attribute hidden : Bool = false, es_subfield: "keyword"
 
     belongs_to AssetCategory, foreign_key: "parent_category_id", association_name: "parent_category"
 
