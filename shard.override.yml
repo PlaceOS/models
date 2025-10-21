@@ -1,7 +1,7 @@
 dependencies:
   neuroplastic:
     github: place-labs/neuroplastic
-    commit: 29b6a363e101ebdc88e28755f872a200a4c800e8
+    commit: 2c156ab8ce688d676ca912b25ccdc631b265952c
   retriable:
     github: Sija/retriable.cr
   pg-orm:
