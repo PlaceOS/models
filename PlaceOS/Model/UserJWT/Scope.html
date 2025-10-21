@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Crystal Docs 1.17.1">
+<meta name="crystal_docs.project_version" content="9.76.1">
+<meta name="crystal_docs.project_name" content="placeos-models">
+
+
+
+<link href="../../../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../../js/doc.js"></script>
+
+  <meta name="repository-name" content="placeos-models">
+  <title>PlaceOS::Model::UserJWT::Scope - placeos-models 9.76.1</title>
+  <script type="text/javascript">
+    CrystalDocs.base_path = "../../../";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill="currentColor" fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<input type="checkbox" id="sidebar-btn">
+<label for="sidebar-btn" id="sidebar-btn-label">
+  <svg class="open" xmlns="http://www.w3.org/2000/svg" height="2em" width="2em" viewBox="0 0 512 512"><title>Open Sidebar</title><path fill="currentColor" d="M80 96v64h352V96H80zm0 112v64h352v-64H80zm0 112v64h352v-64H80z"></path></svg>
+  <svg class="close" xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 512 512"><title>Close Sidebar</title><path fill="currentColor" d="m118.6 73.4-45.2 45.2L210.7 256 73.4 393.4l45.2 45.2L256 301.3l137.4 137.3 45.2-45.2L301.3 256l137.3-137.4-45.2-45.2L256 210.7Z"></path></svg>
+</label>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="../../../index.html">
+          placeos-models
+        </a>
+      </h1>
+
+      <span class="project-version">
+        9.76.1
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class=" " data-id="placeos-models/OptionalRecordConverter" data-name="optionalrecordconverter(t)">
+      <a href="../../../OptionalRecordConverter.html">OptionalRecordConverter</a>
+      
+    </li>
+  
+  <li class="parent open current" data-id="placeos-models/PlaceOS" data-name="placeos">
+      <a href="../../../PlaceOS.html">PlaceOS</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Encryption" data-name="placeos::encryption">
+      <a href="../../../PlaceOS/Encryption.html">Encryption</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Encryption/Level" data-name="placeos::encryption::level">
+      <a href="../../../PlaceOS/Encryption/Level.html">Level</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent open current" data-id="placeos-models/PlaceOS/Model" data-name="placeos::model">
+      <a href="../../../PlaceOS/Model.html">Model</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Alert" data-name="placeos::model::alert">
+      <a href="../../../PlaceOS/Model/Alert.html">Alert</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Alert/AlertType" data-name="placeos::model::alert::alerttype">
+      <a href="../../../PlaceOS/Model/Alert/AlertType.html">AlertType</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Alert/ChangeFeed" data-name="placeos::model::alert::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Alert/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Alert/ChangeFeed/Change" data-name="placeos::model::alert::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Alert/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Alert/PrimaryKeyType" data-name="placeos::model::alert::primarykeytype">
+      <a href="../../../PlaceOS/Model/Alert/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Alert/Severity" data-name="placeos::model::alert::severity">
+      <a href="../../../PlaceOS/Model/Alert/Severity.html">Severity</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/AlertDashboard" data-name="placeos::model::alertdashboard">
+      <a href="../../../PlaceOS/Model/AlertDashboard.html">AlertDashboard</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/AlertDashboard/ChangeFeed" data-name="placeos::model::alertdashboard::changefeed(t)">
+      <a href="../../../PlaceOS/Model/AlertDashboard/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/AlertDashboard/ChangeFeed/Change" data-name="placeos::model::alertdashboard::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/AlertDashboard/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/AlertDashboard/PrimaryKeyType" data-name="placeos::model::alertdashboard::primarykeytype">
+      <a href="../../../PlaceOS/Model/AlertDashboard/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/ApiKey" data-name="placeos::model::apikey">
+      <a href="../../../PlaceOS/Model/ApiKey.html">ApiKey</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/ApiKey/ChangeFeed" data-name="placeos::model::apikey::changefeed(t)">
+      <a href="../../../PlaceOS/Model/ApiKey/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ApiKey/ChangeFeed/Change" data-name="placeos::model::apikey::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/ApiKey/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ApiKey/PrimaryKeyType" data-name="placeos::model::apikey::primarykeytype">
+      <a href="../../../PlaceOS/Model/ApiKey/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ApiKey/PublicResponse" data-name="placeos::model::apikey::publicresponse">
+      <a href="../../../PlaceOS/Model/ApiKey/PublicResponse.html">PublicResponse</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Asset" data-name="placeos::model::asset">
+      <a href="../../../PlaceOS/Model/Asset.html">Asset</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Asset/ChangeFeed" data-name="placeos::model::asset::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Asset/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Asset/ChangeFeed/Change" data-name="placeos::model::asset::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Asset/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Asset/PrimaryKeyType" data-name="placeos::model::asset::primarykeytype">
+      <a href="../../../PlaceOS/Model/Asset/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/AssetCategory" data-name="placeos::model::assetcategory">
+      <a href="../../../PlaceOS/Model/AssetCategory.html">AssetCategory</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/AssetCategory/ChangeFeed" data-name="placeos::model::assetcategory::changefeed(t)">
+      <a href="../../../PlaceOS/Model/AssetCategory/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/AssetCategory/ChangeFeed/Change" data-name="placeos::model::assetcategory::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/AssetCategory/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/AssetCategory/PrimaryKeyType" data-name="placeos::model::assetcategory::primarykeytype">
+      <a href="../../../PlaceOS/Model/AssetCategory/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/AssetPurchaseOrder" data-name="placeos::model::assetpurchaseorder">
+      <a href="../../../PlaceOS/Model/AssetPurchaseOrder.html">AssetPurchaseOrder</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/AssetPurchaseOrder/ChangeFeed" data-name="placeos::model::assetpurchaseorder::changefeed(t)">
+      <a href="../../../PlaceOS/Model/AssetPurchaseOrder/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/AssetPurchaseOrder/ChangeFeed/Change" data-name="placeos::model::assetpurchaseorder::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/AssetPurchaseOrder/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/AssetPurchaseOrder/PrimaryKeyType" data-name="placeos::model::assetpurchaseorder::primarykeytype">
+      <a href="../../../PlaceOS/Model/AssetPurchaseOrder/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/AssetType" data-name="placeos::model::assettype">
+      <a href="../../../PlaceOS/Model/AssetType.html">AssetType</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/AssetType/ChangeFeed" data-name="placeos::model::assettype::changefeed(t)">
+      <a href="../../../PlaceOS/Model/AssetType/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/AssetType/ChangeFeed/Change" data-name="placeos::model::assettype::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/AssetType/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/AssetType/PrimaryKeyType" data-name="placeos::model::assettype::primarykeytype">
+      <a href="../../../PlaceOS/Model/AssetType/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Associations" data-name="placeos::model::associations">
+      <a href="../../../PlaceOS/Model/Associations.html">Associations</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Attendee" data-name="placeos::model::attendee">
+      <a href="../../../PlaceOS/Model/Attendee.html">Attendee</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Attendee/ChangeFeed" data-name="placeos::model::attendee::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Attendee/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Attendee/ChangeFeed/Change" data-name="placeos::model::attendee::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Attendee/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Attendee/PrimaryKeyType" data-name="placeos::model::attendee::primarykeytype">
+      <a href="../../../PlaceOS/Model/Attendee/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Authority" data-name="placeos::model::authority">
+      <a href="../../../PlaceOS/Model/Authority.html">Authority</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Authority/ChangeFeed" data-name="placeos::model::authority::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Authority/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Authority/ChangeFeed/Change" data-name="placeos::model::authority::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Authority/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Authority/PrimaryKeyType" data-name="placeos::model::authority::primarykeytype">
+      <a href="../../../PlaceOS/Model/Authority/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Booking" data-name="placeos::model::booking">
+      <a href="../../../PlaceOS/Model/Booking.html">Booking</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Booking/ChangeFeed" data-name="placeos::model::booking::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Booking/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Booking/ChangeFeed/Change" data-name="placeos::model::booking::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Booking/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Booking/ExpansionDetails" data-name="placeos::model::booking::expansiondetails">
+      <a href="../../../PlaceOS/Model/Booking/ExpansionDetails.html">ExpansionDetails</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Booking/History" data-name="placeos::model::booking::history">
+      <a href="../../../PlaceOS/Model/Booking/History.html">History</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Booking/Induction" data-name="placeos::model::booking::induction">
+      <a href="../../../PlaceOS/Model/Booking/Induction.html">Induction</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Booking/Permission" data-name="placeos::model::booking::permission">
+      <a href="../../../PlaceOS/Model/Booking/Permission.html">Permission</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Booking/PrimaryKeyType" data-name="placeos::model::booking::primarykeytype">
+      <a href="../../../PlaceOS/Model/Booking/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Booking/Recurrence" data-name="placeos::model::booking::recurrence">
+      <a href="../../../PlaceOS/Model/Booking/Recurrence.html">Recurrence</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Booking/RecurrenceDetails" data-name="placeos::model::booking::recurrencedetails">
+      <a href="../../../PlaceOS/Model/Booking/RecurrenceDetails.html">RecurrenceDetails</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Booking/State" data-name="placeos::model::booking::state">
+      <a href="../../../PlaceOS/Model/Booking/State.html">State</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/BookingInstance" data-name="placeos::model::bookinginstance">
+      <a href="../../../PlaceOS/Model/BookingInstance.html">BookingInstance</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/BookingInstance/ChangeFeed" data-name="placeos::model::bookinginstance::changefeed(t)">
+      <a href="../../../PlaceOS/Model/BookingInstance/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/BookingInstance/ChangeFeed/Change" data-name="placeos::model::bookinginstance::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/BookingInstance/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/BookingInstance/History" data-name="placeos::model::bookinginstance::history">
+      <a href="../../../PlaceOS/Model/BookingInstance/History.html">History</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/BookingInstance/PrimaryKeyType" data-name="placeos::model::bookinginstance::primarykeytype">
+      <a href="../../../PlaceOS/Model/BookingInstance/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Broker" data-name="placeos::model::broker">
+      <a href="../../../PlaceOS/Model/Broker.html">Broker</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Broker/AuthType" data-name="placeos::model::broker::authtype">
+      <a href="../../../PlaceOS/Model/Broker/AuthType.html">AuthType</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Broker/ChangeFeed" data-name="placeos::model::broker::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Broker/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Broker/ChangeFeed/Change" data-name="placeos::model::broker::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Broker/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Broker/PrimaryKeyType" data-name="placeos::model::broker::primarykeytype">
+      <a href="../../../PlaceOS/Model/Broker/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Chat" data-name="placeos::model::chat">
+      <a href="../../../PlaceOS/Model/Chat.html">Chat</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Chat/ChangeFeed" data-name="placeos::model::chat::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Chat/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Chat/ChangeFeed/Change" data-name="placeos::model::chat::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Chat/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Chat/PrimaryKeyType" data-name="placeos::model::chat::primarykeytype">
+      <a href="../../../PlaceOS/Model/Chat/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/ChatMessage" data-name="placeos::model::chatmessage">
+      <a href="../../../PlaceOS/Model/ChatMessage.html">ChatMessage</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/ChatMessage/ChangeFeed" data-name="placeos::model::chatmessage::changefeed(t)">
+      <a href="../../../PlaceOS/Model/ChatMessage/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ChatMessage/ChangeFeed/Change" data-name="placeos::model::chatmessage::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/ChatMessage/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ChatMessage/PrimaryKeyType" data-name="placeos::model::chatmessage::primarykeytype">
+      <a href="../../../PlaceOS/Model/ChatMessage/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ChatMessage/Role" data-name="placeos::model::chatmessage::role">
+      <a href="../../../PlaceOS/Model/ChatMessage/Role.html">Role</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/ControlSystem" data-name="placeos::model::controlsystem">
+      <a href="../../../PlaceOS/Model/ControlSystem.html">ControlSystem</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/ControlSystem/ChangeFeed" data-name="placeos::model::controlsystem::changefeed(t)">
+      <a href="../../../PlaceOS/Model/ControlSystem/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ControlSystem/ChangeFeed/Change" data-name="placeos::model::controlsystem::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/ControlSystem/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ControlSystem/PrimaryKeyType" data-name="placeos::model::controlsystem::primarykeytype">
+      <a href="../../../PlaceOS/Model/ControlSystem/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/DoorkeeperApplication" data-name="placeos::model::doorkeeperapplication">
+      <a href="../../../PlaceOS/Model/DoorkeeperApplication.html">DoorkeeperApplication</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/DoorkeeperApplication/ChangeFeed" data-name="placeos::model::doorkeeperapplication::changefeed(t)">
+      <a href="../../../PlaceOS/Model/DoorkeeperApplication/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/DoorkeeperApplication/ChangeFeed/Change" data-name="placeos::model::doorkeeperapplication::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/DoorkeeperApplication/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/DoorkeeperApplication/PrimaryKeyType" data-name="placeos::model::doorkeeperapplication::primarykeytype">
+      <a href="../../../PlaceOS/Model/DoorkeeperApplication/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Driver" data-name="placeos::model::driver">
+      <a href="../../../PlaceOS/Model/Driver.html">Driver</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Driver/ChangeFeed" data-name="placeos::model::driver::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Driver/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Driver/ChangeFeed/Change" data-name="placeos::model::driver::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Driver/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Driver/PrimaryKeyType" data-name="placeos::model::driver::primarykeytype">
+      <a href="../../../PlaceOS/Model/Driver/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Driver/Role" data-name="placeos::model::driver::role">
+      <a href="../../../PlaceOS/Model/Driver/Role.html">Role</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Driver/UpdateInfo" data-name="placeos::model::driver::updateinfo">
+      <a href="../../../PlaceOS/Model/Driver/UpdateInfo.html">UpdateInfo</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Edge" data-name="placeos::model::edge">
+      <a href="../../../PlaceOS/Model/Edge.html">Edge</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Edge/ChangeFeed" data-name="placeos::model::edge::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Edge/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Edge/ChangeFeed/Change" data-name="placeos::model::edge::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Edge/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Edge/CreateBody" data-name="placeos::model::edge::createbody">
+      <a href="../../../PlaceOS/Model/Edge/CreateBody.html">CreateBody</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Edge/KeyResponse" data-name="placeos::model::edge::keyresponse">
+      <a href="../../../PlaceOS/Model/Edge/KeyResponse.html">KeyResponse</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Edge/PrimaryKeyType" data-name="placeos::model::edge::primarykeytype">
+      <a href="../../../PlaceOS/Model/Edge/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Email" data-name="placeos::model::email">
+      <a href="../../../PlaceOS/Model/Email.html">Email</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Error" data-name="placeos::model::error">
+      <a href="../../../PlaceOS/Model/Error.html">Error</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Error/InvalidSaasKey" data-name="placeos::model::error::invalidsaaskey">
+      <a href="../../../PlaceOS/Model/Error/InvalidSaasKey.html">InvalidSaasKey</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Error/MalformedFilter" data-name="placeos::model::error::malformedfilter">
+      <a href="../../../PlaceOS/Model/Error/MalformedFilter.html">MalformedFilter</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Error/NoParent" data-name="placeos::model::error::noparent">
+      <a href="../../../PlaceOS/Model/Error/NoParent.html">NoParent</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Error/NoScope" data-name="placeos::model::error::noscope">
+      <a href="../../../PlaceOS/Model/Error/NoScope.html">NoScope</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/EventMetadata" data-name="placeos::model::eventmetadata">
+      <a href="../../../PlaceOS/Model/EventMetadata.html">EventMetadata</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/EventMetadata/ChangeFeed" data-name="placeos::model::eventmetadata::changefeed(t)">
+      <a href="../../../PlaceOS/Model/EventMetadata/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/EventMetadata/ChangeFeed/Change" data-name="placeos::model::eventmetadata::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/EventMetadata/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/EventMetadata/Permission" data-name="placeos::model::eventmetadata::permission">
+      <a href="../../../PlaceOS/Model/EventMetadata/Permission.html">Permission</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/EventMetadata/PrimaryKeyType" data-name="placeos::model::eventmetadata::primarykeytype">
+      <a href="../../../PlaceOS/Model/EventMetadata/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Executable" data-name="placeos::model::executable">
+      <a href="../../../PlaceOS/Model/Executable.html">Executable</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Executable/Info" data-name="placeos::model::executable::info">
+      <a href="../../../PlaceOS/Model/Executable/Info.html">Info</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Guest" data-name="placeos::model::guest">
+      <a href="../../../PlaceOS/Model/Guest.html">Guest</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Guest/ChangeFeed" data-name="placeos::model::guest::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Guest/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Guest/ChangeFeed/Change" data-name="placeos::model::guest::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Guest/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Guest/PrimaryKeyType" data-name="placeos::model::guest::primarykeytype">
+      <a href="../../../PlaceOS/Model/Guest/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/JsonSchema" data-name="placeos::model::jsonschema">
+      <a href="../../../PlaceOS/Model/JsonSchema.html">JsonSchema</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/JsonSchema/ChangeFeed" data-name="placeos::model::jsonschema::changefeed(t)">
+      <a href="../../../PlaceOS/Model/JsonSchema/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/JsonSchema/ChangeFeed/Change" data-name="placeos::model::jsonschema::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/JsonSchema/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/JsonSchema/PrimaryKeyType" data-name="placeos::model::jsonschema::primarykeytype">
+      <a href="../../../PlaceOS/Model/JsonSchema/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/JWTBase" data-name="placeos::model::jwtbase">
+      <a href="../../../PlaceOS/Model/JWTBase.html">JWTBase</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/LdapAuthentication" data-name="placeos::model::ldapauthentication">
+      <a href="../../../PlaceOS/Model/LdapAuthentication.html">LdapAuthentication</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/LdapAuthentication/ChangeFeed" data-name="placeos::model::ldapauthentication::changefeed(t)">
+      <a href="../../../PlaceOS/Model/LdapAuthentication/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/LdapAuthentication/ChangeFeed/Change" data-name="placeos::model::ldapauthentication::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/LdapAuthentication/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/LdapAuthentication/PrimaryKeyType" data-name="placeos::model::ldapauthentication::primarykeytype">
+      <a href="../../../PlaceOS/Model/LdapAuthentication/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Metadata" data-name="placeos::model::metadata">
+      <a href="../../../PlaceOS/Model/Metadata.html">Metadata</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Metadata/ChangeFeed" data-name="placeos::model::metadata::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Metadata/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Metadata/ChangeFeed/Change" data-name="placeos::model::metadata::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Metadata/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Metadata/Interface" data-name="placeos::model::metadata::interface">
+      <a href="../../../PlaceOS/Model/Metadata/Interface.html">Interface</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Metadata/ParentResponse" data-name="placeos::model::metadata::parentresponse">
+      <a href="../../../PlaceOS/Model/Metadata/ParentResponse.html">ParentResponse</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Metadata/PrimaryKeyType" data-name="placeos::model::metadata::primarykeytype">
+      <a href="../../../PlaceOS/Model/Metadata/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ModelBase" data-name="placeos::model::modelbase">
+      <a href="../../../PlaceOS/Model/ModelBase.html">ModelBase</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ModelWithAutoKey" data-name="placeos::model::modelwithautokey">
+      <a href="../../../PlaceOS/Model/ModelWithAutoKey.html">ModelWithAutoKey</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Module" data-name="placeos::model::module">
+      <a href="../../../PlaceOS/Model/Module.html">Module</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Module/ChangeFeed" data-name="placeos::model::module::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Module/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Module/ChangeFeed/Change" data-name="placeos::model::module::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Module/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Module/PrimaryKeyType" data-name="placeos::model::module::primarykeytype">
+      <a href="../../../PlaceOS/Model/Module/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/OAuthAuthentication" data-name="placeos::model::oauthauthentication">
+      <a href="../../../PlaceOS/Model/OAuthAuthentication.html">OAuthAuthentication</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/OAuthAuthentication/ChangeFeed" data-name="placeos::model::oauthauthentication::changefeed(t)">
+      <a href="../../../PlaceOS/Model/OAuthAuthentication/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/OAuthAuthentication/ChangeFeed/Change" data-name="placeos::model::oauthauthentication::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/OAuthAuthentication/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/OAuthAuthentication/PrimaryKeyType" data-name="placeos::model::oauthauthentication::primarykeytype">
+      <a href="../../../PlaceOS/Model/OAuthAuthentication/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/OutlookManifest" data-name="placeos::model::outlookmanifest">
+      <a href="../../../PlaceOS/Model/OutlookManifest.html">OutlookManifest</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Playlist" data-name="placeos::model::playlist">
+      <a href="../../../PlaceOS/Model/Playlist.html">Playlist</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/Animation" data-name="placeos::model::playlist::animation">
+      <a href="../../../PlaceOS/Model/Playlist/Animation.html">Animation</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Playlist/ChangeFeed" data-name="placeos::model::playlist::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Playlist/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/ChangeFeed/Change" data-name="placeos::model::playlist::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Playlist/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/Checker" data-name="placeos::model::playlist::checker">
+      <a href="../../../PlaceOS/Model/Playlist/Checker.html">Checker</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Playlist/Item" data-name="placeos::model::playlist::item">
+      <a href="../../../PlaceOS/Model/Playlist/Item.html">Item</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Playlist/Item/ChangeFeed" data-name="placeos::model::playlist::item::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Playlist/Item/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/Item/ChangeFeed/Change" data-name="placeos::model::playlist::item::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Playlist/Item/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/Item/MediaType" data-name="placeos::model::playlist::item::mediatype">
+      <a href="../../../PlaceOS/Model/Playlist/Item/MediaType.html">MediaType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/Item/PrimaryKeyType" data-name="placeos::model::playlist::item::primarykeytype">
+      <a href="../../../PlaceOS/Model/Playlist/Item/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/ItemsResponse" data-name="placeos::model::playlist::itemsresponse">
+      <a href="../../../PlaceOS/Model/Playlist/ItemsResponse.html">ItemsResponse</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/Orientation" data-name="placeos::model::playlist::orientation">
+      <a href="../../../PlaceOS/Model/Playlist/Orientation.html">Orientation</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/PrimaryKeyType" data-name="placeos::model::playlist::primarykeytype">
+      <a href="../../../PlaceOS/Model/Playlist/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Playlist/Revision" data-name="placeos::model::playlist::revision">
+      <a href="../../../PlaceOS/Model/Playlist/Revision.html">Revision</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Playlist/Revision/ChangeFeed" data-name="placeos::model::playlist::revision::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Playlist/Revision/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/Revision/ChangeFeed/Change" data-name="placeos::model::playlist::revision::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Playlist/Revision/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Playlist/Revision/PrimaryKeyType" data-name="placeos::model::playlist::revision::primarykeytype">
+      <a href="../../../PlaceOS/Model/Playlist/Revision/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Repository" data-name="placeos::model::repository">
+      <a href="../../../PlaceOS/Model/Repository.html">Repository</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Repository/ChangeFeed" data-name="placeos::model::repository::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Repository/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Repository/ChangeFeed/Change" data-name="placeos::model::repository::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Repository/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Repository/PrimaryKeyType" data-name="placeos::model::repository::primarykeytype">
+      <a href="../../../PlaceOS/Model/Repository/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Repository/Type" data-name="placeos::model::repository::type">
+      <a href="../../../PlaceOS/Model/Repository/Type.html">Type</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/SamlAuthentication" data-name="placeos::model::samlauthentication">
+      <a href="../../../PlaceOS/Model/SamlAuthentication.html">SamlAuthentication</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/SamlAuthentication/ChangeFeed" data-name="placeos::model::samlauthentication::changefeed(t)">
+      <a href="../../../PlaceOS/Model/SamlAuthentication/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/SamlAuthentication/ChangeFeed/Change" data-name="placeos::model::samlauthentication::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/SamlAuthentication/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/SamlAuthentication/PrimaryKeyType" data-name="placeos::model::samlauthentication::primarykeytype">
+      <a href="../../../PlaceOS/Model/SamlAuthentication/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Scope" data-name="placeos::model::scope">
+      <a href="../../../PlaceOS/Model/Scope.html">Scope</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Settings" data-name="placeos::model::settings">
+      <a href="../../../PlaceOS/Model/Settings.html">Settings</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Settings/ChangeFeed" data-name="placeos::model::settings::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Settings/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Settings/ChangeFeed/Change" data-name="placeos::model::settings::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Settings/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Settings/ParentType" data-name="placeos::model::settings::parenttype">
+      <a href="../../../PlaceOS/Model/Settings/ParentType.html">ParentType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Settings/PrimaryKeyType" data-name="placeos::model::settings::primarykeytype">
+      <a href="../../../PlaceOS/Model/Settings/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Shortener" data-name="placeos::model::shortener">
+      <a href="../../../PlaceOS/Model/Shortener.html">Shortener</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Shortener/ChangeFeed" data-name="placeos::model::shortener::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Shortener/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Shortener/ChangeFeed/Change" data-name="placeos::model::shortener::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Shortener/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Shortener/PrimaryKeyType" data-name="placeos::model::shortener::primarykeytype">
+      <a href="../../../PlaceOS/Model/Shortener/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Statistics" data-name="placeos::model::statistics">
+      <a href="../../../PlaceOS/Model/Statistics.html">Statistics</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Statistics/ChangeFeed" data-name="placeos::model::statistics::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Statistics/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Statistics/ChangeFeed/Change" data-name="placeos::model::statistics::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Statistics/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Statistics/PrimaryKeyType" data-name="placeos::model::statistics::primarykeytype">
+      <a href="../../../PlaceOS/Model/Statistics/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Storage" data-name="placeos::model::storage">
+      <a href="../../../PlaceOS/Model/Storage.html">Storage</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Storage/ChangeFeed" data-name="placeos::model::storage::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Storage/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Storage/ChangeFeed/Change" data-name="placeos::model::storage::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Storage/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Storage/PrimaryKeyType" data-name="placeos::model::storage::primarykeytype">
+      <a href="../../../PlaceOS/Model/Storage/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Storage/Type" data-name="placeos::model::storage::type">
+      <a href="../../../PlaceOS/Model/Storage/Type.html">Type</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/SubModel" data-name="placeos::model::submodel">
+      <a href="../../../PlaceOS/Model/SubModel.html">SubModel</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Survey" data-name="placeos::model::survey">
+      <a href="../../../PlaceOS/Model/Survey.html">Survey</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Survey/Answer" data-name="placeos::model::survey::answer">
+      <a href="../../../PlaceOS/Model/Survey/Answer.html">Answer</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Survey/Answer/ChangeFeed" data-name="placeos::model::survey::answer::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Survey/Answer/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/Answer/ChangeFeed/Change" data-name="placeos::model::survey::answer::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Survey/Answer/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/Answer/PrimaryKeyType" data-name="placeos::model::survey::answer::primarykeytype">
+      <a href="../../../PlaceOS/Model/Survey/Answer/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Survey/ChangeFeed" data-name="placeos::model::survey::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Survey/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/ChangeFeed/Change" data-name="placeos::model::survey::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Survey/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Survey/Invitation" data-name="placeos::model::survey::invitation">
+      <a href="../../../PlaceOS/Model/Survey/Invitation.html">Invitation</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Survey/Invitation/ChangeFeed" data-name="placeos::model::survey::invitation::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Survey/Invitation/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/Invitation/ChangeFeed/Change" data-name="placeos::model::survey::invitation::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Survey/Invitation/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/Invitation/PrimaryKeyType" data-name="placeos::model::survey::invitation::primarykeytype">
+      <a href="../../../PlaceOS/Model/Survey/Invitation/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/Page" data-name="placeos::model::survey::page">
+      <a href="../../../PlaceOS/Model/Survey/Page.html">Page</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/PrimaryKeyType" data-name="placeos::model::survey::primarykeytype">
+      <a href="../../../PlaceOS/Model/Survey/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Survey/Question" data-name="placeos::model::survey::question">
+      <a href="../../../PlaceOS/Model/Survey/Question.html">Question</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Survey/Question/ChangeFeed" data-name="placeos::model::survey::question::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Survey/Question/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/Question/ChangeFeed/Change" data-name="placeos::model::survey::question::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Survey/Question/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/Question/PrimaryKeyType" data-name="placeos::model::survey::question::primarykeytype">
+      <a href="../../../PlaceOS/Model/Survey/Question/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Survey/TriggerType" data-name="placeos::model::survey::triggertype">
+      <a href="../../../PlaceOS/Model/Survey/TriggerType.html">TriggerType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Tenant" data-name="placeos::model::tenant">
+      <a href="../../../PlaceOS/Model/Tenant.html">Tenant</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Tenant/ChangeFeed" data-name="placeos::model::tenant::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Tenant/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Tenant/ChangeFeed/Change" data-name="placeos::model::tenant::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Tenant/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Tenant/GoogleConfig" data-name="placeos::model::tenant::googleconfig">
+      <a href="../../../PlaceOS/Model/Tenant/GoogleConfig.html">GoogleConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Tenant/GoogleDelegatedConfig" data-name="placeos::model::tenant::googledelegatedconfig">
+      <a href="../../../PlaceOS/Model/Tenant/GoogleDelegatedConfig.html">GoogleDelegatedConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Tenant/Office365Config" data-name="placeos::model::tenant::office365config">
+      <a href="../../../PlaceOS/Model/Tenant/Office365Config.html">Office365Config</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Tenant/Office365DelegatedConfig" data-name="placeos::model::tenant::office365delegatedconfig">
+      <a href="../../../PlaceOS/Model/Tenant/Office365DelegatedConfig.html">Office365DelegatedConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Tenant/OutlookConfig" data-name="placeos::model::tenant::outlookconfig">
+      <a href="../../../PlaceOS/Model/Tenant/OutlookConfig.html">OutlookConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Tenant/PrimaryKeyType" data-name="placeos::model::tenant::primarykeytype">
+      <a href="../../../PlaceOS/Model/Tenant/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Tenant/Responder" data-name="placeos::model::tenant::responder">
+      <a href="../../../PlaceOS/Model/Tenant/Responder.html">Responder</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Timestamps" data-name="placeos::model::timestamps">
+      <a href="../../../PlaceOS/Model/Timestamps.html">Timestamps</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Timestamps/EpochMillisConverter" data-name="placeos::model::timestamps::epochmillisconverter">
+      <a href="../../../PlaceOS/Model/Timestamps/EpochMillisConverter.html">EpochMillisConverter</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger" data-name="placeos::model::trigger">
+      <a href="../../../PlaceOS/Model/Trigger.html">Trigger</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger/Actions" data-name="placeos::model::trigger::actions">
+      <a href="../../../PlaceOS/Model/Trigger/Actions.html">Actions</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Actions/Email" data-name="placeos::model::trigger::actions::email">
+      <a href="../../../PlaceOS/Model/Trigger/Actions/Email.html">Email</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Actions/Function" data-name="placeos::model::trigger::actions::function">
+      <a href="../../../PlaceOS/Model/Trigger/Actions/Function.html">Function</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger/ChangeFeed" data-name="placeos::model::trigger::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Trigger/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/ChangeFeed/Change" data-name="placeos::model::trigger::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Trigger/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions" data-name="placeos::model::trigger::conditions">
+      <a href="../../../PlaceOS/Model/Trigger/Conditions.html">Conditions</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison" data-name="placeos::model::trigger::conditions::comparison">
+      <a href="../../../PlaceOS/Model/Trigger/Conditions/Comparison.html">Comparison</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison/Constant" data-name="placeos::model::trigger::conditions::comparison::constant">
+      <a href="../../../PlaceOS/Model/Trigger/Conditions/Comparison/Constant.html">Constant</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison/Operator" data-name="placeos::model::trigger::conditions::comparison::operator">
+      <a href="../../../PlaceOS/Model/Trigger/Conditions/Comparison/Operator.html">Operator</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison/StatusVariable" data-name="placeos::model::trigger::conditions::comparison::statusvariable">
+      <a href="../../../PlaceOS/Model/Trigger/Conditions/Comparison/StatusVariable.html">StatusVariable</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison/Value" data-name="placeos::model::trigger::conditions::comparison::value">
+      <a href="../../../PlaceOS/Model/Trigger/Conditions/Comparison/Value.html">Value</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/TimeDependent" data-name="placeos::model::trigger::conditions::timedependent">
+      <a href="../../../PlaceOS/Model/Trigger/Conditions/TimeDependent.html">TimeDependent</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/TimeDependent/Type" data-name="placeos::model::trigger::conditions::timedependent::type">
+      <a href="../../../PlaceOS/Model/Trigger/Conditions/TimeDependent/Type.html">Type</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/PrimaryKeyType" data-name="placeos::model::trigger::primarykeytype">
+      <a href="../../../PlaceOS/Model/Trigger/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/TriggerInstance" data-name="placeos::model::triggerinstance">
+      <a href="../../../PlaceOS/Model/TriggerInstance.html">TriggerInstance</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/TriggerInstance/ChangeFeed" data-name="placeos::model::triggerinstance::changefeed(t)">
+      <a href="../../../PlaceOS/Model/TriggerInstance/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/TriggerInstance/ChangeFeed/Change" data-name="placeos::model::triggerinstance::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/TriggerInstance/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/TriggerInstance/MetadataResponse" data-name="placeos::model::triggerinstance::metadataresponse">
+      <a href="../../../PlaceOS/Model/TriggerInstance/MetadataResponse.html">MetadataResponse</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/TriggerInstance/PrimaryKeyType" data-name="placeos::model::triggerinstance::primarykeytype">
+      <a href="../../../PlaceOS/Model/TriggerInstance/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Upload" data-name="placeos::model::upload">
+      <a href="../../../PlaceOS/Model/Upload.html">Upload</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Upload/ChangeFeed" data-name="placeos::model::upload::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Upload/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Upload/ChangeFeed/Change" data-name="placeos::model::upload::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Upload/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Upload/Permissions" data-name="placeos::model::upload::permissions">
+      <a href="../../../PlaceOS/Model/Upload/Permissions.html">Permissions</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Upload/PrimaryKeyType" data-name="placeos::model::upload::primarykeytype">
+      <a href="../../../PlaceOS/Model/Upload/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/User" data-name="placeos::model::user">
+      <a href="../../../PlaceOS/Model/User.html">User</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/AdminMetadataResponse" data-name="placeos::model::user::adminmetadataresponse">
+      <a href="../../../PlaceOS/Model/User/AdminMetadataResponse.html">AdminMetadataResponse</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/AdminResponse" data-name="placeos::model::user::adminresponse">
+      <a href="../../../PlaceOS/Model/User/AdminResponse.html">AdminResponse</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/User/ChangeFeed" data-name="placeos::model::user::changefeed(t)">
+      <a href="../../../PlaceOS/Model/User/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/ChangeFeed/Change" data-name="placeos::model::user::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/User/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/GroupResponse" data-name="placeos::model::user::groupresponse">
+      <a href="../../../PlaceOS/Model/User/GroupResponse.html">GroupResponse</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/Password" data-name="placeos::model::user::password">
+      <a href="../../../PlaceOS/Model/User/Password.html">Password</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/PrimaryKeyType" data-name="placeos::model::user::primarykeytype">
+      <a href="../../../PlaceOS/Model/User/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/PublicMetadataResponse" data-name="placeos::model::user::publicmetadataresponse">
+      <a href="../../../PlaceOS/Model/User/PublicMetadataResponse.html">PublicMetadataResponse</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/PublicResponse" data-name="placeos::model::user::publicresponse">
+      <a href="../../../PlaceOS/Model/User/PublicResponse.html">PublicResponse</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/WorktimeBlock" data-name="placeos::model::user::worktimeblock">
+      <a href="../../../PlaceOS/Model/User/WorktimeBlock.html">WorktimeBlock</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/WorktimePreference" data-name="placeos::model::user::worktimepreference">
+      <a href="../../../PlaceOS/Model/User/WorktimePreference.html">WorktimePreference</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/UserAuthLookup" data-name="placeos::model::userauthlookup">
+      <a href="../../../PlaceOS/Model/UserAuthLookup.html">UserAuthLookup</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/UserAuthLookup/ChangeFeed" data-name="placeos::model::userauthlookup::changefeed(t)">
+      <a href="../../../PlaceOS/Model/UserAuthLookup/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/UserAuthLookup/ChangeFeed/Change" data-name="placeos::model::userauthlookup::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/UserAuthLookup/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/UserAuthLookup/PrimaryKeyType" data-name="placeos::model::userauthlookup::primarykeytype">
+      <a href="../../../PlaceOS/Model/UserAuthLookup/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent open current" data-id="placeos-models/PlaceOS/Model/UserJWT" data-name="placeos::model::userjwt">
+      <a href="../../../PlaceOS/Model/UserJWT.html">UserJWT</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/UserJWT/Metadata" data-name="placeos::model::userjwt::metadata">
+      <a href="../../../PlaceOS/Model/UserJWT/Metadata.html">Metadata</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/UserJWT/Permissions" data-name="placeos::model::userjwt::permissions">
+      <a href="../../../PlaceOS/Model/UserJWT/Permissions.html">Permissions</a>
+      
+    </li>
+  
+  <li class="parent open current" data-id="placeos-models/PlaceOS/Model/UserJWT/Scope" data-name="placeos::model::userjwt::scope">
+      <a href="../../../PlaceOS/Model/UserJWT/Scope.html">Scope</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/UserJWT/Scope/Access" data-name="placeos::model::userjwt::scope::access">
+      <a href="../../../PlaceOS/Model/UserJWT/Scope/Access.html">Access</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Utilities" data-name="placeos::model::utilities">
+      <a href="../../../PlaceOS/Model/Utilities.html">Utilities</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Utilities/IdGenerator" data-name="placeos::model::utilities::idgenerator">
+      <a href="../../../PlaceOS/Model/Utilities/IdGenerator.html">IdGenerator</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Utilities/LastModified" data-name="placeos::model::utilities::lastmodified">
+      <a href="../../../PlaceOS/Model/Utilities/LastModified.html">LastModified</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Utilities/MetadataHelper" data-name="placeos::model::utilities::metadatahelper">
+      <a href="../../../PlaceOS/Model/Utilities/MetadataHelper.html">MetadataHelper</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Utilities/SettingsHelper" data-name="placeos::model::utilities::settingshelper">
+      <a href="../../../PlaceOS/Model/Utilities/SettingsHelper.html">SettingsHelper</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Utilities/Versions" data-name="placeos::model::utilities::versions">
+      <a href="../../../PlaceOS/Model/Utilities/Versions.html">Versions</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Validation" data-name="placeos::model::validation">
+      <a href="../../../PlaceOS/Model/Validation.html">Validation</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Version" data-name="placeos::model::version">
+      <a href="../../../PlaceOS/Model/Version.html">Version</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Zone" data-name="placeos::model::zone">
+      <a href="../../../PlaceOS/Model/Zone.html">Zone</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Zone/ChangeFeed" data-name="placeos::model::zone::changefeed(t)">
+      <a href="../../../PlaceOS/Model/Zone/ChangeFeed.html">ChangeFeed</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Zone/ChangeFeed/Change" data-name="placeos::model::zone::changefeed::change(t)">
+      <a href="../../../PlaceOS/Model/Zone/ChangeFeed/Change.html">Change</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Zone/PrimaryKeyType" data-name="placeos::model::zone::primarykeytype">
+      <a href="../../../PlaceOS/Model/Zone/PrimaryKeyType.html">PrimaryKeyType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">
+    struct
+  </span> PlaceOS::<wbr>Model::<wbr>UserJWT::<wbr>Scope
+
+</h1>
+
+
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../../../PlaceOS/Model/UserJWT/Scope.html">PlaceOS::Model::UserJWT::Scope</a></li><li class="superclass">Struct</li><li class="superclass">Value</li><li class="superclass">Object</li></ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      placeos-models/user_jwt.cr
+    
+    <br/>
+  
+
+
+
+  
+    <h2>
+      <a id="constant-summary" class="anchor" href="#constant-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+      Constant Summary
+    </h2>
+  
+  <dl>
+    
+      <dt class="entry-const" id="GUEST">
+        <strong>GUEST</strong> = <code>new(<span class="s">&quot;guest&quot;</span>)</code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="PUBLIC">
+        <strong>PUBLIC</strong> = <code>new(<span class="s">&quot;public&quot;</span>)</code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SAAS">
+        <strong>SAAS</strong> = <code>new(<span class="s">&quot;portal-saas&quot;</span>)</code>
+      </dt>
+      
+    
+  </dl>
+
+
+
+  
+  <h2>
+    <a id="constructors" class="anchor" href="#constructors">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructors
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#new%28json%3AJSON%3A%3APullParser%29-class-method" class="signature"><strong>.new</strong>(json : JSON::PullParser)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#new%28resource%3AString%2Caccess%3AAccess%7CNil%3Dnil%29-class-method" class="signature"><strong>.new</strong>(resource : String, access : Access | Nil = <span class="n">nil</span>)</a>
+        
+      </li>
+    
+  </ul>
+
+
+  
+  <h2>
+    <a id="class-method-summary" class="anchor" href="#class-method-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Class Method Summary
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#from_json%28json%3AJSON%3A%3APullParser%29-class-method" class="signature"><strong>.from_json</strong>(json : JSON::PullParser)</a>
+        
+      </li>
+    
+  </ul>
+
+
+  
+
+  
+  <h2>
+    <a id="instance-method-summary" class="anchor" href="#instance-method-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Summary
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#access%3AAccess-instance-method" class="signature"><strong>#access</strong> : Access</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#resource%3AString-instance-method" class="signature"><strong>#resource</strong> : String</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_json%28builder%3AJSON%3A%3ABuilder%29-instance-method" class="signature"><strong>#to_json</strong>(builder : JSON::Builder)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_s%28io%3AIO%29%3ANil-instance-method" class="signature"><strong>#to_s</strong>(io : IO) : Nil</a>
+        
+          <div class="summary"><p>Same as <code>#inspect(io)</code>.</p></div>
+        
+      </li>
+    
+  </ul>
+
+
+
+  <div class="methods-inherited">
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+  </div>
+
+  
+  <h2>
+    <a id="constructor-detail" class="anchor" href="#constructor-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructor Detail
+  </h2>
+  
+    <div class="entry-detail" id="new(json:JSON::PullParser)-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(json : JSON::PullParser)
+
+        <a class="method-permalink" href="#new%28json%3AJSON%3A%3APullParser%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="new(resource:String,access:Access|Nil=nil)-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(resource : String, access : <a href="../../../PlaceOS/Model/UserJWT/Scope/Access.html">Access</a> | Nil = <span class="n">nil</span>)
+
+        <a class="method-permalink" href="#new%28resource%3AString%2Caccess%3AAccess%7CNil%3Dnil%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+
+
+  
+  <h2>
+    <a id="class-method-detail" class="anchor" href="#class-method-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Class Method Detail
+  </h2>
+  
+    <div class="entry-detail" id="from_json(json:JSON::PullParser)-class-method">
+      <div class="signature">
+        
+        def self.<strong>from_json</strong>(json : JSON::PullParser)
+
+        <a class="method-permalink" href="#from_json%28json%3AJSON%3A%3APullParser%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+
+
+  
+
+  
+  <h2>
+    <a id="instance-method-detail" class="anchor" href="#instance-method-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Detail
+  </h2>
+  
+    <div class="entry-detail" id="access:Access-instance-method">
+      <div class="signature">
+        
+        def <strong>access</strong> : <a href="../../../PlaceOS/Model/UserJWT/Scope/Access.html">Access</a>
+
+        <a class="method-permalink" href="#access%3AAccess-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="resource:String-instance-method">
+      <div class="signature">
+        
+        def <strong>resource</strong> : String
+
+        <a class="method-permalink" href="#resource%3AString-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_json(builder:JSON::Builder)-instance-method">
+      <div class="signature">
+        
+        def <strong>to_json</strong>(builder : JSON::Builder)
+
+        <a class="method-permalink" href="#to_json%28builder%3AJSON%3A%3ABuilder%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_s(io:IO):Nil-instance-method">
+      <div class="signature">
+        
+        def <strong>to_s</strong>(io : IO) : Nil
+
+        <a class="method-permalink" href="#to_s%28io%3AIO%29%3ANil-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+            <div class="doc-inherited">
+              Description copied from struct Struct
+            </div>
+          
+          <p>Same as <code>#inspect(io)</code>.</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+
+
+
+</div>
+
+</body>
+</html>
