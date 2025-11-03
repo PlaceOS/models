@@ -1,4 +1,10 @@
-## Unreleased
+## v9.77.0 (2025-11-03)
+
+### Feat
+
+- add openid connect table
+
+## v9.76.2 (2025-10-21)
 
 ## v9.76.1 (2025-09-23)
 
