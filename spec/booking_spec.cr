@@ -458,6 +458,70 @@ module PlaceOS::Model
     saved.should eq 1
   end
 
+  it "tests clashing_bookings with ignore_assets parameter" do
+    user_email = "steve@place.tech"
+    tenant_id = Generator.tenant.id
+
+    # Create first booking with desk1
+    booking1 = Booking.new(
+      booking_type: "desk",
+      asset_ids: ["desk1"],
+      booking_start: 1.hour.from_now.to_unix,
+      booking_end: 2.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "Steve",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "Steve",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1234",
+      history: [] of Booking::History
+    ).save!
+
+    # Create second booking with same asset and overlapping time - should clash
+    booking2 = Booking.new(
+      booking_type: "desk",
+      asset_ids: ["desk1"],
+      booking_start: 1.5.hours.from_now.to_unix,
+      booking_end: 2.5.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "Steve",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "Steve",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1234",
+      history: [] of Booking::History
+    )
+
+    # Should find clash with same asset
+    clashes = booking2.clashing_bookings
+    clashes.size.should eq 1
+    clashes.first.id.should eq booking1.id
+
+    # Create third booking with different asset but overlapping time
+    booking3 = Booking.new(
+      booking_type: "desk",
+      asset_ids: ["desk2"],
+      booking_start: 1.5.hours.from_now.to_unix,
+      booking_end: 2.5.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "Steve",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "Steve",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1234",
+      history: [] of Booking::History
+    )
+
+    # Should not find clash with different asset (default behavior)
+    clashes_without_ignore = booking3.clashing_bookings
+    clashes_without_ignore.size.should eq 0
+
+    # Should find clash when ignoring assets
+    clashes_with_ignore = booking3.clashing_bookings(ignore_assets: true)
+    clashes_with_ignore.size.should eq 1
+    clashes_with_ignore.first.id.should eq booking1.id
+  end
+
   it "rejects a booking with multiple same asset ids" do
     user_email = "steve@place.tech"
     tenant_id = Generator.tenant.id

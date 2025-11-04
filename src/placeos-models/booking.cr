@@ -503,7 +503,7 @@ module PlaceOS::Model
       clashing_bookings.size > 0
     end
 
-    protected def recurring_clash_check : Array(Booking)
+    protected def recurring_clash_check(ignore_assets : Bool = false) : Array(Booking)
       # we need to check for clashes against each recurrence
       starting = self.booking_start
       ending = self.booking_end
@@ -538,6 +538,7 @@ module PlaceOS::Model
         rec_ending = max_period.from_now.to_unix
       end
 
+      asset_check_sql = ignore_assets ? "" : "AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}"
       overrides = Booking.find_all_by_sql(<<-SQL, tenant_id, rec_ending, starting, end_time, start_time, booking_type)
         SELECT b.* FROM "bookings" b
         JOIN booking_instances i ON b.id = i.id
@@ -548,7 +549,7 @@ module PlaceOS::Model
           AND i.ending_time > $5
           AND i.checked_out_at IS NULL
           AND b.booking_type = $6
-          AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}
+          #{asset_check_sql}
           AND b.rejected <> TRUE
           AND i.deleted <> TRUE
       SQL
@@ -561,10 +562,11 @@ module PlaceOS::Model
       expanded = Booking.expand_bookings!(starting_tz, rec_ending_tz, [self]).bookings
 
       # starting - booking_length ensures we capture overlaps
+      asset_check_where = ignore_assets ? "" : "AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} "
       query = Booking
         .by_tenant(tenant_id)
         .where(
-          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_end > ? AND booking_start < ?)) AND checked_out_at IS NULL AND starting_time < ? AND ending_time > ? AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
+          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_end > ? AND booking_start < ?)) AND checked_out_at IS NULL AND starting_time < ? AND ending_time > ? AND booking_type = ? #{asset_check_where}AND rejected <> TRUE AND deleted <> TRUE",
           starting, starting, rec_ending, end_time, start_time, booking_type
         )
       query = query.where("id != ?", id) unless id.nil?
@@ -573,10 +575,11 @@ module PlaceOS::Model
       end
     end
 
-    protected def regular_clash_check : Array(Booking)
+    protected def regular_clash_check(ignore_assets : Bool = false) : Array(Booking)
       starting = self.booking_start
       ending = self.booking_end
 
+      asset_check_sql = ignore_assets ? "" : "AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}"
       clashing = BookingInstance.find_one_by_sql?(<<-SQL, tenant_id, ending, starting, booking_type)
         SELECT i.* FROM "booking_instances" i
         JOIN bookings b ON i.id = b.id
@@ -585,7 +588,7 @@ module PlaceOS::Model
           AND i.booking_end > $3
           AND i.checked_out_at IS NULL
           AND b.booking_type = $4
-          AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}
+          #{asset_check_sql}
           AND b.rejected <> TRUE
           AND i.deleted <> TRUE
         LIMIT 1
@@ -593,17 +596,18 @@ module PlaceOS::Model
       return [clashing.hydrate_booking] if clashing
 
       # find any valid recurring bookings in the time period
+      asset_check_where = ignore_assets ? "" : "AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} "
       query = Booking
         .by_tenant(tenant_id)
         .where(
-          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE' AND booking_start < ?) OR (booking_start < ? AND booking_end > ?)) AND checked_out_at IS NULL AND booking_type = ? AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} AND rejected <> TRUE AND deleted <> TRUE",
+          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE' AND booking_start < ?) OR (booking_start < ? AND booking_end > ?)) AND checked_out_at IS NULL AND booking_type = ? #{asset_check_where}AND rejected <> TRUE AND deleted <> TRUE",
           starting, ending, ending, starting, booking_type
         )
       query = query.where("id != ?", id) unless id.nil?
       Booking.expand_bookings!(starting_tz, ending_tz, query.to_a).bookings
     end
 
-    def clashing_bookings : Array(Booking)
+    def clashing_bookings(ignore_assets : Bool = false) : Array(Booking)
       return [] of Booking if self.booking_type.downcase == "visitor"
 
       update_assets
@@ -614,9 +618,9 @@ module PlaceOS::Model
 
       # find any overrides that might clash with the bookings
       candidates = if recurring_booking?
-                     recurring_clash_check
+                     recurring_clash_check(ignore_assets)
                    else
-                     regular_clash_check
+                     regular_clash_check(ignore_assets)
                    end
 
       # we need to do this as booking instances may only set checked out / deleted flags
