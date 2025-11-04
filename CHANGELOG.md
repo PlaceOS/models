@@ -1,3 +1,9 @@
+## v9.78.0 (2025-11-04)
+
+### Feat
+
+- **booking**: [PPT-2241] add ignore_assets parameter to clash checking ([#299](https://github.com/PlaceOS/models/pull/299))
+
 ## v9.77.0 (2025-11-03)
 
 ### Feat
