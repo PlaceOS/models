@@ -1,3 +1,9 @@
+## v9.79.0 (2025-11-13)
+
+### Feat
+
+- **control_system**: add additional fields ([#300](https://github.com/PlaceOS/models/pull/300))
+
 ## v9.78.0 (2025-11-04)
 
 ### Feat
