@@ -25,12 +25,12 @@ LANGUAGE plpgsql;
 -- Add the new column
 ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS induction_new public.booking_induction_type DEFAULT 'TENTATIVE'::public.booking_induction_type;
 
--- Migrate data
-UPDATE bookings
-SET induction_new = CASE
-    WHEN induction = true THEN 'ACCEPTED'::public.booking_induction_type
-    ELSE 'TENTATIVE'::public.booking_induction_type
-END;
+-- Migrate data (disabled retrospectively due to migration issues)
+-- UPDATE bookings
+-- SET induction_new = CASE
+--    WHEN induction = true THEN 'ACCEPTED'::public.booking_induction_type
+--    ELSE 'TENTATIVE'::public.booking_induction_type
+-- END;
 
 -- Drop the old column and rename the new column
 ALTER TABLE bookings DROP COLUMN induction;
