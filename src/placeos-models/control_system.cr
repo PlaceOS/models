@@ -41,8 +41,14 @@ module PlaceOS::Model
 
     attribute timezone : Time::Location?, converter: Time::Location::Converter, es_type: "text"
 
-    # Provide a field for simplifying support
+    # Provide fields for simplifying support
     attribute support_url : String = ""
+    attribute timetable_url : String?
+    attribute camera_snapshot_url : String?
+    attribute camera_url : String?
+
+    # if not bookable via google / O365 calendaring systems
+    attribute room_booking_url : String?
 
     attribute version : Int32 = 0
 
