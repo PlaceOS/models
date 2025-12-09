@@ -744,12 +744,12 @@ module PlaceOS::Model
 
     def self.history(
       type : String = "zone",
-      object_id : String = "zone-#{RANDOM.hex(4)}",
+      resource_id : String = "zone-#{RANDOM.hex(4)}",
       changed_fields : Array(String) = ["name", "description"],
     )
       History.new(
         type: type,
-        object_id: object_id,
+        resource_id: resource_id,
         changed_fields: changed_fields
       )
     end

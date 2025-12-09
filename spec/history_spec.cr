@@ -18,32 +18,32 @@ module PlaceOS::Model
       found = History.find!(history.id.as(String))
       found.id.should eq history.id
       found.type.should eq history.type
-      found.object_id.should eq history.object_id
+      found.resource_id.should eq history.resource_id
       found.changed_fields.should eq history.changed_fields
     end
 
     it "requires type" do
       history = History.new(
         type: "",
-        object_id: "zone-123"
+        resource_id: "zone-123"
       )
       history.valid?.should be_false
       history.errors.first.field.should eq :type
     end
 
-    it "requires object_id" do
+    it "requires resource_id" do
       history = History.new(
         type: "zone",
-        object_id: ""
+        resource_id: ""
       )
       history.valid?.should be_false
-      history.errors.first.field.should eq :object_id
+      history.errors.first.field.should eq :resource_id
     end
 
     it "defaults changed_fields to empty array" do
       history = History.new(
         type: "zone",
-        object_id: "zone-123"
+        resource_id: "zone-123"
       )
       history.save!
 

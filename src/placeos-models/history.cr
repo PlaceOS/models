@@ -7,13 +7,13 @@ module PlaceOS::Model
     table :history
 
     attribute type : String, es_subfield: "keyword"
-    attribute object_id : String, es_subfield: "keyword"
+    attribute resource_id : String, es_subfield: "keyword"
     attribute changed_fields : Array(String) = [] of String, es_type: "keyword"
 
     # Validation
     ###############################################################################################
 
     validates :type, presence: true
-    validates :object_id, presence: true
+    validates :resource_id, presence: true
   end
 end

@@ -4,14 +4,14 @@
 CREATE TABLE IF NOT EXISTS "history" (
   id TEXT NOT NULL PRIMARY KEY,
   type TEXT NOT NULL,
-  object_id TEXT NOT NULL,
+  resource_id TEXT NOT NULL,
   changed_fields TEXT[] NOT NULL,
   created_at TIMESTAMPTZ NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS history_type_index ON "history" USING BTREE (type);
-CREATE INDEX IF NOT EXISTS history_object_id_index ON "history" USING BTREE (object_id);
+CREATE INDEX IF NOT EXISTS history_resource_id_index ON "history" USING BTREE (resource_id);
 
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
