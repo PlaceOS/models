@@ -1,7 +1,7 @@
 require "./helper"
 
 module PlaceOS::Model
-  describe History, focus: true do
+  describe History do
     Spec.before_each do
       History.clear
     end
