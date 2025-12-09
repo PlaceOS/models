@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS "history" (
   id TEXT NOT NULL PRIMARY KEY,
   type TEXT NOT NULL,
   resource_id TEXT NOT NULL,
+  action TEXT NOT NULL,
   changed_fields TEXT[] NOT NULL,
   created_at TIMESTAMPTZ NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL
