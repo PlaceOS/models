@@ -24,6 +24,7 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
     attribute enabled : Bool = true, es_subfield: "keyword"
+    attribute any_match : Bool = false, es_subfield: "keyword"
 
     # Reuse the same conditions structure as Trigger
     attribute conditions : PlaceOS::Model::Trigger::Conditions = -> { PlaceOS::Model::Trigger::Conditions.new }, es_ignore: true

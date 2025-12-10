@@ -22,6 +22,7 @@ module PlaceOS::Model
     attribute important : Bool = false
 
     attribute enable_webhook : Bool = false
+    attribute any_match : Bool = false, es_subfield: "keyword"
 
     METHODS = %w(GET POST PUT PATCH DELETE)
     attribute supported_methods : Array(String) = ["POST"]

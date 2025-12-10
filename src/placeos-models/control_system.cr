@@ -39,13 +39,16 @@ module PlaceOS::Model
     # Array of URLs to images for a system
     attribute images : Array(String) = -> { [] of String }
 
+    # Array of security group ids for room access
+    attribute security_groups : Array(String) = -> { [] of String }
+
     attribute timezone : Time::Location?, converter: Time::Location::Converter, es_type: "text"
 
     # Provide fields for simplifying support
     attribute support_url : String = ""
-    attribute timetable_url : String?
-    attribute camera_snapshot_url : String?
-    attribute camera_url : String?
+    attribute timetable_url : String?       # The timetable visualisation
+    attribute camera_snapshot_url : String? # snapshot images of the room
+    attribute camera_url : String?          # admin control
 
     # if not bookable via google / O365 calendaring systems
     attribute room_booking_url : String?
