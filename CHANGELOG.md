@@ -1,3 +1,9 @@
+## v9.80.0 (2025-12-10)
+
+### Feat
+
+- add security_groups and any_match for triggers
+
 ## v9.79.0 (2025-11-13)
 
 ### Feat
