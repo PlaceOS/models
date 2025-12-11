@@ -741,5 +741,19 @@ module PlaceOS::Model
         alert_dashboard_id: alert_dashboard_id
       )
     end
+
+    def self.history(
+      type : String = "zone",
+      resource_id : String = "zone-#{RANDOM.hex(4)}",
+      action : String = "update",
+      changed_fields : Array(String) = ["name", "description"],
+    )
+      History.new(
+        type: type,
+        resource_id: resource_id,
+        action: action,
+        changed_fields: changed_fields
+      )
+    end
   end
 end
