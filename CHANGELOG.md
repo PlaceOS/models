@@ -1,3 +1,9 @@
+## v9.81.0 (2025-12-11)
+
+### Feat
+
+- **history**: [PPT-2227] add history ([#301](https://github.com/PlaceOS/models/pull/301))
+
 ## v9.80.0 (2025-12-10)
 
 ### Feat
