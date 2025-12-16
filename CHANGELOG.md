@@ -1,3 +1,9 @@
+## v9.81.1 (2025-12-16)
+
+### Refactor
+
+- [PPT-2299] add bookings query indexes ([#302](https://github.com/PlaceOS/models/pull/302))
+
 ## v9.81.0 (2025-12-11)
 
 ### Feat
