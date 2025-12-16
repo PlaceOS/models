@@ -38,9 +38,16 @@ CREATE INDEX IF NOT EXISTS bookings_tenant_type_time_zones_idx
   INCLUDE (zones, recurrence_type, recurrence_end, rejected_at, deleted_at, checked_out_at)
   WHERE deleted = FALSE;
 
+-- Create a composite index for deleted bookings queries (mirrors the non-deleted index)
+CREATE INDEX IF NOT EXISTS bookings_deleted_lookup_idx
+  ON bookings USING BTREE (tenant_id, booking_type, booking_start, booking_end)
+  INCLUDE (zones, recurrence_type, recurrence_end, rejected_at, deleted_at, checked_out_at)
+  WHERE deleted = TRUE;
+
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
 
+DROP INDEX IF EXISTS bookings_deleted_lookup_idx;
 DROP INDEX IF EXISTS bookings_tenant_type_time_zones_idx;
 DROP INDEX IF EXISTS bookings_active_idx;
 DROP INDEX IF EXISTS bookings_regular_time_idx;
