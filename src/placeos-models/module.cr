@@ -46,6 +46,8 @@ module PlaceOS::Model
     attribute has_runtime_error : Bool = false, mass_assignment: false
     attribute error_timestamp : Time? = nil, converter: Time::EpochConverterOptional, type: "integer", format: "Int64", mass_assignment: false
 
+    attribute launch_on_execute : Bool = false
+
     # Associations
     ###############################################################################################
 
