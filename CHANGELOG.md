@@ -1,3 +1,9 @@
+## v9.82.0 (2025-12-25)
+
+### Feat
+
+- [PPT-2215] add launch_on_execute attribute to Module ([#303](https://github.com/PlaceOS/models/pull/303))
+
 ## v9.81.1 (2025-12-16)
 
 ### Refactor
