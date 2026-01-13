@@ -292,6 +292,10 @@ module PlaceOS::Model
     end
 
     scope :by_user_or_email do |user_id_value, user_email_value, include_booked_by, include_open_permission, include_public_permission|
+      by_user_or_email(user_id_value, user_email_value, include_booked_by, include_open_permission, include_public_permission, false)
+    end
+
+    scope :by_user_or_email do |user_id_value, user_email_value, include_booked_by, include_open_permission, include_public_permission, include_attendee|
       # TODO: Construct `user_or_email` query correctly
       booked_by = include_booked_by ? %( OR "booked_by_id" = '#{user_id_value}') : ""
       open_permission = include_open_permission ? %( OR "permission" = 'OPEN') : ""
@@ -301,13 +305,17 @@ module PlaceOS::Model
 
       user_email_digest = PlaceOS::Model::Email.new(user_email_value.to_s).digest if user_email_value
 
+      if include_attendee
+        attendee = %( OR "bookings"."id" IN (SELECT "bookings"."id" FROM "bookings" LEFT JOIN "attendees" ON "bookings"."id" = "attendees"."booking_id" LEFT JOIN "guests" ON "attendees"."guest_id" = "guests"."id" WHERE "guests"."email" = '#{user_email_value}') )
+      end
+
       if user_id_value && user_email_digest
-        where("user_id = ? OR email_digest = ? #{booked_by} #{open_permission} #{public_permission}", user_id_value, user_email_digest)
+        where("user_id = ? OR email_digest = ? #{booked_by} #{open_permission} #{public_permission} #{attendee}", user_id_value, user_email_digest)
       elsif user_id_value
         where("user_id = ? #{booked_by} #{open_permission} #{public_permission}", user_id_value)
       elsif user_email_digest
         booked_by = include_booked_by ? %( OR "booked_by_email_digest" = '#{user_email_digest}') : ""
-        where("email_digest = ? #{booked_by} #{open_permission} #{public_permission}", user_email_digest)
+        where("email_digest = ? #{booked_by} #{open_permission} #{public_permission} #{attendee}", user_email_digest)
       else
         self
       end
