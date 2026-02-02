@@ -180,5 +180,18 @@ module PlaceOS::Model
       playlist.revisions.to_a.map(&.id).should eq [revision3.id, revision.id]
       playlist.revision.id.should eq revision3.id
     end
+    it "allows user deletion when linked to a revision" do
+      user = Generator.user.save!
+      revision = Generator.revision
+      revision.user = user
+      revision.save!
+
+      # Should not raise foreign key constraint error
+      user.delete
+
+      # Verify nullification
+      reloaded = Playlist::Revision.find(revision.id.as(String))
+      reloaded.user_id.should be_nil
+    end
   end
 end
