@@ -1,3 +1,9 @@
+## v9.82.1 (2026-02-02)
+
+### Fix
+
+- [PPT-2355] Allow user deletion after signage use ([#304](https://github.com/PlaceOS/models/pull/304))
+
 ## v9.82.0 (2025-12-25)
 
 ### Feat
