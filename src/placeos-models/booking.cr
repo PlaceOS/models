@@ -753,6 +753,7 @@ module PlaceOS::Model
       limit : Int32 = DEFAULT_LIMIT,
       skip : Int32 = 0,
       is_checked_out : Bool? = nil,
+      include_deleted : Bool = false,
     ) : ExpansionDetails
       recurring = parents.select(&.recurring_booking?)
       return ExpansionDetails.new(parents, 0, 0) if recurring.empty?
@@ -822,6 +823,7 @@ module PlaceOS::Model
 
         instances = instances.compact_map do |starting_at|
           if override = overrides.find { |inst| inst.instance_start == starting_at }
+            next if override.deleted && !include_deleted
             # ensure the override is within the queried range
             override.hydrate_booking(booking) if override.booking_start < ending_unix && override.booking_end > starting_unix
           else

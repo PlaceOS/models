@@ -679,4 +679,67 @@ module PlaceOS::Model
     child_booking_json["linked_parent_booking"].as_h.should_not be_nil
     child_booking_json["linked_parent_booking"].as_h["id"].should eq(parent_booking.id)
   end
+  it "excludes deleted recurring instances from expand_bookings" do
+    tenant_id = Generator.tenant.id.not_nil!
+    user_email = "steve@place.tech"
+
+    # Create a weekly recurring booking
+    parent_booking = Booking.new(
+      booking_type: "desk",
+      asset_ids: ["desk1"],
+      booking_start: 1.day.from_now.at_beginning_of_day.to_unix + 9.hours.total_seconds.to_i64,
+      booking_end: 1.day.from_now.at_beginning_of_day.to_unix + 10.hours.total_seconds.to_i64,
+      timezone: "UTC",
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "Steve",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "Steve",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1234",
+      history: [] of Booking::History,
+      recurrence_type: Booking::Recurrence::WEEKLY,
+      recurrence_days: 0b1111111,
+      recurrence_interval: 1
+    ).save!
+
+    # Calculate the time range for expansion (4 weeks)
+    start_time = 1.day.from_now.at_beginning_of_day
+    end_time = start_time + 28.days
+
+    # Expand bookings to get all instances
+    result = Booking.expand_bookings!(start_time, end_time, [parent_booking])
+    initial_count = result.bookings.size
+    initial_count.should be >= 4
+
+    # Delete the 3rd instance by creating a deleted booking instance
+    instances = result.bookings.sort_by(&.booking_start)
+    third_instance = instances[2]
+
+    deleted_instance = BookingInstance.new(
+      id: parent_booking.id.not_nil!,
+      instance_start: third_instance.booking_start,
+      tenant_id: tenant_id,
+      booking_start: third_instance.booking_start,
+      booking_end: third_instance.booking_end,
+      deleted: true,
+      deleted_at: Time.utc.to_unix
+    )
+    deleted_instance.save!
+
+    # Expand bookings again - should exclude the deleted instance
+    result_after_delete = Booking.expand_bookings!(start_time, end_time, [parent_booking], include_deleted: false)
+    result_after_delete.bookings.size.should eq(initial_count - 1)
+
+    # Verify the deleted instance is not in the results
+    result_after_delete.bookings.any? { |b| b.booking_start == third_instance.booking_start }.should be_false
+
+    # When include_deleted is true, should include the deleted instance
+    result_with_deleted = Booking.expand_bookings!(start_time, end_time, [parent_booking], include_deleted: true)
+    result_with_deleted.bookings.size.should eq(initial_count)
+
+    # Verify the deleted instance IS in the results when include_deleted is true
+    deleted_booking = result_with_deleted.bookings.find { |b| b.booking_start == third_instance.booking_start }
+    deleted_booking.should_not be_nil
+    deleted_booking.not_nil!.deleted.should be_true
+  end
 end
