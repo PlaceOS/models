@@ -1,3 +1,9 @@
+## v9.82.2 (2026-02-05)
+
+### Fix
+
+- **bookings**: [PPT-2366] exclude deleted recurring instances from expand_bookings when include_deleted is false ([#305](https://github.com/PlaceOS/models/pull/305))
+
 ## v9.82.1 (2026-02-02)
 
 ### Fix
