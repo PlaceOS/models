@@ -1,3 +1,9 @@
+## v9.83.0 (2026-02-24)
+
+### Feat
+
+- **playlist**: add additional validation
+
 ## v9.82.2 (2026-02-05)
 
 ### Fix
