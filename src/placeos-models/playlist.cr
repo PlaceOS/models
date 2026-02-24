@@ -55,6 +55,50 @@ module PlaceOS::Model
     attribute play_at : Int64? = nil
     attribute play_cron : String? = nil
 
+    def should_present?(timezone : Time::Location? = nil) : Bool
+      return false unless enabled
+
+      now = timezone ? Time.local(timezone) : Time.utc
+      now_unix = now.to_unix
+      starting = valid_from
+      ending = valid_until
+      return false if starting && starting > now_unix
+      return false if ending && ending <= now_unix
+
+      if timezone && (hours = play_hours)
+        return between?(hours, now)
+      end
+
+      true
+    end
+
+    def between?(times : String, now : Time) : Bool
+      start_str, end_str = times.split('-', 2)
+
+      # Parse hours/minutes manually (faster + avoids timezone parsing issues)
+      start_hour = start_str[0, 2].to_i
+      start_min = start_str[3, 2].to_i
+      end_hour = end_str[0, 2].to_i
+      end_min = end_str[3, 2].to_i
+
+      now_minutes =
+        now.hour * 60 + now.minute
+
+      start_minutes =
+        start_hour * 60 + start_min
+
+      end_minutes =
+        end_hour * 60 + end_min
+
+      if start_minutes <= end_minutes
+        # Normal range (same day)
+        now_minutes >= start_minutes && now_minutes < end_minutes
+      else
+        # Overnight range (crosses midnight)
+        now_minutes >= start_minutes || now_minutes < end_minutes
+      end
+    end
+
     def systems
       ControlSystem.with_playlists({self.id.as(String)})
     end
@@ -117,6 +161,12 @@ module PlaceOS::Model
 
     validates :name, presence: true
     validates :default_duration, presence: true, numericality: {greater_than: 999}
+
+    # valid format:
+    validates :play_hours, format: {
+      :message => "must be in the form: 10:30-16:00",
+      :with    => /\A(?:[01]\d|2[0-3]):[0-5]\d-(?:[01]\d|2[0-3]):[0-5]\d\z/,
+    }
 
     # ensure crons valid
     validate ->(this : Playlist) {

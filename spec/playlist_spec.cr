@@ -117,6 +117,26 @@ module PlaceOS::Model
       })
     end
 
+    it "validates play_hours are valid" do
+      playlist = Generator.playlist
+      playlist.play_hours = "25:00-16:00"
+      playlist.save.should eq false
+
+      playlist.play_hours = "10:75-16:00"
+      playlist.save.should eq false
+
+      playlist.play_hours = " 00:30-16:00"
+      playlist.save.should eq false
+
+      playlist.play_hours = "00:30 - 16:00"
+      playlist.save.should eq false
+
+      playlist.errors.first.field.should eq :play_hours
+
+      playlist.play_hours = "10:30-16:00"
+      playlist.save.should eq true
+    end
+
     it "validates CRONs are valid" do
       playlist = Generator.playlist
       playlist.play_cron = "not valid"
