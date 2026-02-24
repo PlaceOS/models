@@ -55,10 +55,9 @@ module PlaceOS::Model
     attribute play_at : Int64? = nil
     attribute play_cron : String? = nil
 
-    def should_present?(timezone : Time::Location? = nil) : Bool
+    def should_present?(now : Time = Time.utc, timezone : Bool = false) : Bool
       return false unless enabled
 
-      now = timezone ? Time.local(timezone) : Time.utc
       now_unix = now.to_unix
       starting = valid_from
       ending = valid_until
