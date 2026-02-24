@@ -1,3 +1,9 @@
+## v9.83.1 (2026-02-24)
+
+### Fix
+
+- **playlist**: should_present? params
+
 ## v9.83.0 (2026-02-24)
 
 ### Feat
