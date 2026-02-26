@@ -111,6 +111,17 @@ module PlaceOS::Model
 
     # Validate support URI
     validate ->(this : ControlSystem) {
+      if url = this.camera_snapshot_url
+        this.validation_error(:camera_snapshot_url, "is an invalid URI") unless Validation.valid_uri?(url)
+      end
+
+      this.camera_snapshot_urls.each do |url|
+        if !Validation.valid_uri?(url)
+          this.validation_error(:camera_snapshot_urls, "contains an invalid URI")
+          break
+        end
+      end
+
       return if this.support_url.blank?
       this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
     }
