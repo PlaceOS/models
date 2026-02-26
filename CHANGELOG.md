@@ -1,3 +1,9 @@
+## v9.84.0 (2026-02-26)
+
+### Feat
+
+- add stagehand fields [PPT-2370] ([#306](https://github.com/PlaceOS/models/pull/306))
+
 ## v9.83.1 (2026-02-24)
 
 ### Fix
