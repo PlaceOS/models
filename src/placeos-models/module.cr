@@ -32,6 +32,9 @@ module PlaceOS::Model
     # Cache the module's driver role locally for load order
     attribute role : Driver::Role, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
 
+    attribute alert_level : Alert::Severity?, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::Severity),
+      description: "the alert level for stagehand issues"
+
     # Connected state in model so we can filter and search on it
     attribute connected : Bool = true
     attribute running : Bool = false
@@ -228,6 +231,8 @@ module PlaceOS::Model
     # NOTE: Temporary while `edge` feature developed
     before_create :set_edge_hint
 
+    before_create :set_alert_level
+
     # Logic modules are automatically added to the ControlSystem
     #
     protected def add_logic_module
@@ -273,6 +278,10 @@ module PlaceOS::Model
         self.new_record = true
         @id = Utilities::IdGenerator.next(self) + EDGE_HINT
       end
+    end
+
+    protected def set_alert_level
+      self.alert_level = driver.try(&.alert_level) || Alert::Severity::MEDIUM if self.alert_level.nil?
     end
 
     # Overridden attribute accessors

@@ -48,7 +48,8 @@ module PlaceOS::Model
     attribute support_url : String = ""
     attribute timetable_url : String?       # The timetable visualisation
     attribute camera_snapshot_url : String? # snapshot images of the room
-    attribute camera_url : String?          # admin control
+    attribute camera_snapshot_urls : Array(String) = -> { [] of String }
+    attribute camera_url : String? # admin control
 
     # if not bookable via google / O365 calendaring systems
     attribute room_booking_url : String?
@@ -110,9 +111,48 @@ module PlaceOS::Model
 
     # Validate support URI
     validate ->(this : ControlSystem) {
+      if url = this.camera_snapshot_url
+        this.validation_error(:camera_snapshot_url, "is an invalid URI") unless Validation.valid_uri?(url)
+      end
+
+      this.camera_snapshot_urls.each do |url|
+        if !Validation.valid_uri?(url)
+          this.validation_error(:camera_snapshot_urls, "contains an invalid URI")
+          break
+        end
+      end
+
       return if this.support_url.blank?
       this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
     }
+
+    before_save :unique_camera_urls
+
+    def unique_camera_urls
+      update_camera_urls
+      unique_urls = self.camera_snapshot_urls.uniq
+      if unique_urls.size != self.camera_snapshot_urls.size
+        self.camera_snapshot_urls = unique_urls
+      end
+    end
+
+    def update_camera_urls
+      url = camera_snapshot_url
+      if camera_snapshot_urls.size == 1 && url && !@camera_snapshot_urls_changed && @camera_snapshot_url_changed
+        self.camera_snapshot_urls[0] = url
+        @camera_snapshot_urls_changed = true
+      elsif url && camera_snapshot_urls.empty?
+        camera_snapshot_urls.insert(0, url)
+        @camera_snapshot_urls_changed = true
+      end
+      self.camera_snapshot_url = camera_snapshot_urls.first?
+    end
+
+    def camera_snapshot_urls=(vals : Array(String))
+      @camera_snapshot_urls = vals
+      @camera_snapshot_urls_changed = true
+      vals
+    end
 
     # Queries
     ###############################################################################################

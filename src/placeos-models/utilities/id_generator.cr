@@ -47,7 +47,7 @@ class PlaceOS::Model::Utilities::IdGenerator
 
   # Provides a channel with an infinite stream of psuedo-random values up to
   # *max* size and a guaranteed cycle of at least *max* samples.
-  private def self.seq(max = UInt32::MAX, r = Random::DEFAULT)
+  private def self.seq(max = UInt32::MAX, r = Random.new)
     ch = Channel(UInt32).new
     spawn do
       loop do

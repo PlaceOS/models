@@ -33,6 +33,9 @@ module PlaceOS::Model
 
     attribute role : Role, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
 
+    attribute alert_level : Alert::Severity = Alert::Severity::MEDIUM, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::Severity),
+      description: "the default alert level for stagehand issues"
+
     # Path to driver, relative to repository directory
     attribute file_name : String
 
