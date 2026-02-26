@@ -115,6 +115,8 @@ module PlaceOS::Model
       this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
     }
 
+    before_save :unique_camera_urls
+
     def unique_camera_urls
       update_camera_urls
       unique_urls = self.camera_snapshot_urls.uniq
@@ -124,11 +126,12 @@ module PlaceOS::Model
     end
 
     def update_camera_urls
-      if camera_snapshot_urls.size == 1 && !@camera_snapshot_urls_changed && @camera_snapshot_url_changed
-        camera_snapshot_urls[0] = camera_snapshot_url
+      url = camera_snapshot_url
+      if camera_snapshot_urls.size == 1 && url && !@camera_snapshot_urls_changed && @camera_snapshot_url_changed
+        self.camera_snapshot_urls[0] = url
         @camera_snapshot_urls_changed = true
-      elsif camera_snapshot_urls.empty?
-        camera_snapshot_urls.insert(0, camera_snapshot_url)
+      elsif url && camera_snapshot_urls.empty?
+        camera_snapshot_urls.insert(0, url)
         @camera_snapshot_urls_changed = true
       end
       self.camera_snapshot_url = camera_snapshot_urls.first?

@@ -169,6 +169,26 @@ module PlaceOS::Model
       end
     end
 
+    describe "camera_snapshot_urls" do
+      it "setting camera_snapshot_url updates camera_snapshot_urls" do
+        control_system = Generator.control_system
+        control_system.camera_snapshot_url = "https://placeos.com/"
+        control_system.save!
+        control_system.reload!
+        control_system.camera_snapshot_urls[0]?.should eq control_system.camera_snapshot_url
+        control_system.destroy
+      end
+
+      it "setting camera_snapshot_urls updates camera_snapshot_url" do
+        control_system = Generator.control_system
+        control_system.camera_snapshot_urls = ["https://placeos.com/"]
+        control_system.save!
+        control_system.reload!
+        control_system.camera_snapshot_url.should eq control_system.camera_snapshot_urls[0]
+        control_system.destroy
+      end
+    end
+
     describe "remove_module" do
       it "removes a module if present" do
         control_system = Generator.control_system
