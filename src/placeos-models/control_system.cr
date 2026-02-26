@@ -48,7 +48,8 @@ module PlaceOS::Model
     attribute support_url : String = ""
     attribute timetable_url : String?       # The timetable visualisation
     attribute camera_snapshot_url : String? # snapshot images of the room
-    attribute camera_url : String?          # admin control
+    attribute camera_snapshot_urls : Array(String) = -> { [] of String }
+    attribute camera_url : String? # admin control
 
     # if not bookable via google / O365 calendaring systems
     attribute room_booking_url : String?
@@ -113,6 +114,31 @@ module PlaceOS::Model
       return if this.support_url.blank?
       this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
     }
+
+    def unique_camera_urls
+      update_camera_urls
+      unique_urls = self.camera_snapshot_urls.uniq
+      if unique_urls.size != self.camera_snapshot_urls.size
+        self.camera_snapshot_urls = unique_urls
+      end
+    end
+
+    def update_camera_urls
+      if camera_snapshot_urls.size == 1 && !@camera_snapshot_urls_changed && @camera_snapshot_url_changed
+        camera_snapshot_urls[0] = camera_snapshot_url
+        @camera_snapshot_urls_changed = true
+      elsif camera_snapshot_urls.empty?
+        camera_snapshot_urls.insert(0, camera_snapshot_url)
+        @camera_snapshot_urls_changed = true
+      end
+      self.camera_snapshot_url = camera_snapshot_urls.first?
+    end
+
+    def camera_snapshot_urls=(vals : Array(String))
+      @camera_snapshot_urls = vals
+      @camera_snapshot_urls_changed = true
+      vals
+    end
 
     # Queries
     ###############################################################################################

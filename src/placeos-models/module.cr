@@ -32,6 +32,9 @@ module PlaceOS::Model
     # Cache the module's driver role locally for load order
     attribute role : Driver::Role, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
 
+    attribute alert_level : Alert::Severity, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::Severity),
+      description: "the alert level for stagehand issues"
+
     # Connected state in model so we can filter and search on it
     attribute connected : Bool = true
     attribute running : Bool = false
@@ -75,6 +78,8 @@ module PlaceOS::Model
       driver = this.driver
       role = driver.try(&.role)
       return if driver.nil? || role.nil?
+
+      this.alert_level = driver.alert_level if this.alert_level.nil?
 
       case role
       in .service?, .websocket?
