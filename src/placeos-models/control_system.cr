@@ -111,7 +111,7 @@ module PlaceOS::Model
 
     # Validate support URI
     validate ->(this : ControlSystem) {
-      if url = this.camera_snapshot_url
+      if url = this.camera_snapshot_url.presence
         this.validation_error(:camera_snapshot_url, "is an invalid URI") unless Validation.valid_uri?(url)
       end
 
@@ -137,7 +137,7 @@ module PlaceOS::Model
     end
 
     def update_camera_urls
-      url = camera_snapshot_url
+      url = camera_snapshot_url.presence
       if camera_snapshot_urls.size == 1 && url && !@camera_snapshot_urls_changed && @camera_snapshot_url_changed
         self.camera_snapshot_urls[0] = url
         @camera_snapshot_urls_changed = true
