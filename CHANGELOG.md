@@ -1,3 +1,9 @@
+## v9.84.1 (2026-03-02)
+
+### Fix
+
+- **control_system**: check if camera_snapshot_url is present
+
 ## v9.84.0 (2026-02-26)
 
 ### Feat
