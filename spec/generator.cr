@@ -103,6 +103,29 @@ module PlaceOS::Model
       play
     end
 
+    def self.signage_plugin(
+      name : String = Faker::Hacker.noun,
+      description : String = "",
+      uri : String = "/plugins/default",
+      authority : Authority? = nil,
+      params : Hash(String, JSON::Any) = {"type" => JSON::Any.new("object"), "properties" => JSON::Any.new({"play_at_period" => JSON::Any.new({"type" => JSON::Any.new("integer")} of String => JSON::Any)} of String => JSON::Any)},
+      defaults : Hash(String, JSON::Any) = {"play_at_period" => JSON::Any.new(10_i64)},
+    )
+      unless authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
+      SignagePlugin.new(
+        name: name,
+        description: description,
+        uri: uri,
+        authority_id: authority.id,
+        params: params,
+        defaults: defaults,
+      )
+    end
+
     def self.revision(playlist : Playlist = playlist.save!, user : User = user.save!)
       rev = Playlist::Revision.new
       rev.playlist_id = playlist.id
@@ -152,6 +175,26 @@ module PlaceOS::Model
       else
         item.media_type = Playlist::Item::MediaType::Webpage
       end
+      item
+    end
+
+    def self.plugin_item(
+      name : String = Faker::Hacker.noun,
+      plugin : SignagePlugin = signage_plugin.save!,
+      plugin_params : Hash(String, JSON::Any) = {} of String => JSON::Any,
+      authority : Authority? = nil,
+    )
+      unless authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
+      item = Playlist::Item.new
+      item.authority_id = authority.id
+      item.name = name
+      item.media_type = Playlist::Item::MediaType::Plugin
+      item.plugin_id = plugin.id
+      item.plugin_params = plugin_params
       item
     end
 

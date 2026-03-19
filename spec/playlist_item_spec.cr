@@ -64,6 +64,86 @@ module PlaceOS::Model
       updated.should_not eq playlist.updated_at
     end
 
+    it "creates a plugin item" do
+      plugin = Generator.signage_plugin.save!
+      item = Generator.plugin_item(plugin: plugin)
+      item.save!
+
+      found = Playlist::Item.find(item.id.as(String))
+      found.media_type.should eq Playlist::Item::MediaType::Plugin
+      found.plugin_id.should eq plugin.id
+    end
+
+    it "requires a plugin_id for plugin items" do
+      item = Generator.item
+      item.media_type = Playlist::Item::MediaType::Plugin
+      item.media_uri = nil
+      item.plugin_id = nil
+      item.save.should eq false
+      item.errors.any? { |e| e.field == :plugin_id }.should eq true
+    end
+
+    it "validates plugin_params keys exist in plugin params properties" do
+      plugin = Generator.signage_plugin(
+        params: {
+          "type"       => JSON::Any.new("object"),
+          "properties" => JSON::Any.new({
+            "play_at_period" => JSON::Any.new({"type" => JSON::Any.new("integer")} of String => JSON::Any),
+          } of String => JSON::Any),
+        },
+      ).save!
+
+      item = Generator.plugin_item(
+        plugin: plugin,
+        plugin_params: {"bad_key" => JSON::Any.new(5_i64)},
+      )
+      item.save.should eq false
+      item.errors.any? { |e| e.field == :plugin_params }.should eq true
+    end
+
+    it "validates required params are satisfied by defaults merged with plugin_params" do
+      plugin = Generator.signage_plugin(
+        params: {
+          "type"       => JSON::Any.new("object"),
+          "properties" => JSON::Any.new({
+            "play_at_period" => JSON::Any.new({"type" => JSON::Any.new("integer")} of String => JSON::Any),
+            "color"          => JSON::Any.new({"type" => JSON::Any.new("string")} of String => JSON::Any),
+          } of String => JSON::Any),
+          "required" => JSON::Any.new([JSON::Any.new("play_at_period"), JSON::Any.new("color")]),
+        },
+        defaults: {"play_at_period" => JSON::Any.new(10_i64)},
+      ).save!
+
+      # missing "color" which is required and has no default
+      item = Generator.plugin_item(
+        plugin: plugin,
+        plugin_params: {} of String => JSON::Any,
+      )
+      item.save.should eq false
+      item.errors.any? { |e| e.field == :plugin_params && e.message.to_s.includes?("color") }.should eq true
+    end
+
+    it "allows plugin_params when defaults cover required params" do
+      plugin = Generator.signage_plugin(
+        params: {
+          "type"       => JSON::Any.new("object"),
+          "properties" => JSON::Any.new({
+            "play_at_period" => JSON::Any.new({"type" => JSON::Any.new("integer")} of String => JSON::Any),
+            "color"          => JSON::Any.new({"type" => JSON::Any.new("string")} of String => JSON::Any),
+          } of String => JSON::Any),
+          "required" => JSON::Any.new([JSON::Any.new("play_at_period"), JSON::Any.new("color")]),
+        },
+        defaults: {"play_at_period" => JSON::Any.new(10_i64)},
+      ).save!
+
+      # "color" provided in plugin_params, "play_at_period" covered by defaults
+      item = Generator.plugin_item(
+        plugin: plugin,
+        plugin_params: {"color" => JSON::Any.new("red")},
+      )
+      item.save.should eq true
+    end
+
     it "updates playlists when an item is modified" do
       revision = Generator.revision
 

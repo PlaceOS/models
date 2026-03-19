@@ -55,6 +55,10 @@ module PlaceOS::Model
     attribute play_at : Int64? = nil
     attribute play_cron : String? = nil
 
+    # how many minutes should a scheduled playlist play for / should it takeover the displays
+    attribute play_at_period : Int32? = nil
+    attribute play_at_takeover : Bool = false
+
     def should_present?(now : Time = Time.utc, timezone : Bool = false) : Bool
       return false unless enabled
 
