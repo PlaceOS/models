@@ -37,6 +37,10 @@ module PlaceOS::Model
     belongs_to Upload, foreign_key: "media_id", association_name: "media"
     belongs_to Upload, foreign_key: "thumbnail_id", association_name: "thumbnail"
 
+    # plugin data for playback
+    belongs_to SignagePlugin, foreign_key: "plugin_id", association_name: "plugin"
+    attribute plugin_params : Hash(String, JSON::Any) = {} of String => JSON::Any
+
     # other metadata
     attribute play_count : Int64 = 0
     attribute valid_from : Int64? = nil
@@ -87,6 +91,8 @@ module PlaceOS::Model
       case this.media_type
       when .image?, .video?
         this.validation_error(:media_id, "must specify a media upload id") unless this.media
+      when .plugin?
+        this.validate_plugin
       else
         if media_uri = this.media_uri.presence
           begin
@@ -102,6 +108,36 @@ module PlaceOS::Model
         end
       end
     }
+
+    protected def validate_plugin
+      plugin = self.plugin
+      unless plugin
+        self.validation_error(:plugin_id, "must specify a plugin id")
+        return
+      end
+
+      params = self.plugin_params
+      properties = plugin.params["properties"]?.try(&.as_h?)
+
+      # ensure plugin_params keys exist in plugin params properties
+      params.each_key do |key|
+        unless properties.try(&.has_key?(key))
+          self.validation_error(:plugin_params, "key '#{key}' does not exist in plugin params properties")
+        end
+      end
+
+      # ensure all required params are satisfied by defaults merged with plugin_params
+      if required = plugin.params["required"]?.try(&.as_a?)
+        merged = plugin.defaults.merge(params)
+        required.each do |req_key|
+          key = req_key.as_s?
+          next unless key
+          unless merged.has_key?(key)
+            self.validation_error(:plugin_params, "missing required param '#{key}'")
+          end
+        end
+      end
+    end
 
     before_destroy :cleanup_playlists
 

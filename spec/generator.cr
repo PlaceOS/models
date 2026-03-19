@@ -176,6 +176,26 @@ module PlaceOS::Model
       item
     end
 
+    def self.plugin_item(
+      name : String = Faker::Hacker.noun,
+      plugin : SignagePlugin = signage_plugin.save!,
+      plugin_params : Hash(String, JSON::Any) = {} of String => JSON::Any,
+      authority : Authority? = nil,
+    )
+      unless authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
+      item = Playlist::Item.new
+      item.authority_id = authority.id
+      item.name = name
+      item.media_type = Playlist::Item::MediaType::Plugin
+      item.plugin_id = plugin.id
+      item.plugin_params = plugin_params
+      item
+    end
+
     def self.booking(tenant_id, asset_ids : Array(String), start : Time, ending : Time, booking_type = "booking", parent_id = nil, event_id = nil)
       user_name = Faker::Hacker.noun
       user_email = Faker::Internet.email
