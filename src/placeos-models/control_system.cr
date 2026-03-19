@@ -115,8 +115,8 @@ module PlaceOS::Model
         this.validation_error(:camera_snapshot_url, "is an invalid URI") unless Validation.valid_uri?(url)
       end
 
-      this.camera_snapshot_urls.each do |url|
-        if !Validation.valid_uri?(url)
+      this.camera_snapshot_urls.each do |snap_url|
+        if !Validation.valid_uri?(snap_url)
           this.validation_error(:camera_snapshot_urls, "contains an invalid URI")
           break
         end
