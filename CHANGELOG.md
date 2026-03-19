@@ -1,3 +1,9 @@
+## v9.85.0 (2026-03-19)
+
+### Feat
+
+- add signage plugins ([#307](https://github.com/PlaceOS/models/pull/307))
+
 ## v9.84.1 (2026-03-02)
 
 ### Fix
