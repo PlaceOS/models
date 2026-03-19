@@ -106,6 +106,7 @@ module PlaceOS::Model
     def self.signage_plugin(
       name : String = Faker::Hacker.noun,
       description : String = "",
+      uri : String = "/plugins/default",
       authority : Authority? = nil,
       params : Hash(String, JSON::Any) = {"type" => JSON::Any.new("object"), "properties" => JSON::Any.new({"play_at_period" => JSON::Any.new({"type" => JSON::Any.new("integer")} of String => JSON::Any)} of String => JSON::Any)},
       defaults : Hash(String, JSON::Any) = {"play_at_period" => JSON::Any.new(10_i64)},
@@ -118,6 +119,7 @@ module PlaceOS::Model
       SignagePlugin.new(
         name: name,
         description: description,
+        uri: uri,
         authority_id: authority.id,
         params: params,
         defaults: defaults,

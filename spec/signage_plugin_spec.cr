@@ -60,5 +60,27 @@ module PlaceOS::Model
       )
       plugin.save.should eq true
     end
+
+    it "allows a local resource URI" do
+      plugin = Generator.signage_plugin(uri: "/plugins/weather")
+      plugin.save.should eq true
+    end
+
+    it "allows an https URL" do
+      plugin = Generator.signage_plugin(uri: "https://example.com/plugins/weather")
+      plugin.save.should eq true
+    end
+
+    it "rejects http URLs" do
+      plugin = Generator.signage_plugin(uri: "http://example.com/plugins/weather")
+      plugin.save.should eq false
+      plugin.errors.any? { |e| e.field == :uri }.should eq true
+    end
+
+    it "requires a uri" do
+      plugin = Generator.signage_plugin(uri: "")
+      plugin.save.should eq false
+      plugin.errors.any? { |e| e.field == :uri }.should eq true
+    end
   end
 end

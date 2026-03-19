@@ -1,3 +1,4 @@
+require "uri"
 require "./base/model"
 
 module PlaceOS::Model
@@ -8,6 +9,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
+    attribute uri : String
 
     belongs_to Authority, foreign_key: "authority_id"
 
@@ -19,6 +21,20 @@ module PlaceOS::Model
     ###############################################################################################
 
     validates :name, presence: true
+    validates :uri, presence: true
+
+    validate ->(this : SignagePlugin) {
+      return unless uri = this.uri.presence
+      begin
+        parsed = URI.parse(uri)
+        raise "requires a request target" unless parsed.request_target.presence
+        if scheme = parsed.scheme
+          raise "scheme must be https" unless scheme.downcase == "https"
+        end
+      rescue error
+        this.validation_error(:uri, "not valid: #{error.message}")
+      end
+    }
 
     # ensure keys in defaults exist in params properties
     validate ->(this : SignagePlugin) {

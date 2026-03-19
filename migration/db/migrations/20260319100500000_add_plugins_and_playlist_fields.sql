@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS "signage_plugin"(
 
   name TEXT NOT NULL,
   description TEXT,
+  uri TEXT NOT NULL,
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
   params JSONB NOT NULL DEFAULT '{}'::jsonb,
   defaults JSONB NOT NULL DEFAULT '{}'::jsonb,
