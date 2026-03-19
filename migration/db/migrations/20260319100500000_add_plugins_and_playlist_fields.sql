@@ -7,6 +7,27 @@ ALTER TABLE "playlists"
 ALTER TABLE "playlists"
   ADD COLUMN IF NOT EXISTS play_at_takeover BOOLEAN NOT NULL DEFAULT FALSE;
 
+-- +micrate StatementBegin
+DO
+$$
+BEGIN
+  IF NOT EXISTS (SELECT *
+                        FROM pg_type typ
+                             INNER JOIN pg_namespace nsp
+                                        ON nsp.oid = typ.typnamespace
+                        WHERE nsp.nspname = current_schema()
+                              AND typ.typname = 'signage_plugin_playback_type') THEN
+    CREATE TYPE signage_plugin_playback_type AS ENUM (
+            'STATIC',
+            'INTERACTIVE',
+            'PLAYSTHROUGH'
+        );
+  END IF;
+END;
+$$
+LANGUAGE plpgsql;
+-- +micrate StatementEnd
+
 CREATE TABLE IF NOT EXISTS "signage_plugin"(
   id TEXT NOT NULL PRIMARY KEY,
   authority_id TEXT,
@@ -16,6 +37,7 @@ CREATE TABLE IF NOT EXISTS "signage_plugin"(
   name TEXT NOT NULL,
   description TEXT,
   uri TEXT NOT NULL,
+  playback_type public.signage_plugin_playback_type NOT NULL DEFAULT 'STATIC'::public.signage_plugin_playback_type,
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
   params JSONB NOT NULL DEFAULT '{}'::jsonb,
   defaults JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -42,3 +64,6 @@ ALTER TABLE "playlist_items" DROP COLUMN IF EXISTS plugin_id;
 DROP TABLE IF EXISTS "signage_plugin";
 ALTER TABLE "playlists" DROP COLUMN IF EXISTS play_at_period;
 ALTER TABLE "playlists" DROP COLUMN IF EXISTS play_at_takeover;
+
+-- Drop the enum type
+DROP TYPE IF EXISTS public.signage_plugin_playback_type;

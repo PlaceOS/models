@@ -7,9 +7,16 @@ module PlaceOS::Model
 
     table :signage_plugin
 
+    enum PlaybackType
+      STATIC
+      INTERACTIVE
+      PLAYSTHROUGH
+    end
+
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
     attribute uri : String
+    attribute playback_type : PlaybackType = PlaybackType::STATIC, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::SignagePlugin::PlaybackType)
 
     belongs_to Authority, foreign_key: "authority_id"
 
