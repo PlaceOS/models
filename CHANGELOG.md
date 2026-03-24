@@ -1,3 +1,9 @@
+## v9.86.0 (2026-03-24)
+
+### Feat
+
+- remove deprecated camera_snapshot_url field
+
 ## v9.85.0 (2026-03-19)
 
 ### Feat
