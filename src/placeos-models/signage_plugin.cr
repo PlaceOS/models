@@ -36,7 +36,9 @@ module PlaceOS::Model
         parsed = URI.parse(uri)
         raise "requires a request target" unless parsed.request_target.presence
         if scheme = parsed.scheme
-          raise "scheme must be https" unless scheme.downcase == "https"
+          scheme = scheme.downcase
+          # allow http for localhost testing
+          raise "scheme must be https" unless scheme == "https" || (scheme == "http" && parsed.host == "localhost")
         end
       rescue error
         this.validation_error(:uri, "not valid: #{error.message}")
