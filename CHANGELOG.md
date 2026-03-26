@@ -1,3 +1,9 @@
+## v9.86.1 (2026-03-26)
+
+### Fix
+
+- **signage_plugin**: allow http localhost for testing
+
 ## v9.86.0 (2026-03-24)
 
 ### Feat
