@@ -1,3 +1,9 @@
+## v9.86.2 (2026-04-01)
+
+### Fix
+
+- **doorkeeper_application**: consistent UIDs
+
 ## v9.86.1 (2026-03-26)
 
 ### Fix
