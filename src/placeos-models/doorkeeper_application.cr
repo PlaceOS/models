@@ -47,11 +47,7 @@ module PlaceOS::Model
       check_uid = @uid
       if check_uid.nil? || check_uid.blank?
         redirect = self.redirect_uri.downcase
-        if redirect.starts_with?("http")
-          self.uid = Digest::MD5.hexdigest(redirect)
-        else
-          self.uid = Random::Secure.urlsafe_base64(25)
-        end
+        self.uid = Digest::MD5.hexdigest(redirect)
 
         current_id = @id
         if current_id.nil?
