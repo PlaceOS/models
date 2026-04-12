@@ -68,7 +68,7 @@ module PlaceOS::Model
       return false if starting && starting > now_unix
       return false if ending && ending <= now_unix
 
-      if timezone && (hours = play_hours)
+      if timezone && (hours = play_hours.presence)
         return between?(hours, now)
       end
 
