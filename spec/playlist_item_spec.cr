@@ -83,7 +83,7 @@ module PlaceOS::Model
       item.errors.any? { |e| e.field == :plugin_id }.should eq true
     end
 
-    it "now playingv item associated with a display (control system)" do
+    it "now playing item associated with a display (control system)" do
       cs = Generator.control_system
       cs.save!
       cs.signage_last_seen.should be_nil
