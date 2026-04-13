@@ -95,7 +95,7 @@ module PlaceOS::Model
       item_id = item.id.as(String)
       system_id = cs.id.as(String)
       ::PgORM::Database.connection do |db|
-        db.exec(<<-SQL, system_id, item_id)
+        db.exec(<<-SQL, args: {system_id, item_id})
           UPDATE sys
           SET
             signage_last_seen = now(),
