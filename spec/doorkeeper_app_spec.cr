@@ -65,7 +65,7 @@ module PlaceOS::Model
       end
 
       app.persisted?.should be_true
-      app.uid.should_not eq(Digest::MD5.hexdigest(app.redirect_uri))
+      app.uid.should eq(Digest::MD5.hexdigest(app.redirect_uri))
     end
 
     it "saves an app with a specified UID" do
