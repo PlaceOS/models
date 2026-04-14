@@ -87,21 +87,13 @@ module PlaceOS::Model
       cs = Generator.control_system
       cs.save!
       cs.playlist_item_id.should be_nil
+      cs.signage_last_seen.should be_nil
 
       item = Generator.item
       item.save!
 
-      item_id = item.id.as(String)
-      system_id = cs.id.as(String)
-      ::PgORM::Database.connection do |db|
-        db.exec(<<-SQL, args: [system_id, item_id])
-          UPDATE sys
-          SET
-            signage_last_seen = now(),
-            playlist_item_id  = NULLIF($2, '')
-          WHERE id = $1;
-        SQL
-      end
+      item_id = item.id
+      cs.update_last_seen_time(item_id)
 
       cs.reload!
       cs.signage_last_seen.should_not be_nil

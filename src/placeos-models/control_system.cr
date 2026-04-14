@@ -70,8 +70,22 @@ module PlaceOS::Model
     attribute playlists : Array(String) = [] of String, es_type: "keyword"
     attribute signage : Bool = false
 
-    attribute signage_last_seen : Time = -> { 5.hours.ago }, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
+    attribute signage_last_seen : Time? = nil, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
     belongs_to Playlist::Item, foreign_key: "playlist_item_id"
+
+    def update_last_seen_time(item_id : String? = nil)
+      system_id = self.id.as(String)
+
+      ::PgORM::Database.connection do |db|
+        db.exec(<<-SQL, args: [system_id, item_id])
+          UPDATE sys
+          SET
+            signage_last_seen = now(),
+            playlist_item_id  = NULLIF($2, '')
+          WHERE id = $1;
+        SQL
+      end
+    end
 
     # Associations
     ###############################################################################################
