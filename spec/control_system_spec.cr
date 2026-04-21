@@ -184,6 +184,20 @@ module PlaceOS::Model
 
         control_system.destroy
       end
+
+      it "allows empty/blank strings without validation errors" do
+        control_system = Generator.control_system
+        control_system.camera_snapshot_urls = [""]
+        control_system.valid?.should be_true
+
+        control_system.camera_snapshot_urls = ["", ""]
+        control_system.valid?.should be_true
+
+        control_system.camera_snapshot_urls = ["", "https://placeos.com/"]
+        control_system.valid?.should be_true
+
+        control_system.destroy
+      end
     end
 
     describe "remove_module" do
