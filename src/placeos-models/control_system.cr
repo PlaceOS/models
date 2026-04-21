@@ -382,11 +382,13 @@ module PlaceOS::Model
 
       Module.find?(module_id).try(&.destroy) unless still_in_use
 
-      Log.debug { {
-        message:           "module removed from system #{still_in_use ? "still in use" : "deleted as not in any other systems"}",
-        module_id:         module_id,
-        control_system_id: control_system_id,
-      } }
+      Log.debug do
+        {
+          message:           "module removed from system #{still_in_use ? "still in use" : "deleted as not in any other systems"}",
+          module_id:         module_id,
+          control_system_id: control_system_id,
+        }
+      end
 
       true
     end
