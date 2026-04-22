@@ -1,3 +1,9 @@
+## v9.87.0 (2026-04-22)
+
+### Feat
+
+- **signage**: add display monitoring features ([#308](https://github.com/PlaceOS/models/pull/308))
+
 ## v9.86.3 (2026-04-22)
 
 ### Fix
