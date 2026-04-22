@@ -87,7 +87,7 @@ module PlaceOS::Model
       cs = Generator.control_system
       cs.save!
       cs.playlist_item_id.should be_nil
-      cs.signage_last_seen.should be_nil
+      initial_time = cs.signage_last_seen
 
       item = Generator.item
       item.save!
@@ -96,7 +96,7 @@ module PlaceOS::Model
       cs.update_last_seen_time(item_id)
 
       cs.reload!
-      cs.signage_last_seen.should_not be_nil
+      cs.signage_last_seen.should_not eq initial_time
       cs.playlist_item_id.should eq item_id
     end
 
