@@ -1,3 +1,9 @@
+## v9.87.1 (2026-04-22)
+
+### Fix
+
+- **migration**: add signage monitoring
+
 ## v9.87.0 (2026-04-22)
 
 ### Feat
