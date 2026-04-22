@@ -83,6 +83,23 @@ module PlaceOS::Model
       item.errors.any? { |e| e.field == :plugin_id }.should eq true
     end
 
+    it "now playing item associated with a display (control system)" do
+      cs = Generator.control_system
+      cs.save!
+      cs.playlist_item_id.should be_nil
+      initial_time = cs.signage_last_seen
+
+      item = Generator.item
+      item.save!
+
+      item_id = item.id
+      cs.update_last_seen_time(item_id)
+
+      cs.reload!
+      cs.signage_last_seen.should_not eq initial_time
+      cs.playlist_item_id.should eq item_id
+    end
+
     it "validates plugin_params keys exist in plugin params properties" do
       plugin = Generator.signage_plugin(
         params: {
