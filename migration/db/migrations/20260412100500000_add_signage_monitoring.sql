@@ -2,9 +2,19 @@
 -- SQL in section 'Up' is executed when this migration is applied
 
 ALTER TABLE sys
-  ADD COLUMN IF NOT EXISTS signage_last_seen TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS signage_last_seen TIMESTAMPTZ DEFAULT now(),
   ADD COLUMN IF NOT EXISTS playlist_item_id TEXT;
 
+-- Backfill any existing NULLs (safety step)
+UPDATE sys
+  SET signage_last_seen = now()
+  WHERE signage_last_seen IS NULL;
+
+-- Enforce NOT NULL after data exists
+ALTER TABLE sys
+  ALTER COLUMN signage_last_seen SET NOT NULL;
+
+-- Recreate FK safely
 ALTER TABLE sys
   DROP CONSTRAINT IF EXISTS sys_playlist_item_id_fkey;
 
