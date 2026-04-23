@@ -853,6 +853,38 @@ module PlaceOS::Model
       )
     end
 
+    def self.doorkeeper_application(owner : Authority? = nil, name : String? = nil)
+      owner_auth = owner || begin
+        existing = Authority.find_by_domain("localhost")
+        existing || self.authority.save!
+      end
+      DoorkeeperApplication.new(
+        name: name || "oauth-#{RANDOM.hex(6)}",
+        redirect_uri: "http://example.com/callback/#{RANDOM.hex(4)}",
+        owner_id: owner_auth.id.not_nil!,
+      )
+    end
+
+    def self.group_application_doorkeeper(
+      group_application : GroupApplication? = nil,
+      doorkeeper_application : DoorkeeperApplication? = nil,
+    )
+      authority = if group_application
+                    Authority.find!(group_application.authority_id)
+                  elsif doorkeeper_application
+                    Authority.find!(doorkeeper_application.owner_id)
+                  else
+                    existing = Authority.find_by_domain("localhost")
+                    existing || self.authority.save!
+                  end
+      ga = group_application || self.group_application(authority: authority).save!
+      da = doorkeeper_application || self.doorkeeper_application(owner: authority).save!
+      GroupApplicationDoorkeeper.new(
+        group_application_id: ga.id.not_nil!,
+        doorkeeper_application_id: da.id.not_nil!,
+      )
+    end
+
     def self.group_user(
       user : User? = nil,
       group : Group? = nil,

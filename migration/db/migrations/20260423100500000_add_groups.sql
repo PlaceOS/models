@@ -65,6 +65,27 @@ CREATE INDEX IF NOT EXISTS group_application_memberships_application_id_index
 
 
 -- ---------------------------------------------------------------------------
+-- GroupApplicationDoorkeepers: links a GroupApplication to one or more
+-- Doorkeeper (OAuth) applications so callers authenticating via a given
+-- OAuth client can be resolved against this subsystem's permissions.
+--
+-- Both sides must share an authority (`doorkeeper.owner_id` ==
+-- `group_application.authority_id`). Enforced at the model layer — the
+-- database can't express that via a single FK.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS "group_application_doorkeepers"(
+    group_application_id UUID NOT NULL REFERENCES "group_applications"(id) ON DELETE CASCADE,
+    doorkeeper_application_id BIGINT NOT NULL REFERENCES "oauth_applications"(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (group_application_id, doorkeeper_application_id)
+);
+
+CREATE INDEX IF NOT EXISTS group_application_doorkeepers_doorkeeper_application_id_index
+    ON "group_application_doorkeepers" USING BTREE (doorkeeper_application_id);
+
+
+-- ---------------------------------------------------------------------------
 -- GroupUsers: junction between users and groups, with a permission bitmask.
 -- Composite PK (user_id, group_id).
 -- ---------------------------------------------------------------------------
@@ -161,6 +182,7 @@ DROP TABLE IF EXISTS "group_history";
 DROP TABLE IF EXISTS "group_invitations";
 DROP TABLE IF EXISTS "group_zones";
 DROP TABLE IF EXISTS "group_users";
+DROP TABLE IF EXISTS "group_application_doorkeepers";
 DROP TABLE IF EXISTS "group_application_memberships";
 DROP TABLE IF EXISTS "groups";
 DROP TABLE IF EXISTS "group_applications";
