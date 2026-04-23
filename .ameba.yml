@@ -48,3 +48,6 @@ Style/PredicateName:
 
 Style/QueryBoolMethods:
   Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false

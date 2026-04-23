@@ -798,5 +798,127 @@ module PlaceOS::Model
         changed_fields: changed_fields
       )
     end
+
+    # -------------------------------------------------------------------
+    # Group permissions system
+    # -------------------------------------------------------------------
+
+    def self.group_application(authority : Authority? = nil, code : String? = nil)
+      unless authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+      GroupApplication.new(
+        name: Faker::Hacker.noun,
+        code: code || "#{Faker::Hacker.noun}-#{RANDOM.hex(3)}",
+        description: Faker::Hacker.say_something_smart,
+        authority_id: authority.id.not_nil!,
+      )
+    end
+
+    def self.group(authority : Authority? = nil, parent : Group? = nil)
+      unless authority
+        if parent
+          authority = Authority.find!(parent.authority_id)
+        else
+          existing = Authority.find_by_domain("localhost")
+          authority = existing || self.authority.save!
+        end
+      end
+      Group.new(
+        name: Faker::Hacker.noun + "-" + RANDOM.hex(3),
+        description: "",
+        authority_id: authority.id.not_nil!,
+        parent_id: parent.try(&.id),
+      )
+    end
+
+    def self.group_application_membership(
+      group : Group? = nil,
+      application : GroupApplication? = nil,
+    )
+      authority = if group
+                    Authority.find!(group.authority_id)
+                  elsif application
+                    Authority.find!(application.authority_id)
+                  else
+                    existing = Authority.find_by_domain("localhost")
+                    existing || self.authority.save!
+                  end
+      g = group || self.group(authority: authority).save!
+      a = application || self.group_application(authority: authority).save!
+      GroupApplicationMembership.new(
+        group_id: g.id.not_nil!,
+        application_id: a.id.not_nil!,
+      )
+    end
+
+    def self.group_user(
+      user : User? = nil,
+      group : Group? = nil,
+      permissions : Permissions = Permissions::Read,
+    )
+      u = user || self.user.save!
+      g = group || self.group.save!
+      GroupUser.new(
+        user_id: u.id.not_nil!,
+        group_id: g.id.not_nil!,
+        permissions: permissions.to_i,
+      )
+    end
+
+    def self.group_zone(
+      group : Group? = nil,
+      zone : Zone? = nil,
+      permissions : Permissions = Permissions::Read,
+      deny : Bool = false,
+    )
+      g = group || self.group.save!
+      z = zone || self.zone.save!
+      GroupZone.new(
+        group_id: g.id.not_nil!,
+        zone_id: z.id.not_nil!,
+        permissions: permissions.to_i,
+        deny: deny,
+      )
+    end
+
+    def self.group_invitation(
+      group : Group? = nil,
+      email : String? = nil,
+      permissions : Permissions = Permissions::Read,
+      expires_at : Time? = nil,
+    )
+      g = group || self.group.save!
+      GroupInvitation.build_with_secret(
+        group: g,
+        email: email || Faker::Internet.email,
+        permissions: permissions,
+        expires_at: expires_at,
+      )
+    end
+
+    def self.group_history(
+      group_id : UUID? = nil,
+      application_id : UUID? = nil,
+      user : User? = nil,
+      action : String = "update",
+      resource_type : String = "group",
+      resource_id : String? = nil,
+      changed_fields : Array(String) = ["name"],
+    )
+      actor_email = user.try(&.email.to_s) || Faker::Internet.email
+      actor_id = user.try(&.id)
+      GroupHistory.new(
+        application_id: application_id,
+        group_id: group_id,
+        user_id: actor_id,
+        email: actor_email,
+        action: action,
+        resource_type: resource_type,
+        resource_id: resource_id || "res-#{RANDOM.hex(4)}",
+        changed_fields: changed_fields,
+      )
+    end
   end
 end
