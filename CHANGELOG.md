@@ -1,3 +1,9 @@
+## v9.88.0 (2026-04-24)
+
+### Feat
+
+- add application level permission groups ([#311](https://github.com/PlaceOS/models/pull/311))
+
 ## v9.87.1 (2026-04-22)
 
 ### Fix
