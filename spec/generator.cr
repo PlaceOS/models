@@ -952,5 +952,45 @@ module PlaceOS::Model
         changed_fields: changed_fields,
       )
     end
+
+    def self.group_playlist(
+      group : Group? = nil,
+      playlist : Playlist? = nil,
+    )
+      authority = if group
+                    Authority.find!(group.authority_id)
+                  elsif playlist
+                    Authority.find!(playlist.authority_id.not_nil!)
+                  else
+                    existing = Authority.find_by_domain("localhost")
+                    existing || self.authority.save!
+                  end
+      g = group || self.group(authority: authority).save!
+      pl = playlist || self.playlist(authority: authority).save!
+      GroupPlaylist.new(
+        group_id: g.id.not_nil!,
+        playlist_id: pl.id.not_nil!,
+      )
+    end
+
+    def self.group_playlist_item(
+      group : Group? = nil,
+      playlist_item : Playlist::Item? = nil,
+    )
+      authority = if group
+                    Authority.find!(group.authority_id)
+                  elsif playlist_item
+                    Authority.find!(playlist_item.authority_id.not_nil!)
+                  else
+                    existing = Authority.find_by_domain("localhost")
+                    existing || self.authority.save!
+                  end
+      g = group || self.group(authority: authority).save!
+      pi = playlist_item || self.item(authority: authority).save!
+      GroupPlaylistItem.new(
+        group_id: g.id.not_nil!,
+        playlist_item_id: pi.id.not_nil!,
+      )
+    end
   end
 end
