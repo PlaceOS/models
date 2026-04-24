@@ -35,11 +35,14 @@ module PlaceOS::Model
       app.errors.map(&.field).should contain(:code)
     end
 
-    it "enforces unique (authority_id, code)" do
+    it "enforces unique (authority_id, code) at the model level" do
       authority = Generator.authority.save!
       Generator.group_application(authority: authority, code: "signage").save!
 
       dupe = Generator.group_application(authority: authority, code: "signage")
+      dupe.valid?.should be_false
+      dupe.errors.map(&.field).should contain(:code)
+
       expect_raises(::PgORM::Error) do
         dupe.save!
       end

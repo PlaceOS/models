@@ -28,6 +28,14 @@ module PlaceOS::Model
     validates :code, presence: true
     validates :authority_id, presence: true
 
+    # Codes must be unique per authority. Backed by a partial unique
+    # index in the migration; this model-level check short-circuits with
+    # a friendlier ModelValidation error before the DB constraint fires.
+    # Transform block also strips whitespace from the code on insert.
+    ensure_unique :code, scope: [:authority_id, :code] do |authority_id, code|
+      {authority_id, code.strip}
+    end
+
     include GroupHistory::Mixin
 
     # --------------------------------------------------------------------
