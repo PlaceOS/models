@@ -23,6 +23,18 @@ Spec.after_suite do
   {% for model in PlaceOS::Model::ModelBase.subclasses %}
     {{model.id}}.clear
   {% end %}
+  # Models that inherit directly from ::PgORM::Base (not ModelBase) —
+  # cleared in dependency order (children first so FKs don't fire).
+  [
+    PlaceOS::Model::GroupHistory,
+    PlaceOS::Model::GroupInvitation,
+    PlaceOS::Model::GroupZone,
+    PlaceOS::Model::GroupUser,
+    PlaceOS::Model::GroupApplicationDoorkeeper,
+    PlaceOS::Model::GroupApplicationMembership,
+    PlaceOS::Model::Group,
+    PlaceOS::Model::GroupApplication,
+  ].each(&.clear)
 end
 
 # Spec Macros
