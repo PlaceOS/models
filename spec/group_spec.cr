@@ -7,9 +7,7 @@ module PlaceOS::Model
       GroupInvitation.clear
       GroupZone.clear
       GroupUser.clear
-      GroupApplicationMembership.clear
       Group.clear
-      GroupApplication.clear
       User.clear
       Authority.clear
     end
@@ -107,15 +105,15 @@ module PlaceOS::Model
       actions.should eq ["create", "delete", "update"]
     end
 
-    it "lists applications it participates in" do
+    it "persists the subsystems list it participates in" do
       authority = Generator.authority.save!
-      group = Generator.group(authority: authority).save!
-      app1 = Generator.group_application(authority: authority, code: "signage").save!
-      app2 = Generator.group_application(authority: authority, code: "events").save!
-      Generator.group_application_membership(group: group, application: app1).save!
-      Generator.group_application_membership(group: group, application: app2).save!
+      group = Generator.group(
+        authority: authority,
+        subsystems: ["signage", "events"],
+      ).save!
 
-      group.applications.map(&.id).sort!.should eq [app1.id, app2.id].compact.sort!
+      group.reload!
+      group.subsystems.sort!.should eq ["events", "signage"]
     end
   end
 end

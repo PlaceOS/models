@@ -32,10 +32,7 @@ Spec.after_suite do
     PlaceOS::Model::GroupUser,
     PlaceOS::Model::GroupPlaylistItem,
     PlaceOS::Model::GroupPlaylist,
-    PlaceOS::Model::GroupApplicationDoorkeeper,
-    PlaceOS::Model::GroupApplicationMembership,
     PlaceOS::Model::Group,
-    PlaceOS::Model::GroupApplication,
   ].each(&.clear)
 end
 

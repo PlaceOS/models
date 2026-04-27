@@ -3,7 +3,8 @@ require "./helper"
 module PlaceOS::Model
   # Fixture for the permission-resolution end-to-end tests.
   #
-  # Group tree (for one application):
+  # Group tree (every group participates in `subsystem` unless a test
+  # tears the membership down):
   #   root
   #    ├── team_a
   #    │    └── squad_a1
@@ -16,7 +17,8 @@ module PlaceOS::Model
   #    │    └── room_102
   #    └── floor_2
   class GroupPermissionsFixture
-    getter app : GroupApplication
+    getter authority : Authority
+    getter subsystem : String
     getter user : User
     getter root : Group
     getter team_a : Group
@@ -29,26 +31,20 @@ module PlaceOS::Model
     getter floor_2 : Zone
 
     def initialize(
-      @app, @user, @root, @team_a, @squad_a1, @team_b,
+      @authority, @subsystem, @user,
+      @root, @team_a, @squad_a1, @team_b,
       @building, @floor_1, @room_101, @room_102, @floor_2,
     )
     end
 
-    def self.build : GroupPermissionsFixture
+    def self.build(subsystem : String = "signage") : GroupPermissionsFixture
       authority = Generator.authority(domain: "http://perm-#{Random::Secure.hex(4)}.example").save!
-      app = Generator.group_application(authority: authority).save!
       user = Generator.user(authority: authority).save!
 
-      root = Generator.group(authority: authority, parent: nil).save!
-      team_a = Generator.group(authority: authority, parent: root).save!
-      squad_a1 = Generator.group(authority: authority, parent: team_a).save!
-      team_b = Generator.group(authority: authority, parent: root).save!
-
-      # Every group participates in this application, unless a test
-      # explicitly tears the membership back down.
-      [root, team_a, squad_a1, team_b].each do |g|
-        Generator.group_application_membership(group: g, application: app).save!
-      end
+      root = Generator.group(authority: authority, parent: nil, subsystems: [subsystem]).save!
+      team_a = Generator.group(authority: authority, parent: root, subsystems: [subsystem]).save!
+      squad_a1 = Generator.group(authority: authority, parent: team_a, subsystems: [subsystem]).save!
+      team_b = Generator.group(authority: authority, parent: root, subsystems: [subsystem]).save!
 
       building = Generator.zone.save!
       floor_1 = Generator.zone.save!
@@ -65,28 +61,44 @@ module PlaceOS::Model
       floor_2.save!
 
       new(
-        app, user,
+        authority, subsystem, user,
         root, team_a, squad_a1, team_b,
         building, floor_1,
         room_101, room_102, floor_2,
       )
     end
+
+    # Convenience forwarders so tests can stay short.
+    def zone_accessible?(zone : Zone) : Bool
+      Group.zone_accessible?(authority.id.not_nil!, subsystem, user.id.not_nil!, zone.id.not_nil!)
+    end
+
+    def effective_permissions(zone : Zone) : Permissions
+      Group.effective_permissions(authority.id.not_nil!, subsystem, user.id.not_nil!, zone.id.not_nil!)
+    end
+
+    def effective_permissions(zone_ids : Array(String)) : Permissions
+      Group.effective_permissions(authority.id.not_nil!, subsystem, user.id.not_nil!, zone_ids)
+    end
+
+    def accessible_zone_ids : Array(String)
+      Group.accessible_zone_ids(authority.id.not_nil!, subsystem, user.id.not_nil!)
+    end
   end
 
-  # End-to-end tests for GroupApplication's permission resolution:
+  # End-to-end tests for the subsystem-scoped permission resolution on
+  # `Group`:
   # - transitive group membership with replace override
   # - transitive zone grants with replace override
   # - deny rows masking inherited access
   # - effective_permissions / zone_accessible? / accessible_zone_ids
-  describe GroupApplication do
+  describe Group do
     Spec.before_each do
       GroupHistory.clear
       GroupInvitation.clear
       GroupZone.clear
       GroupUser.clear
-      GroupApplicationMembership.clear
       Group.clear
-      GroupApplication.clear
       User.clear
       Authority.clear
       # Not clearing Zone: the generator caches `asset_zone` as a
@@ -99,8 +111,8 @@ module PlaceOS::Model
       Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Read).save!
       Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
 
-      f.app.zone_accessible?(f.user.id.not_nil!, f.floor_1.id.not_nil!).should be_true
-      f.app.effective_permissions(f.user.id.not_nil!, f.floor_1.id.not_nil!).should eq Permissions::Read
+      f.zone_accessible?(f.floor_1).should be_true
+      f.effective_permissions(f.floor_1).should eq Permissions::Read
     end
 
     it "propagates membership down the group tree (transitive)" do
@@ -111,8 +123,8 @@ module PlaceOS::Model
       Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
 
       # User's membership in root transitively applies to team_a's zones
-      f.app.zone_accessible?(f.user.id.not_nil!, f.floor_1.id.not_nil!).should be_true
-      f.app.effective_permissions(f.user.id.not_nil!, f.floor_1.id.not_nil!).should eq Permissions::Read
+      f.zone_accessible?(f.floor_1).should be_true
+      f.effective_permissions(f.floor_1).should eq Permissions::Read
     end
 
     it "propagates zone grants down the zone tree" do
@@ -121,10 +133,10 @@ module PlaceOS::Model
       # Grant at floor_1 reaches room_101 and room_102 transitively
       Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
 
-      f.app.zone_accessible?(f.user.id.not_nil!, f.room_101.id.not_nil!).should be_true
-      f.app.zone_accessible?(f.user.id.not_nil!, f.room_102.id.not_nil!).should be_true
+      f.zone_accessible?(f.room_101).should be_true
+      f.zone_accessible?(f.room_102).should be_true
       # floor_2 is a sibling of floor_1, not reachable
-      f.app.zone_accessible?(f.user.id.not_nil!, f.floor_2.id.not_nil!).should be_false
+      f.zone_accessible?(f.floor_2).should be_false
     end
 
     it "replaces inherited group perms when user is explicitly in a descendant" do
@@ -139,11 +151,11 @@ module PlaceOS::Model
       # in each group, so user sees only what both sides grant.
 
       # At building (via root, user has Read): user sees Read only
-      f.app.effective_permissions(f.user.id.not_nil!, f.building.id.not_nil!).should eq Permissions::Read
+      f.effective_permissions(f.building).should eq Permissions::Read
       # At floor_1 (covered transitively by building's grant, through team_a
       # via root's zone grant): user's effective group is team_a with
       # Update only.
-      f.app.effective_permissions(f.user.id.not_nil!, f.floor_1.id.not_nil!).should eq Permissions::Update
+      f.effective_permissions(f.floor_1).should eq Permissions::Update
     end
 
     it "replaces inherited zone grants via a more-specific GroupZone row" do
@@ -160,12 +172,11 @@ module PlaceOS::Model
         permissions: Permissions::Read,
       ).save!
 
-      f.app.effective_permissions(f.user.id.not_nil!, f.floor_1.id.not_nil!)
+      f.effective_permissions(f.floor_1)
         .should eq(Permissions::Read | Permissions::Update)
-      f.app.effective_permissions(f.user.id.not_nil!, f.room_101.id.not_nil!)
-        .should eq Permissions::Read
+      f.effective_permissions(f.room_101).should eq Permissions::Read
       # room_102 still inherits from floor_1
-      f.app.effective_permissions(f.user.id.not_nil!, f.room_102.id.not_nil!)
+      f.effective_permissions(f.room_102)
         .should eq(Permissions::Read | Permissions::Update)
     end
 
@@ -176,10 +187,10 @@ module PlaceOS::Model
       # Deny at floor_1 — floor_1 and its descendants must lose access.
       Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::All, deny: true).save!
 
-      f.app.zone_accessible?(f.user.id.not_nil!, f.building.id.not_nil!).should be_true
-      f.app.zone_accessible?(f.user.id.not_nil!, f.floor_2.id.not_nil!).should be_true
-      f.app.zone_accessible?(f.user.id.not_nil!, f.floor_1.id.not_nil!).should be_false
-      f.app.zone_accessible?(f.user.id.not_nil!, f.room_101.id.not_nil!).should be_false
+      f.zone_accessible?(f.building).should be_true
+      f.zone_accessible?(f.floor_2).should be_true
+      f.zone_accessible?(f.floor_1).should be_false
+      f.zone_accessible?(f.room_101).should be_false
     end
 
     it "accessible_zone_ids returns all reachable zones" do
@@ -187,7 +198,7 @@ module PlaceOS::Model
       Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Read).save!
       Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
 
-      ids = f.app.accessible_zone_ids(f.user.id.not_nil!)
+      ids = f.accessible_zone_ids
       expected = [f.floor_1.id, f.room_101.id, f.room_102.id].compact.map(&.to_s).sort!
       ids.sort!.should eq expected
     end
@@ -200,7 +211,7 @@ module PlaceOS::Model
       Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
       Generator.group_zone(group: f.team_b, zone: f.floor_1, permissions: Permissions::Update).save!
 
-      f.app.effective_permissions(f.user.id.not_nil!, f.floor_1.id.not_nil!)
+      f.effective_permissions(f.floor_1)
         .should eq(Permissions::Read | Permissions::Update)
     end
 
@@ -208,38 +219,41 @@ module PlaceOS::Model
       f = GroupPermissionsFixture.build
       Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::All).save!
 
-      f.app.accessible_zone_ids(f.user.id.not_nil!).should be_empty
-      f.app.zone_accessible?(f.user.id.not_nil!, f.floor_1.id.not_nil!).should be_false
-      f.app.effective_permissions(f.user.id.not_nil!, f.floor_1.id.not_nil!)
-        .should eq Permissions::None
+      f.accessible_zone_ids.should be_empty
+      f.zone_accessible?(f.floor_1).should be_false
+      f.effective_permissions(f.floor_1).should eq Permissions::None
     end
 
-    it "ignores grants from groups that are not members of this application" do
+    it "ignores grants from groups that are not members of this subsystem" do
       f = GroupPermissionsFixture.build
       Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Read).save!
       Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
 
-      # Revoke team_a's membership in this application. Grants from
-      # team_a must no longer count — even though the group, the
-      # GroupZone row, and the GroupUser row all still exist.
-      GroupApplicationMembership.find!({f.team_a.id.not_nil!, f.app.id.not_nil!}).destroy
+      # Drop team_a out of this subsystem. Grants from team_a must no
+      # longer count — even though the group, the GroupZone row, and the
+      # GroupUser row all still exist.
+      f.team_a.subsystems = [] of String
+      f.team_a.save!
 
-      f.app.zone_accessible?(f.user.id.not_nil!, f.floor_1.id.not_nil!).should be_false
+      f.zone_accessible?(f.floor_1).should be_false
     end
 
-    it "lets a group participate in two applications independently" do
+    it "lets a group participate in two subsystems independently" do
       f = GroupPermissionsFixture.build
-      other_app = Generator.group_application(
-        authority: Authority.find!(f.user.authority_id), code: "other-#{Random::Secure.hex(3)}",
-      ).save!
-      Generator.group_application_membership(group: f.team_a, application: other_app).save!
+      other_subsystem = "events-#{Random::Secure.hex(3)}"
+      f.team_a.subsystems = [f.subsystem, other_subsystem]
+      f.team_a.save!
 
       Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Read).save!
       Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
 
-      # Both applications see the grant (team_a is a member of both).
-      f.app.effective_permissions(f.user.id.not_nil!, f.floor_1.id.not_nil!).should eq Permissions::Read
-      other_app.effective_permissions(f.user.id.not_nil!, f.floor_1.id.not_nil!).should eq Permissions::Read
+      # Both subsystems see the grant (team_a participates in both).
+      Group.effective_permissions(
+        f.authority.id.not_nil!, f.subsystem, f.user.id.not_nil!, f.floor_1.id.not_nil!,
+      ).should eq Permissions::Read
+      Group.effective_permissions(
+        f.authority.id.not_nil!, other_subsystem, f.user.id.not_nil!, f.floor_1.id.not_nil!,
+      ).should eq Permissions::Read
     end
 
     describe "effective_permissions with a batch of zone ids" do
@@ -248,15 +262,14 @@ module PlaceOS::Model
         Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::All).save!
         Generator.group_zone(group: f.team_a, zone: f.building, permissions: Permissions::All).save!
 
-        f.app.effective_permissions(f.user.id.not_nil!, [] of String).should eq Permissions::None
+        f.effective_permissions([] of String).should eq Permissions::None
       end
 
       it "returns None when none of the zones have an applicable grant" do
         f = GroupPermissionsFixture.build
         unreachable_zone = Generator.zone.save!
 
-        f.app.effective_permissions(
-          f.user.id.not_nil!,
+        f.effective_permissions(
           [unreachable_zone.id.not_nil!, f.floor_1.id.not_nil!],
         ).should eq Permissions::None
       end
@@ -279,8 +292,7 @@ module PlaceOS::Model
         # room_101 picks up its own (narrower) grant; the union across the
         # batch should be Read | Update (from floor_1's inherited grant)
         # OR Read (from room_101) = Read | Update.
-        f.app.effective_permissions(
-          f.user.id.not_nil!,
+        f.effective_permissions(
           [f.room_101.id.not_nil!, f.floor_1.id.not_nil!],
         ).should eq(Permissions::Read | Permissions::Update)
       end
@@ -299,8 +311,7 @@ module PlaceOS::Model
 
         # Two separate zone hierarchies contribute: floor_1 gives Read,
         # the other hierarchy gives Update via inheritance. Union = both.
-        f.app.effective_permissions(
-          f.user.id.not_nil!,
+        f.effective_permissions(
           [f.floor_1.id.not_nil!, other_child.id.not_nil!],
         ).should eq(Permissions::Read | Permissions::Update)
       end
@@ -312,8 +323,7 @@ module PlaceOS::Model
         Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Read).save!
         Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
 
-        f.app.effective_permissions(
-          f.user.id.not_nil!,
+        f.effective_permissions(
           [unreachable_zone.id.not_nil!, f.room_101.id.not_nil!],
         ).should eq Permissions::Read
       end

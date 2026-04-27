@@ -7,9 +7,7 @@ module PlaceOS::Model
       GroupInvitation.clear
       GroupZone.clear
       GroupUser.clear
-      GroupApplicationMembership.clear
       Group.clear
-      GroupApplication.clear
       User.clear
       Authority.clear
     end

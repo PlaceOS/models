@@ -803,20 +803,11 @@ module PlaceOS::Model
     # Group permissions system
     # -------------------------------------------------------------------
 
-    def self.group_application(authority : Authority? = nil, code : String? = nil)
-      unless authority
-        existing = Authority.find_by_domain("localhost")
-        authority = existing || self.authority.save!
-      end
-      GroupApplication.new(
-        name: Faker::Hacker.noun,
-        code: code || "#{Faker::Hacker.noun}-#{RANDOM.hex(3)}",
-        description: Faker::Hacker.say_something_smart,
-        authority_id: authority.id.not_nil!,
-      )
-    end
-
-    def self.group(authority : Authority? = nil, parent : Group? = nil)
+    def self.group(
+      authority : Authority? = nil,
+      parent : Group? = nil,
+      subsystems : Array(String) = [] of String,
+    )
       unless authority
         if parent
           authority = Authority.find!(parent.authority_id)
@@ -830,30 +821,15 @@ module PlaceOS::Model
         description: "",
         authority_id: authority.id.not_nil!,
         parent_id: parent.try(&.id),
+        subsystems: subsystems,
       )
     end
 
-    def self.group_application_membership(
-      group : Group? = nil,
-      application : GroupApplication? = nil,
+    def self.doorkeeper_application(
+      owner : Authority? = nil,
+      name : String? = nil,
+      subsystems : Array(String) = [] of String,
     )
-      authority = if group
-                    Authority.find!(group.authority_id)
-                  elsif application
-                    Authority.find!(application.authority_id)
-                  else
-                    existing = Authority.find_by_domain("localhost")
-                    existing || self.authority.save!
-                  end
-      g = group || self.group(authority: authority).save!
-      a = application || self.group_application(authority: authority).save!
-      GroupApplicationMembership.new(
-        group_id: g.id.not_nil!,
-        application_id: a.id.not_nil!,
-      )
-    end
-
-    def self.doorkeeper_application(owner : Authority? = nil, name : String? = nil)
       owner_auth = owner || begin
         existing = Authority.find_by_domain("localhost")
         existing || self.authority.save!
@@ -862,26 +838,7 @@ module PlaceOS::Model
         name: name || "oauth-#{RANDOM.hex(6)}",
         redirect_uri: "http://example.com/callback/#{RANDOM.hex(4)}",
         owner_id: owner_auth.id.not_nil!,
-      )
-    end
-
-    def self.group_application_doorkeeper(
-      group_application : GroupApplication? = nil,
-      doorkeeper_application : DoorkeeperApplication? = nil,
-    )
-      authority = if group_application
-                    Authority.find!(group_application.authority_id)
-                  elsif doorkeeper_application
-                    Authority.find!(doorkeeper_application.owner_id)
-                  else
-                    existing = Authority.find_by_domain("localhost")
-                    existing || self.authority.save!
-                  end
-      ga = group_application || self.group_application(authority: authority).save!
-      da = doorkeeper_application || self.doorkeeper_application(owner: authority).save!
-      GroupApplicationDoorkeeper.new(
-        group_application_id: ga.id.not_nil!,
-        doorkeeper_application_id: da.id.not_nil!,
+        subsystems: subsystems,
       )
     end
 
@@ -932,7 +889,6 @@ module PlaceOS::Model
 
     def self.group_history(
       group_id : UUID? = nil,
-      application_id : UUID? = nil,
       user : User? = nil,
       action : String = "update",
       resource_type : String = "group",
@@ -942,7 +898,6 @@ module PlaceOS::Model
       actor_email = user.try(&.email.to_s) || Faker::Internet.email
       actor_id = user.try(&.id)
       GroupHistory.new(
-        application_id: application_id,
         group_id: group_id,
         user_id: actor_id,
         email: actor_email,

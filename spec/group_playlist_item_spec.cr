@@ -9,10 +9,7 @@ module PlaceOS::Model
       GroupUser.clear
       GroupPlaylistItem.clear
       GroupPlaylist.clear
-      GroupApplicationDoorkeeper.clear
-      GroupApplicationMembership.clear
       Group.clear
-      GroupApplication.clear
       User.clear
       Authority.clear
     end

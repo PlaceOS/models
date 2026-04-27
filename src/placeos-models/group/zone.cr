@@ -45,10 +45,6 @@ module PlaceOS::Model
       "#{self.group_id}:#{self.zone_id}"
     end
 
-    protected def group_history_application_id : UUID?
-      nil
-    end
-
     protected def group_history_group_id : UUID?
       self.group_id
     end
