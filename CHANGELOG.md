@@ -1,3 +1,9 @@
+## v9.89.0 (2026-04-28)
+
+### Feat
+
+- add signage groups ([#312](https://github.com/PlaceOS/models/pull/312))
+
 ## v9.88.0 (2026-04-24)
 
 ### Feat
