@@ -1,3 +1,9 @@
+## v9.89.1 (2026-04-28)
+
+### Fix
+
+- **control_system**: [PPT-2460] empty string in camera_snapshot_urls ([#310](https://github.com/PlaceOS/models/pull/310))
+
 ## v9.89.0 (2026-04-28)
 
 ### Feat
