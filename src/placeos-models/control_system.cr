@@ -108,7 +108,7 @@ module PlaceOS::Model
       name.strip
     end
 
-    # Validate support URI
+    # Validate URIs
     validate ->(this : ControlSystem) {
       this.camera_snapshot_urls.each do |snap_url|
         next if snap_url.blank?
@@ -122,13 +122,25 @@ module PlaceOS::Model
       this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
     }
 
-    before_save :unique_camera_urls
+    before_save :clean_urls
 
-    def unique_camera_urls
-      unique_urls = self.camera_snapshot_urls.uniq
-      if unique_urls.size != self.camera_snapshot_urls.size
-        self.camera_snapshot_urls = unique_urls
+    def clean_urls
+      # Strip blank entries from array URL fields
+      cleaned_snapshot_urls = self.camera_snapshot_urls.reject(&.blank?)
+      if cleaned_snapshot_urls.size != self.camera_snapshot_urls.size
+        self.camera_snapshot_urls = cleaned_snapshot_urls
       end
+
+      cleaned_images = self.images.reject(&.blank?)
+      if cleaned_images.size != self.images.size
+        self.images = cleaned_images
+      end
+
+      # Blank single URL fields to their empty/nil defaults
+      self.support_url = "" if self.support_url.blank?
+      self.timetable_url = nil if self.timetable_url.try(&.blank?)
+      self.camera_url = nil if self.camera_url.try(&.blank?)
+      self.room_booking_url = nil if self.room_booking_url.try(&.blank?)
     end
 
     def camera_snapshot_urls=(vals : Array(String))
