@@ -1,3 +1,33 @@
+## v9.89.0 (2026-04-28)
+
+### Feat
+
+- add signage groups ([#312](https://github.com/PlaceOS/models/pull/312))
+
+## v9.88.0 (2026-04-24)
+
+### Feat
+
+- add application level permission groups ([#311](https://github.com/PlaceOS/models/pull/311))
+
+## v9.87.1 (2026-04-22)
+
+### Fix
+
+- **migration**: add signage monitoring
+
+## v9.87.0 (2026-04-22)
+
+### Feat
+
+- **signage**: add display monitoring features ([#308](https://github.com/PlaceOS/models/pull/308))
+
+## v9.86.3 (2026-04-22)
+
+### Fix
+
+- **user**: [PPT-2459] Disabling mass_assignment on internal fields ([#309](https://github.com/PlaceOS/models/pull/309))
+
 ## v9.86.2 (2026-04-01)
 
 ### Fix

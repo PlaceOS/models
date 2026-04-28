@@ -60,3 +60,6 @@ Style/PercentLiteralDelimiters:
 
 Style/MultilineStringLiteral:
   Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false

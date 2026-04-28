@@ -68,9 +68,9 @@ module PlaceOS::Model
     attribute support : Bool = false, mass_assignment: false
     attribute locatable : Bool = true
 
-    attribute login_count : Int64 = 0
-    attribute last_login : Time? = nil, converter: Time::EpochConverterOptional, type: "integer", format: "Int64"
-    attribute logged_out_at : Time? = nil
+    attribute login_count : Int64 = 0, mass_assignment: false
+    attribute last_login : Time? = nil, mass_assignment: false, converter: Time::EpochConverterOptional, type: "integer", format: "Int64"
+    attribute logged_out_at : Time? = nil, mass_assignment: false
 
     attribute work_preferences : Array(WorktimePreference) = [] of WorktimePreference, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::User::WorktimePreference)
     attribute work_overrides : Hash(String, WorktimePreference) = {} of String => WorktimePreference, converter: PlaceOS::Model::DBHashConverter(String, PlaceOS::Model::User::WorktimePreference)
