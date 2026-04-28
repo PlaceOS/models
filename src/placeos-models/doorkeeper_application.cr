@@ -16,6 +16,7 @@ module PlaceOS::Model
     attribute redirect_uri : String
     attribute confidential : Bool = false
     attribute skip_authorization : Bool = false
+    attribute subsystems : Array(String) = [] of String
 
     attribute uid : String, mass_assignment: false
 

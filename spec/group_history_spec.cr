@@ -7,9 +7,7 @@ module PlaceOS::Model
       GroupInvitation.clear
       GroupZone.clear
       GroupUser.clear
-      GroupApplicationMembership.clear
       Group.clear
-      GroupApplication.clear
       User.clear
       Authority.clear
     end
@@ -20,7 +18,6 @@ module PlaceOS::Model
 
       entry = Generator.group_history(
         group_id: group.id,
-        application_id: nil,
         user: user,
         action: "update",
         resource_type: "group",
@@ -55,7 +52,6 @@ module PlaceOS::Model
 
       entry = Generator.group_history(
         group_id: group.id,
-        application_id: nil,
         user: user,
       ).save!
 

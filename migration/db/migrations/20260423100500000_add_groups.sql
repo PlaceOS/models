@@ -2,30 +2,10 @@
 -- SQL in section 'Up' is executed when this migration is applied
 
 -- ---------------------------------------------------------------------------
--- GroupApplication: a named subsystem (signage, events, parking, workplace, ...)
--- scoped to an Authority. Holds the root of a Group tree.
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "group_applications"(
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    authority_id TEXT NOT NULL REFERENCES "authority"(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    code TEXT NOT NULL,
-    description TEXT NOT NULL DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS group_applications_authority_id_index
-    ON "group_applications" USING BTREE (authority_id);
-CREATE UNIQUE INDEX IF NOT EXISTS group_applications_authority_code_unique
-    ON "group_applications" (authority_id, code);
-
-
--- ---------------------------------------------------------------------------
 -- Groups: authority-wide tree (org hierarchy). A single root per authority is
--- enforced by a partial unique index. Membership in one or more applications
--- is modelled by `group_application_memberships` below, so the same group
--- subtree can be shared across subsystems.
+-- enforced by a partial unique index. The `subsystems` text array names every
+-- subsystem (signage, events, parking, ...) that a group participates in;
+-- subsystem-scoped permission queries filter on `'<code>' = ANY(subsystems)`.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS "groups"(
     id UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -33,6 +13,7 @@ CREATE TABLE IF NOT EXISTS "groups"(
     parent_id UUID REFERENCES "groups"(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
+    subsystems TEXT[] NOT NULL DEFAULT '{}',
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL
 );
@@ -44,45 +25,22 @@ CREATE INDEX IF NOT EXISTS groups_parent_id_index
 -- One root per authority
 CREATE UNIQUE INDEX IF NOT EXISTS groups_authority_single_root
     ON "groups" (authority_id) WHERE parent_id IS NULL;
+-- GIN index supports `'subsystem' = ANY(subsystems)` lookups efficiently.
+CREATE INDEX IF NOT EXISTS groups_subsystems_index
+    ON "groups" USING GIN (subsystems);
 
 
 -- ---------------------------------------------------------------------------
--- GroupApplicationMembership: M:N between groups and applications. A group
--- may participate in zero or more applications; an application sees only
--- grants attributed to groups in its membership list. Both sides must share
--- an authority (enforced at the model layer).
+-- DoorkeeperApplication.subsystems: same `TEXT[]` shape as `groups.subsystems`.
+-- An OAuth client is associated with one or more subsystems — callers
+-- authenticating via that client are resolved against those subsystems'
+-- group permissions.
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "group_application_memberships"(
-    group_id UUID NOT NULL REFERENCES "groups"(id) ON DELETE CASCADE,
-    application_id UUID NOT NULL REFERENCES "group_applications"(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL,
-    PRIMARY KEY (group_id, application_id)
-);
+ALTER TABLE "oauth_applications"
+    ADD COLUMN IF NOT EXISTS subsystems TEXT[] NOT NULL DEFAULT '{}';
 
-CREATE INDEX IF NOT EXISTS group_application_memberships_application_id_index
-    ON "group_application_memberships" USING BTREE (application_id);
-
-
--- ---------------------------------------------------------------------------
--- GroupApplicationDoorkeepers: links a GroupApplication to one or more
--- Doorkeeper (OAuth) applications so callers authenticating via a given
--- OAuth client can be resolved against this subsystem's permissions.
---
--- Both sides must share an authority (`doorkeeper.owner_id` ==
--- `group_application.authority_id`). Enforced at the model layer — the
--- database can't express that via a single FK.
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "group_application_doorkeepers"(
-    group_application_id UUID NOT NULL REFERENCES "group_applications"(id) ON DELETE CASCADE,
-    doorkeeper_application_id BIGINT NOT NULL REFERENCES "oauth_applications"(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL,
-    PRIMARY KEY (group_application_id, doorkeeper_application_id)
-);
-
-CREATE INDEX IF NOT EXISTS group_application_doorkeepers_doorkeeper_application_id_index
-    ON "group_application_doorkeepers" USING BTREE (doorkeeper_application_id);
+CREATE INDEX IF NOT EXISTS oauth_applications_subsystems_index
+    ON "oauth_applications" USING GIN (subsystems);
 
 
 -- ---------------------------------------------------------------------------
@@ -154,7 +112,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS group_invitations_secret_digest_unique
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS "group_history"(
     id UUID PRIMARY KEY DEFAULT uuidv7(),
-    application_id UUID,
     group_id UUID,
     user_id TEXT REFERENCES "user"(id) ON DELETE SET NULL,
     email TEXT NOT NULL,
@@ -167,8 +124,6 @@ CREATE TABLE IF NOT EXISTS "group_history"(
 
 CREATE INDEX IF NOT EXISTS group_history_group_id_index
     ON "group_history" USING BTREE (group_id);
-CREATE INDEX IF NOT EXISTS group_history_application_id_index
-    ON "group_history" USING BTREE (application_id);
 CREATE INDEX IF NOT EXISTS group_history_user_id_index
     ON "group_history" USING BTREE (user_id);
 CREATE INDEX IF NOT EXISTS group_history_created_at_index
@@ -182,7 +137,7 @@ DROP TABLE IF EXISTS "group_history";
 DROP TABLE IF EXISTS "group_invitations";
 DROP TABLE IF EXISTS "group_zones";
 DROP TABLE IF EXISTS "group_users";
-DROP TABLE IF EXISTS "group_application_doorkeepers";
-DROP TABLE IF EXISTS "group_application_memberships";
 DROP TABLE IF EXISTS "groups";
-DROP TABLE IF EXISTS "group_applications";
+
+DROP INDEX IF EXISTS oauth_applications_subsystems_index;
+ALTER TABLE "oauth_applications" DROP COLUMN IF EXISTS subsystems;
