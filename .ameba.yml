@@ -49,5 +49,17 @@ Style/PredicateName:
 Style/QueryBoolMethods:
   Enabled: false
 
+Style/RedundantSelf:
+  Enabled: false
+
+Style/HeredocIndent:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  Enabled: false
+
+Style/MultilineStringLiteral:
+  Enabled: false
+
 Metrics/CyclomaticComplexity:
   Enabled: false

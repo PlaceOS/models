@@ -169,7 +169,7 @@ module PlaceOS::Model
       end
     end
 
-    describe "camera_snapshot_urls" do
+    describe "url cleanup" do
       it "setting camera_snapshot_urls works" do
         control_system = Generator.control_system
         control_system.camera_snapshot_urls = ["https://placeos.com/"]
@@ -181,6 +181,78 @@ module PlaceOS::Model
         control_system.save!
         control_system.reload!
         control_system.camera_snapshot_urls.empty?.should be_true
+
+        control_system.destroy
+      end
+
+      it "strips blank strings from camera_snapshot_urls on save" do
+        control_system = Generator.control_system
+        control_system.camera_snapshot_urls = [""]
+        control_system.save!
+        control_system.reload!
+        control_system.camera_snapshot_urls.should eq([] of String)
+
+        control_system.camera_snapshot_urls = ["", ""]
+        control_system.save!
+        control_system.reload!
+        control_system.camera_snapshot_urls.should eq([] of String)
+
+        control_system.camera_snapshot_urls = ["", "https://placeos.com/"]
+        control_system.save!
+        control_system.reload!
+        control_system.camera_snapshot_urls.should eq(["https://placeos.com/"])
+
+        control_system.camera_snapshot_urls = ["  ", "\t", "https://placeos.com/"]
+        control_system.save!
+        control_system.reload!
+        control_system.camera_snapshot_urls.should eq(["https://placeos.com/"])
+
+        control_system.destroy
+      end
+
+      it "strips blank strings from images on save" do
+        control_system = Generator.control_system
+        control_system.images = ["", "https://placeos.com/image.png", "  "]
+        control_system.save!
+        control_system.reload!
+        control_system.images.should eq(["https://placeos.com/image.png"])
+
+        control_system.images = ["", ""]
+        control_system.save!
+        control_system.reload!
+        control_system.images.should eq([] of String)
+
+        control_system.destroy
+      end
+
+      it "nils blank single url fields on save" do
+        control_system = Generator.control_system
+        control_system.support_url = "  "
+        control_system.timetable_url = ""
+        control_system.camera_url = "\t"
+        control_system.room_booking_url = "   "
+        control_system.save!
+        control_system.reload!
+        control_system.support_url.should eq("")
+        control_system.timetable_url.should be_nil
+        control_system.camera_url.should be_nil
+        control_system.room_booking_url.should be_nil
+
+        control_system.destroy
+      end
+
+      it "preserves valid urls" do
+        control_system = Generator.control_system
+        control_system.support_url = "https://support.placeos.com/"
+        control_system.timetable_url = "https://timetable.placeos.com/"
+        control_system.camera_url = "https://camera.placeos.com/"
+        control_system.room_booking_url = "https://booking.placeos.com/"
+        control_system.save!
+        control_system.reload!
+        control_system.support_url.should eq("https://support.placeos.com/")
+        control_system.timetable_url.should eq("https://timetable.placeos.com/")
+        control_system.camera_url.should eq("https://camera.placeos.com/")
+        control_system.room_booking_url.should eq("https://booking.placeos.com/")
 
         control_system.destroy
       end
