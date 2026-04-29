@@ -58,7 +58,6 @@ module PlaceOS::Model
         NotEqual
         Or
 
-        # ameba:disable Metrics/CyclomaticComplexity
         def compare(left : JSON::Any::Type, right : JSON::Any::Type) : Bool
           case self
           in And

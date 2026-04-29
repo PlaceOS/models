@@ -745,7 +745,6 @@ module PlaceOS::Model
     DEFAULT_LIMIT = 100_000
 
     # modifies the array, injecting the recurrences
-    # ameba:disable Metrics/CyclomaticComplexity
     def self.expand_bookings!(
       starting : Time,
       ending : Time,

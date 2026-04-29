@@ -368,5 +368,102 @@ module PlaceOS::Model
         found.try(&.id).should eq expected_user.id
       end
     end
+
+    describe "#subsystem_access" do
+      Spec.before_each do
+        GroupHistory.clear
+        GroupInvitation.clear
+        GroupZone.clear
+        GroupUser.clear
+        Group.clear
+        User.clear
+        Authority.clear
+      end
+
+      it "returns the union of subsystems across directly-membered groups" do
+        authority = Generator.authority(domain: "http://sub-#{Random::Secure.hex(3)}.example").save!
+        user = Generator.user(authority: authority).save!
+
+        a = Generator.group(authority: authority, subsystems: ["signage", "events"]).save!
+        b = Generator.group(authority: authority, parent: a, subsystems: ["events", "parking"]).save!
+
+        Generator.group_user(user: user, group: a).save!
+        Generator.group_user(user: user, group: b).save!
+
+        user.subsystem_access.should eq ["events", "parking", "signage"]
+      end
+
+      it "includes subsystems from descendant groups (transitive membership)" do
+        authority = Generator.authority(domain: "http://sub-#{Random::Secure.hex(3)}.example").save!
+        user = Generator.user(authority: authority).save!
+
+        root = Generator.group(authority: authority, subsystems: ["signage"]).save!
+        child = Generator.group(authority: authority, parent: root, subsystems: ["events"]).save!
+        grandchild = Generator.group(authority: authority, parent: child, subsystems: ["parking"]).save!
+
+        # Explicit membership only on the root.
+        Generator.group_user(user: user, group: root).save!
+        _ = grandchild
+
+        user.subsystem_access.should eq ["events", "parking", "signage"]
+      end
+
+      it "excludes groups in other authorities and groups the user has no path to" do
+        own_authority = Generator.authority(domain: "http://own-#{Random::Secure.hex(3)}.example").save!
+        user = Generator.user(authority: own_authority).save!
+
+        # One root per authority is enforced by the schema, so the
+        # "unreachable" same-authority group has to be a sibling under
+        # the root, not a second root.
+        root = Generator.group(authority: own_authority).save!
+        own_group = Generator.group(authority: own_authority, parent: root, subsystems: ["signage"]).save!
+        Generator.group(authority: own_authority, parent: root, subsystems: ["unreachable"]).save!
+        Generator.group_user(user: user, group: own_group).save!
+
+        # Cross-authority group with a subsystem the user must not see.
+        other_authority = Generator.authority(domain: "http://other-#{Random::Secure.hex(3)}.example").save!
+        Generator.group(authority: other_authority, subsystems: ["foreign"]).save!
+
+        user.subsystem_access.should eq ["signage"]
+      end
+
+      it "returns an empty array when the user has no group memberships" do
+        authority = Generator.authority(domain: "http://sub-#{Random::Secure.hex(3)}.example").save!
+        user = Generator.user(authority: authority).save!
+        Generator.group(authority: authority, subsystems: ["signage"]).save!
+
+        user.subsystem_access.should be_empty
+      end
+
+      it "deduplicates subsystems shared across multiple reachable groups" do
+        authority = Generator.authority(domain: "http://sub-#{Random::Secure.hex(3)}.example").save!
+        user = Generator.user(authority: authority).save!
+
+        a = Generator.group(authority: authority, subsystems: ["signage"]).save!
+        Generator.group(authority: authority, parent: a, subsystems: ["signage"]).save!
+
+        Generator.group_user(user: user, group: a).save!
+
+        user.subsystem_access.should eq ["signage"]
+      end
+
+      it "is exposed on the struct returned by `to_admin_metadata_struct`" do
+        authority = Generator.authority(domain: "http://sub-#{Random::Secure.hex(3)}.example").save!
+        user = Generator.user(authority: authority).save!
+
+        root = Generator.group(authority: authority, subsystems: ["signage"]).save!
+        Generator.group(authority: authority, parent: root, subsystems: ["events"]).save!
+        Generator.group_user(user: user, group: root).save!
+
+        struct_value = user.to_admin_metadata_struct
+        struct_value.subsystem_access.should eq ["events", "signage"]
+
+        # Confirm the property survives a JSON round-trip through the
+        # struct — the admin metadata serialization is the wire format
+        # consumers actually receive.
+        json_data = JSON.parse(struct_value.to_json)
+        json_data["subsystem_access"].as_a.map(&.as_s).should eq ["events", "signage"]
+      end
+    end
   end
 end

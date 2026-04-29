@@ -314,10 +314,53 @@ module PlaceOS::Model
 
     # Admin visible fields
     define_to_json :admin, only: ADMIN_DATA, methods: :id
-    define_to_json :admin_metadata, only: ADMIN_DATA, methods: [:id, :associated_metadata]
+    define_to_json :admin_metadata, only: ADMIN_DATA, methods: [:id, :associated_metadata, :subsystem_access]
 
     def associated_metadata
       Model::Metadata.build_metadata(self)
+    end
+
+    # Unique subsystem codes the user has effective access to via
+    # group membership.
+    #
+    # A user is effectively a member of every descendant of any group
+    # they have an explicit `GroupUser` row on (closest-ancestor-wins
+    # semantics, same as `Group.resolve_user_permissions`). The
+    # subsystem access for the user is the union of `groups.subsystems`
+    # across every such reachable group, scoped to the user's
+    # authority.
+    #
+    # Implemented as a single recursive CTE so the cost is independent
+    # of tree depth or member count.
+    def subsystem_access : Array(String)
+      user_id = self.id
+      authority_id = self.authority_id
+      return [] of String if user_id.nil? || authority_id.nil?
+
+      sql = <<-SQL
+        WITH RECURSIVE accessible_groups AS (
+          SELECT g.id, g.subsystems
+          FROM groups g
+          INNER JOIN group_users gu ON gu.group_id = g.id
+          WHERE gu.user_id = $1 AND g.authority_id = $2
+          UNION ALL
+          SELECT child.id, child.subsystems
+          FROM groups child
+          INNER JOIN accessible_groups ag ON child.parent_id = ag.id
+        )
+        SELECT DISTINCT subsystem
+        FROM accessible_groups, unnest(subsystems) AS subsystem
+        ORDER BY subsystem
+      SQL
+
+      args = [user_id.as(::PgORM::Value), authority_id.as(::PgORM::Value)]
+      result = [] of String
+      ::PgORM::Database.connection do |conn|
+        conn.query_all(sql, args: args) do |rs|
+          result << rs.read(String)
+        end
+      end
+      result
     end
 
     # Password Encryption

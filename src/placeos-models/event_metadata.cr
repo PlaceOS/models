@@ -173,7 +173,6 @@ module PlaceOS::Model
 
     before_save :record_metadata_history
 
-    # ameba:disable Metrics/CyclomaticComplexity
     protected def record_metadata_history
       # Skip if this is a new record being created - event creation is tracked via notify_change
       return unless persisted?
