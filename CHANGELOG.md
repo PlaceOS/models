@@ -1,3 +1,9 @@
+## v9.90.0 (2026-04-29)
+
+### Feat
+
+- **user**: add subsystem_access helper
+
 ## v9.89.1 (2026-04-28)
 
 ### Fix
