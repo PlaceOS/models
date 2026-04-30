@@ -73,3 +73,6 @@ Lint/SpecEqWithBoolOrNilLiteral:
 
 Style/VerboseNilType:
   Enabled: false
+
+Lint/UnusedRescueVariable:
+  Enabled: false
