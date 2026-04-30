@@ -48,10 +48,10 @@ module PlaceOS::Model
     def self.validate_filters(broker : Broker)
       return if broker.filters.empty?
       # Render regex errors
-      error_string = broker.filters.compact_map { |filter|
+      error_string = broker.filters.compact_map do |filter|
         error = Regex.error?(filter)
         "'#{filter}' errored with '#{error}'" if error
-      }.join(" and")
+      end.join(" and")
 
       broker.validation_error(:filters, error_string) unless error_string.empty?
     end

@@ -214,10 +214,14 @@ module PlaceOS::Model
       @booked_by_email_digest = booked_by_email.digest
       @booked_from ||= utm_source
       @history = current_history
-      Log.error { {
-        message: "History contains more than 3 events.",
-        id:      id,
-      } } if history.size > 3
+      if history.size > 3
+        Log.error do
+          {
+            message: "History contains more than 3 events.",
+            id:      id,
+          }
+        end
+      end
       update_assets
       survey_trigger
       # Sanitize extension_data string values to prevent HTML injection in emails
@@ -482,17 +486,19 @@ module PlaceOS::Model
       when .is_cancelled?                then State::Cancelled
       when .is_ended?                    then State::Ended
       else
-        Log.error { {
-          message:        "Booking is in an Unknown state.",
-          id:             id,
-          current_time:   current_time,
-          booking_start:  booking_start,
-          booking_end:    booking_end,
-          rejected_at:    rejected_at,
-          checked_in_at:  checked_in_at,
-          checked_out_at: checked_out_at,
-          deleted_at:     deleted_at,
-        } }
+        Log.error do
+          {
+            message:        "Booking is in an Unknown state.",
+            id:             id,
+            current_time:   current_time,
+            booking_start:  booking_start,
+            booking_end:    booking_end,
+            rejected_at:    rejected_at,
+            checked_in_at:  checked_in_at,
+            checked_out_at: checked_out_at,
+            deleted_at:     deleted_at,
+          }
+        end
         State::Unknown
       end
     end

@@ -7,7 +7,7 @@ module PlaceOS::Model
       it "strips HTML tags from string values" do
         json = JSON.parse(%({ "name": "<script>alert('xss')</script>Hello" }))
         result = Sanitization.sanitize_json_strings(json)
-        result["name"].as_s.should eq "alert('xss')Hello"
+        result["name"].as_s.should eq "Hello"
       end
 
       it "recursively sanitizes nested hashes" do
@@ -77,7 +77,7 @@ module PlaceOS::Model
       it "strips HTML tags from all strings in an array" do
         input = ["<b>bold</b>", "plain", "<script>xss</script>safe"]
         result = Sanitization.sanitize_strings(input)
-        result.should eq ["bold", "plain", "xsssafe"]
+        result.should eq ["bold", "plain", "safe"]
       end
 
       it "handles an empty array" do

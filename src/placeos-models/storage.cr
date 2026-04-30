@@ -32,19 +32,19 @@ module PlaceOS::Model
     validates :access_key, presence: true
     validates :access_secret, presence: true
 
-    before_create {
+    before_create do
       rec = Model::Storage.find_by?(authority_id: authority_id, storage_type: storage_type.to_s.upcase, bucket_name: bucket_name)
       raise Model::Error.new("authority_id need to be unique") unless rec.nil?
-    }
+    end
 
-    before_save {
+    before_save do
       @ext_filter = ext_filter.map do |ext|
         ext = ext[1..] if ext.starts_with?('.')
         ext.downcase
       end
       @mime_filter = mime_filter.map(&.downcase)
       self.access_secret = PlaceOS::Encryption.encrypt(access_secret, level: level, id: encryption_id)
-    }
+    end
 
     def decrypt_secret
       PlaceOS::Encryption.decrypt(access_secret, level: level, id: encryption_id)

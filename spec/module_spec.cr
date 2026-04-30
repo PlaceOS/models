@@ -127,9 +127,9 @@ module PlaceOS::Model
         control_system = Generator.control_system.save!
         driver = Generator.driver(role: Driver::Role::Logic).save!
 
-        expected_ids = Array.new(2) {
+        expected_ids = Array.new(2) do
           Generator.module(driver: driver, control_system: control_system).save!.id.as(String)
-        }.sort
+        end.sort
 
         fetched_ids = Module.logic_for(control_system.id.as(String)).compact_map(&.id).to_a.sort
 
