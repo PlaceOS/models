@@ -1,6 +1,7 @@
 require "time"
 
 require "./base/model"
+require "./utilities/sanitization"
 require "./settings"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
@@ -121,6 +122,12 @@ module PlaceOS::Model
     ###############################################################################################
 
     before_destroy :remove_zone
+
+    before_save do
+      if (tag_values = @tags) && @tags_changed
+        @tags = Sanitization.sanitize_string_set(tag_values)
+      end
+    end
 
     before_save :check_triggers
 

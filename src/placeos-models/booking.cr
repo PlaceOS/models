@@ -221,7 +221,9 @@ module PlaceOS::Model
       update_assets
       survey_trigger
       # Sanitize extension_data string values to prevent HTML injection in emails
-      @extension_data = Sanitization.sanitize_json_strings(@extension_data) if @extension_data_changed
+      if (ext = @extension_data) && @extension_data_changed
+        @extension_data = Sanitization.sanitize_json_strings(ext)
+      end
     end
 
     before_update :cleanup_recurring_instances
@@ -277,14 +279,8 @@ module PlaceOS::Model
       @asset_id ||= self.asset_ids.first unless self.asset_ids.empty?
     end
 
-    before_save do
-      if @extension_data_changed
-        @extension_data = Sanitization.sanitize_json_strings(@extension_data)
-      end
-    end
-
     def change_extension_data(data : JSON::Any)
-      @extension_data = Sanitization.sanitize_json_strings(data)
+      @extension_data = data
       @extension_data_changed = true
     end
 

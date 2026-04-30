@@ -69,7 +69,9 @@ module PlaceOS::Model
     end
 
     before_save do
-      @tags = Sanitization.sanitize_strings(@tags) if @tags_changed
+      if (tag_values = @tags) && @tags_changed
+        @tags = Sanitization.sanitize_strings(tag_values)
+      end
     end
 
     before_destroy :delete_data

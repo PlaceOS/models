@@ -5,6 +5,7 @@ require "future"
 require "./converter/time_location"
 
 require "./base/model"
+require "./utilities/sanitization"
 require "./settings"
 require "./email"
 require "./utilities/settings_helper"
@@ -138,6 +139,12 @@ module PlaceOS::Model
       return if this.support_url.blank?
       this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
     }
+
+    before_save do
+      if (feat = @features) && @features_changed
+        @features = Sanitization.sanitize_string_set(feat)
+      end
+    end
 
     before_save :clean_urls
 

@@ -7,7 +7,6 @@ require "time"
 
 require "./utilities/last_modified"
 require "./utilities/versions"
-require "./utilities/sanitization"
 
 require "./base/model"
 require "./control_system"
@@ -58,12 +57,6 @@ module PlaceOS::Model
 
     # Validation
     ###############################################################################################
-
-    before_save do
-      if @details_changed
-        @details = Sanitization.sanitize_json_strings(@details)
-      end
-    end
 
     validates :details, presence: true
     validates :name, presence: true

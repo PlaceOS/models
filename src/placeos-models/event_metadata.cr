@@ -73,7 +73,7 @@ module PlaceOS::Model
     end
 
     def set_ext_data(meta : JSON::Any)
-      @ext_data = Sanitization.sanitize_json_strings(meta)
+      @ext_data = meta
       @ext_data_changed = true
     end
 

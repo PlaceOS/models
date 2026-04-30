@@ -11,8 +11,8 @@ module PlaceOS::Model
       belongs_to Survey, pk_type: Int64, serialize: true
 
       before_save do
-        if @answer_json_changed
-          @answer_json = Sanitization.sanitize_json_strings(@answer_json)
+        if (aj = @answer_json) && @answer_json_changed
+          @answer_json = Sanitization.sanitize_json_strings(aj)
         end
       end
 

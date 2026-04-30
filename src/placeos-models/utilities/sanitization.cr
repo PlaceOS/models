@@ -25,5 +25,10 @@ module PlaceOS::Model
     def sanitize_strings(strings : Array(String)) : Array(String)
       strings.map { |s| ActiveModel::Sanitizer.text.process(s) }
     end
+
+    # Sanitize all strings in a set, stripping HTML tags
+    def sanitize_string_set(strings : Set(String)) : Set(String)
+      strings.map { |s| ActiveModel::Sanitizer.text.process(s) }.to_set
+    end
   end
 end

@@ -52,13 +52,15 @@ module PlaceOS::Model
       end
 
       before_save do
-        if @options_changed
-          @options = Sanitization.sanitize_json_strings(@options)
+        if (opts = @options) && @options_changed
+          @options = Sanitization.sanitize_json_strings(opts)
         end
-        if @choices_changed
-          @choices = Sanitization.sanitize_json_strings(@choices)
+        if (ch = @choices) && @choices_changed
+          @choices = Sanitization.sanitize_json_strings(ch)
         end
-        @tags = Sanitization.sanitize_strings(@tags) if @tags_changed
+        if (tag_values = @tags) && @tags_changed
+          @tags = Sanitization.sanitize_strings(tag_values)
+        end
       end
 
       validates :title, :type, presence: true

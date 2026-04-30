@@ -1,6 +1,5 @@
 require "json"
 require "./base/model"
-require "./utilities/sanitization"
 
 module PlaceOS::Model
   class ChatMessage < ModelWithAutoKey
@@ -31,12 +30,6 @@ module PlaceOS::Model
     attribute function_name : String? = nil
     attribute function_args : JSON::Any? = nil
     attribute tool_call_id : String? = nil
-
-    before_save do
-      if (args = @function_args) && @function_args_changed
-        @function_args = Sanitization.sanitize_json_strings(args)
-      end
-    end
 
     belongs_to Chat
   end

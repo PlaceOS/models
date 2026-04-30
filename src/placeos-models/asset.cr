@@ -21,7 +21,7 @@ module PlaceOS::Model
     attribute accessible : Bool = false
     attribute zones : Array(String) = [] of String, es_type: "keyword"
     attribute place_groups : Array(String) = [] of String, es_type: "keyword"
-    attribute assigned_to : String?   # email
+    attribute assigned_to : String?                    # email
     attribute assigned_name : String?, sanitize: :text # name of user
     # queryable with AND and OR operators
     attribute features : Array(String) = [] of String, es_type: "keyword"
@@ -46,7 +46,12 @@ module PlaceOS::Model
       if (data = @other_data) && @other_data_changed
         @other_data = Sanitization.sanitize_json_strings(data)
       end
-      @features = Sanitization.sanitize_strings(@features) if @features_changed
+      if (ids = @client_ids) && @client_ids_changed
+        @client_ids = Sanitization.sanitize_json_strings(ids)
+      end
+      if (feat = @features) && @features_changed
+        @features = Sanitization.sanitize_strings(feat)
+      end
     end
 
     before_destroy :cleanup_bookings

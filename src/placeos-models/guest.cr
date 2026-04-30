@@ -39,11 +39,13 @@ module PlaceOS::Model
     )
 
     before_save do
-      @extension_data = Sanitization.sanitize_json_strings(@extension_data) if @extension_data_changed
+      if (ext = @extension_data) && @extension_data_changed
+        @extension_data = Sanitization.sanitize_json_strings(ext)
+      end
     end
 
     def change_extension_data(data : JSON::Any)
-      @extension_data = Sanitization.sanitize_json_strings(data)
+      @extension_data = data
       @extension_data_changed = true
     end
 

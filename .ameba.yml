@@ -63,3 +63,10 @@ Style/MultilineStringLiteral:
 
 Metrics/CyclomaticComplexity:
   Enabled: false
+
+Lint/WhitespaceAroundMacroExpression:
+  Enabled: false
+
+Lint/SpecEqWithBoolOrNilLiteral:
+  Excluded:
+    - "spec/**"
