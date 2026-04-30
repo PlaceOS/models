@@ -8,10 +8,10 @@ module PlaceOS::Model
 
     table :asset_type
 
-    attribute name : String, es_subfield: "keyword"
-    attribute brand : String
-    attribute description : String?
-    attribute model_number : String?
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute brand : String, sanitize: :text
+    attribute description : String?, sanitize: :common
+    attribute model_number : String?, sanitize: :text
     attribute images : Array(String)? = [] of String
 
     belongs_to AssetCategory, foreign_key: "category_id", association_name: "category"

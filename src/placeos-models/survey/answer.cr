@@ -1,3 +1,5 @@
+require "../utilities/sanitization"
+
 module PlaceOS::Model
   class Survey < ModelWithAutoKey
     class Answer < ModelWithAutoKey
@@ -7,6 +9,12 @@ module PlaceOS::Model
 
       belongs_to Survey::Question, foreign_key: "question_id", pk_type: Int64, serialize: true
       belongs_to Survey, pk_type: Int64, serialize: true
+
+      before_save do
+        if @answer_json_changed
+          @answer_json = Sanitization.sanitize_json_strings(@answer_json)
+        end
+      end
 
       validates :question_id, :survey_id, :type, presence: true
 

@@ -4,7 +4,7 @@ require "./base/model"
 require "./attendee"
 require "./tenant"
 require "./utilities/jsonb_query_helper"
-require "./utilities/sanitize_json"
+require "./utilities/sanitization"
 require "./email"
 
 module PlaceOS::Model
@@ -49,7 +49,7 @@ module PlaceOS::Model
     attribute booking_start : Int64
     attribute booking_end : Int64
     attribute timezone : String?
-    attribute asset_id : String, sanitize: :text
+    attribute asset_id : String
     attribute user_id : String?
     attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter
     attribute user_name : String, sanitize: :text
@@ -221,7 +221,7 @@ module PlaceOS::Model
       update_assets
       survey_trigger
       # Sanitize extension_data string values to prevent HTML injection in emails
-      @extension_data = SanitizeJson.sanitize_json_strings(@extension_data) if @extension_data_changed
+      @extension_data = Sanitization.sanitize_json_strings(@extension_data) if @extension_data_changed
     end
 
     before_update :cleanup_recurring_instances
@@ -277,8 +277,14 @@ module PlaceOS::Model
       @asset_id ||= self.asset_ids.first unless self.asset_ids.empty?
     end
 
+    before_save do
+      if @extension_data_changed
+        @extension_data = Sanitization.sanitize_json_strings(@extension_data)
+      end
+    end
+
     def change_extension_data(data : JSON::Any)
-      @extension_data = SanitizeJson.sanitize_json_strings(data)
+      @extension_data = Sanitization.sanitize_json_strings(data)
       @extension_data_changed = true
     end
 

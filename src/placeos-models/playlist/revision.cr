@@ -9,11 +9,11 @@ module PlaceOS::Model
 
     attribute user_id : String?, mass_assignment: false
     attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter, mass_assignment: false
-    attribute user_name : String, mass_assignment: false
+    attribute user_name : String, sanitize: :text, mass_assignment: false
 
     attribute approved : Bool = false, mass_assignment: false
     attribute approved_by_id : String?, mass_assignment: false
-    attribute approved_by_name : String?, mass_assignment: false
+    attribute approved_by_name : String?, sanitize: :text, mass_assignment: false
     attribute approved_by_email : PlaceOS::Model::Email?, format: "email", converter: PlaceOS::Model::EmailConverter, mass_assignment: false
 
     attribute items : Array(String) = [] of String, es_type: "keyword"

@@ -1,9 +1,11 @@
+require "../utilities/sanitization"
+
 module PlaceOS::Model
   class Survey < ModelWithAutoKey
     class Question < ModelWithAutoKey
       table :questions
-      attribute title : String
-      attribute description : String?
+      attribute title : String, sanitize: :text
+      attribute description : String?, sanitize: :common
       attribute type : String
       attribute options : JSON::Any = JSON::Any.new({} of String => JSON::Any)
       attribute required : Bool = false
@@ -47,6 +49,16 @@ module PlaceOS::Model
         self.new_record = true
         @id = nil
         @deleted_at = nil
+      end
+
+      before_save do
+        if @options_changed
+          @options = Sanitization.sanitize_json_strings(@options)
+        end
+        if @choices_changed
+          @choices = Sanitization.sanitize_json_strings(@choices)
+        end
+        @tags = Sanitization.sanitize_strings(@tags) if @tags_changed
       end
 
       validates :title, :type, presence: true

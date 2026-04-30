@@ -27,7 +27,7 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword", mass_assignment: false
 
     # Custom module names (in addition to what is defined in the driver)
-    attribute custom_name : String?
+    attribute custom_name : String?, sanitize: :text
 
     # Cache the module's driver role locally for load order
     attribute role : Driver::Role, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
@@ -38,7 +38,7 @@ module PlaceOS::Model
     # Connected state in model so we can filter and search on it
     attribute connected : Bool = true
     attribute running : Bool = false
-    attribute notes : String = ""
+    attribute notes : String = "", sanitize: :common
 
     # Don't include this module in statistics or disconnected searches
     # Might be a device that commonly goes offline (like a PC or Display that only supports Wake on Lan)

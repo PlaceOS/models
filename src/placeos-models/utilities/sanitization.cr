@@ -1,7 +1,7 @@
 require "active-model/sanitizer"
 
 module PlaceOS::Model
-  module SanitizeJson
+  module Sanitization
     extend self
 
     # Recursively sanitize all string values in a JSON::Any structure
@@ -19,6 +19,11 @@ module PlaceOS::Model
       else
         json
       end
+    end
+
+    # Sanitize all strings in an array, stripping HTML tags
+    def sanitize_strings(strings : Array(String)) : Array(String)
+      strings.map { |s| ActiveModel::Sanitizer.text.process(s) }
     end
   end
 end

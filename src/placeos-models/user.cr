@@ -33,21 +33,21 @@ module PlaceOS::Model
       property blocks : Array(WorktimeBlock) = [] of WorktimeBlock
     end
 
-    attribute name : String, es_subfield: "keyword"
-    attribute nickname : String?
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute nickname : String?, sanitize: :text
     attribute email : Email = Email.new(""), converter: PlaceOS::Model::EmailConverter, es_type: "text"
-    attribute phone : String?
+    attribute phone : String?, sanitize: :text
     attribute country : String?
     attribute image : String?
     attribute ui_theme : String? = "light"
-    attribute misc : String?
+    attribute misc : String?, sanitize: :common
 
     attribute login_name : String?, mass_assignment: false
     attribute staff_id : String?, mass_assignment: false
-    attribute first_name : String?
-    attribute last_name : String?
-    attribute building : String?
-    attribute department : String?
+    attribute first_name : String?, sanitize: :text
+    attribute last_name : String?, sanitize: :text
+    attribute building : String?, sanitize: :text
+    attribute department : String?, sanitize: :text
     attribute preferred_language : String?
 
     attribute password_digest : String?, mass_assignment: false

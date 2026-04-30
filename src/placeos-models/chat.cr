@@ -6,7 +6,7 @@ module PlaceOS::Model
     include PlaceOS::Model::Timestamps
     table :chats
 
-    attribute summary : String
+    attribute summary : String, sanitize: :text
 
     belongs_to User, foreign_key: "user_id", association_name: "user", presence: true
     belongs_to ControlSystem, foreign_key: "system_id", presence: true

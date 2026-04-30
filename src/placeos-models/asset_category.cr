@@ -8,8 +8,8 @@ module PlaceOS::Model
     table :asset_category
 
     # i.e. a tablet
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String?
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String?, sanitize: :common
     attribute hidden : Bool = false, es_subfield: "keyword"
 
     belongs_to AssetCategory, foreign_key: "parent_category_id", association_name: "parent_category"

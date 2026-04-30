@@ -16,21 +16,21 @@ module PlaceOS::Model
 
     table :zone
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
     attribute tags : Set(String) = -> { Set(String).new }
 
     # =============================
     # Additional top level metadata that is fairly common
     # =============================
     # Geo-location string (lat,long) or any other location
-    attribute location : String?
+    attribute location : String?, sanitize: :text
     # For display on staff app
-    attribute display_name : String?
+    attribute display_name : String?, sanitize: :text
     # Could be used as floor code
-    attribute code : String?
+    attribute code : String?, sanitize: :text
     # Could be used as floor type
-    attribute type : String?
+    attribute type : String?, sanitize: :text
     # Could be used as a desk count
     attribute count : Int32 = 0
     # Could be used as a people capacity

@@ -1,7 +1,7 @@
 require "json"
 require "./base/model"
 require "./booking"
-require "./utilities/sanitize_json"
+require "./utilities/sanitization"
 
 module PlaceOS::Model
   class BookingInstance < ModelWithAutoKey
@@ -31,7 +31,7 @@ module PlaceOS::Model
 
     before_save do
       if (ext = @extension_data) && @extension_data_changed
-        @extension_data = SanitizeJson.sanitize_json_strings(ext)
+        @extension_data = Sanitization.sanitize_json_strings(ext)
       end
     end
 

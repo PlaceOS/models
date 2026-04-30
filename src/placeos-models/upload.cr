@@ -4,6 +4,7 @@ require "upload-signer"
 require "./base/model"
 require "./storage"
 require "./email"
+require "./utilities/sanitization"
 
 module PlaceOS::Model
   class Upload < ModelBase
@@ -65,6 +66,10 @@ module PlaceOS::Model
 
     def part_data_changed(flag = true)
       @part_data_changed = flag
+    end
+
+    before_save do
+      @tags = Sanitization.sanitize_strings(@tags) if @tags_changed
     end
 
     before_destroy :delete_data

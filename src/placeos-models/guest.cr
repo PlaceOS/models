@@ -4,7 +4,7 @@ require "./tenant"
 require "./attendee"
 require "./booking"
 require "./event_metadata"
-require "./utilities/sanitize_json"
+require "./utilities/sanitization"
 
 module PlaceOS::Model
   class Guest < ModelWithAutoKey
@@ -39,11 +39,11 @@ module PlaceOS::Model
     )
 
     before_save do
-      @extension_data = SanitizeJson.sanitize_json_strings(@extension_data) if @extension_data_changed
+      @extension_data = Sanitization.sanitize_json_strings(@extension_data) if @extension_data_changed
     end
 
     def change_extension_data(data : JSON::Any)
-      @extension_data = SanitizeJson.sanitize_json_strings(data)
+      @extension_data = Sanitization.sanitize_json_strings(data)
       @extension_data_changed = true
     end
 

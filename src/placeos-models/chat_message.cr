@@ -1,5 +1,6 @@
 require "json"
 require "./base/model"
+require "./utilities/sanitization"
 
 module PlaceOS::Model
   class ChatMessage < ModelWithAutoKey
@@ -23,13 +24,19 @@ module PlaceOS::Model
 
     attribute chat_id : String
     attribute role : Role = Role::User, converter: Enum::ValueConverter(PlaceOS::Model::ChatMessage::Role), es_type: "integer"
-    attribute content : String? = nil
+    attribute content : String? = nil, sanitize: :common
     attribute tokens : Int32 = 0
 
     # When `role` is `Function`, then this should contain the name of the function whose response is in the `content`.
     attribute function_name : String? = nil
     attribute function_args : JSON::Any? = nil
     attribute tool_call_id : String? = nil
+
+    before_save do
+      if (args = @function_args) && @function_args_changed
+        @function_args = Sanitization.sanitize_json_strings(args)
+      end
+    end
 
     belongs_to Chat
   end
