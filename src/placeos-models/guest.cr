@@ -4,16 +4,17 @@ require "./tenant"
 require "./attendee"
 require "./booking"
 require "./event_metadata"
+require "./utilities/sanitize_json"
 
 module PlaceOS::Model
   class Guest < ModelWithAutoKey
     table :guests
     attribute email : String, format: "email"
-    attribute name : String?
-    attribute preferred_name : String?
-    attribute phone : String?
-    attribute organisation : String?
-    attribute notes : String?
+    attribute name : String?, sanitize: :text
+    attribute preferred_name : String?, sanitize: :text
+    attribute phone : String?, sanitize: :text
+    attribute organisation : String?, sanitize: :text
+    attribute notes : String?, sanitize: :common
     attribute photo : String?
     attribute banned : Bool = false
     attribute dangerous : Bool = false
@@ -37,8 +38,12 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    before_save do
+      @extension_data = SanitizeJson.sanitize_json_strings(@extension_data) if @extension_data_changed
+    end
+
     def change_extension_data(data : JSON::Any)
-      @extension_data = data
+      @extension_data = SanitizeJson.sanitize_json_strings(data)
       @extension_data_changed = true
     end
 

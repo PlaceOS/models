@@ -1,0 +1,24 @@
+require "active-model/sanitizer"
+
+module PlaceOS::Model
+  module SanitizeJson
+    extend self
+
+    # Recursively sanitize all string values in a JSON::Any structure
+    # to prevent HTML injection (e.g. via extension_data["desk_name"] in email templates)
+    def sanitize_json_strings(json : JSON::Any) : JSON::Any
+      case raw = json.raw
+      when String
+        JSON::Any.new(ActiveModel::Sanitizer.text.process(raw))
+      when Hash
+        sanitized = raw.transform_values { |v| sanitize_json_strings(v) }
+        JSON::Any.new(sanitized)
+      when Array
+        sanitized = raw.map { |v| sanitize_json_strings(v) }
+        JSON::Any.new(sanitized)
+      else
+        json
+      end
+    end
+  end
+end

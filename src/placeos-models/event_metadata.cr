@@ -1,6 +1,7 @@
 require "json"
 require "./base/model"
 require "./utilities/jsonb_query_helper"
+require "./utilities/sanitize_json"
 
 module PlaceOS::Model
   class EventMetadata < ModelWithAutoKey
@@ -72,7 +73,7 @@ module PlaceOS::Model
     end
 
     def set_ext_data(meta : JSON::Any)
-      @ext_data = meta
+      @ext_data = SanitizeJson.sanitize_json_strings(meta)
       @ext_data_changed = true
     end
 
@@ -168,6 +169,12 @@ module PlaceOS::Model
 
       if cancelled_changed? && cancelled
         Booking.where(event_id: id).update_all({:rejected => true, :rejected_at => Time.utc.to_unix})
+      end
+    end
+
+    before_save do
+      if (ext = @ext_data) && @ext_data_changed
+        @ext_data = SanitizeJson.sanitize_json_strings(ext)
       end
     end
 
