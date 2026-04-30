@@ -76,8 +76,8 @@ module PlaceOS::Model
     # invitation has expired.
     def self.find_by_secret?(plaintext : String) : self?
       invitation = where(secret_digest: digest_secret(plaintext)).first?
-      return nil if invitation.nil?
-      return nil if invitation.expired?
+      return if invitation.nil?
+      return if invitation.expired?
       invitation
     end
 

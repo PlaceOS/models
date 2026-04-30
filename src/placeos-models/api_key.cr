@@ -78,7 +78,7 @@ module PlaceOS::Model
 
     @[JSON::Field(ignore: true)]
     getter x_api_key : String? do
-      return nil if self.persisted?
+      return if self.persisted?
       "#{self.safe_id}.#{self.secret}"
     end
 

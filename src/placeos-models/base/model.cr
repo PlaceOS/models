@@ -200,7 +200,7 @@ module Time::EpochConverterOptional
 
   def self.from_json(value : JSON::PullParser) : Time?
     str = value.read_raw
-    return nil unless str
+    return unless str
     if (val = str.to_i?)
       Time.unix(val)
     else

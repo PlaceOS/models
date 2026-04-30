@@ -49,7 +49,7 @@ module Enum::ValueConverter(T)
   end
 
   def self.to_json(val : T | Nil)
-    return nil if val.nil?
+    return if val.nil?
     previous_def
   end
 

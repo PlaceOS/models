@@ -70,3 +70,6 @@ Lint/WhitespaceAroundMacroExpression:
 Lint/SpecEqWithBoolOrNilLiteral:
   Excluded:
     - "spec/**"
+
+Style/VerboseNilType:
+  Enabled: false

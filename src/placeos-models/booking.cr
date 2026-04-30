@@ -683,12 +683,12 @@ module PlaceOS::Model
     end
 
     private def get_children
-      return nil unless parent?
+      return unless parent?
       Booking.where(parent_id: id).to_a
     end
 
     private def get_parent
-      return nil if parent?
+      return if parent?
       Booking.where(id: parent_id).to_a[0]
     end
 
