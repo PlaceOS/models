@@ -226,7 +226,7 @@ module PlaceOS::Model
       survey_trigger
       # Sanitize extension_data string values to prevent HTML injection in emails
       if (ext = @extension_data) && @extension_data_changed
-        @extension_data = Sanitization.sanitize_json_strings(ext)
+        @extension_data = Sanitization.sanitize_strings(ext)
       end
     end
 

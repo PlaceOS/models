@@ -25,7 +25,7 @@ module PlaceOS::Model
 
     before_save do
       if (data = @supplier_details) && @supplier_details_changed
-        @supplier_details = Sanitization.sanitize_json_strings(data)
+        @supplier_details = Sanitization.sanitize_strings(data)
       end
     end
 

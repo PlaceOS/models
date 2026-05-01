@@ -125,7 +125,7 @@ module PlaceOS::Model
 
     before_save do
       if (tag_values = @tags) && @tags_changed
-        @tags = Sanitization.sanitize_string_set(tag_values)
+        @tags = Sanitization.sanitize_strings(tag_values)
       end
     end
 

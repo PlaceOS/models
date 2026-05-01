@@ -142,7 +142,7 @@ module PlaceOS::Model
 
     before_save do
       if (feat = @features) && @features_changed
-        @features = Sanitization.sanitize_string_set(feat)
+        @features = Sanitization.sanitize_strings(feat)
       end
     end
 

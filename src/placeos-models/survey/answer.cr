@@ -12,7 +12,7 @@ module PlaceOS::Model
 
       before_save do
         if (aj = @answer_json) && @answer_json_changed
-          @answer_json = Sanitization.sanitize_json_strings(aj)
+          @answer_json = Sanitization.sanitize_strings(aj)
         end
       end
 

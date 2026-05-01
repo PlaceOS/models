@@ -44,10 +44,10 @@ module PlaceOS::Model
 
     before_save do
       if (data = @other_data) && @other_data_changed
-        @other_data = Sanitization.sanitize_json_strings(data)
+        @other_data = Sanitization.sanitize_strings(data)
       end
       if (ids = @client_ids) && @client_ids_changed
-        @client_ids = Sanitization.sanitize_json_strings(ids)
+        @client_ids = Sanitization.sanitize_strings(ids)
       end
       if (feat = @features) && @features_changed
         @features = Sanitization.sanitize_strings(feat)

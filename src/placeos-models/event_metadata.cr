@@ -174,7 +174,7 @@ module PlaceOS::Model
 
     before_save do
       if (ext = @ext_data) && @ext_data_changed
-        @ext_data = Sanitization.sanitize_json_strings(ext)
+        @ext_data = Sanitization.sanitize_strings(ext)
       end
     end
 
