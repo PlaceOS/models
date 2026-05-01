@@ -53,10 +53,10 @@ module PlaceOS::Model
 
       before_save do
         if (opts = @options) && @options_changed
-          @options = Sanitization.sanitize_strings(opts)
+          @options = Sanitization.sanitize_strings(opts, policy: :common)
         end
         if (ch = @choices) && @choices_changed
-          @choices = Sanitization.sanitize_strings(ch)
+          @choices = Sanitization.sanitize_strings(ch, policy: :common)
         end
         if (tag_values = @tags) && @tags_changed
           @tags = Sanitization.sanitize_strings(tag_values)
