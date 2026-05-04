@@ -434,13 +434,12 @@ module PlaceOS::Model
       )
     end
 
-    class_getter asset_zone : Zone { self.zone.save! }
-
     def self.asset(asset_type = Generator.asset_type.save!, purchase_order = Generator.asset_purchase_order.save!)
+      zone = self.zone.save!
       Asset.new(
         asset_type_id: asset_type.id,
         purchase_order_id: purchase_order.id,
-        zone_id: asset_zone.id,
+        zone_id: zone.id,
       )
     end
 
@@ -796,6 +795,232 @@ module PlaceOS::Model
         resource_id: resource_id,
         action: action,
         changed_fields: changed_fields
+      )
+    end
+
+    # -------------------------------------------------------------------
+    # Venue booking pricing and payments
+    # -------------------------------------------------------------------
+
+    def self.rate_card(
+      name : String = "rate-#{RANDOM.hex(4)}",
+      kind : RateCard::Kind = RateCard::Kind::BASE,
+      valid_from : Time? = nil,
+      valid_to : Time? = nil,
+      active : Bool = true,
+      priority : Int32 = 100,
+      currency : String = "AUD",
+    )
+      RateCard.new(
+        name: name,
+        description: Faker::Lorem.sentence,
+        kind: kind,
+        valid_from: valid_from,
+        valid_to: valid_to,
+        active: active,
+        priority: priority,
+        currency: currency,
+      )
+    end
+
+    def self.rate_card_assignment(
+      rate_card : RateCard? = nil,
+      asset_type : AssetType? = nil,
+      asset : Asset? = nil,
+      space : ControlSystem? = nil,
+      site : Zone? = nil,
+    )
+      card = rate_card || self.rate_card.save!
+      target_space = space
+      target_space = self.control_system.save! if target_space.nil? && asset_type.nil? && asset.nil? && site.nil?
+      RateCardAssignment.new(
+        rate_card_id: card.id.not_nil!,
+        asset_type_id: asset_type.try(&.id),
+        asset_id: asset.try(&.id),
+        space_id: target_space.try(&.id),
+        site_id: site.try(&.id),
+      )
+    end
+
+    def self.duration_band(
+      rate_card : RateCard? = nil,
+      name : String = "band-#{RANDOM.hex(4)}",
+      min_minutes : Int32 = 0,
+      max_minutes : Int32? = 240,
+      priority : Int32 = 100,
+      active : Bool = true,
+    )
+      card = rate_card || self.rate_card.save!
+      DurationBand.new(
+        rate_card_id: card.id.not_nil!,
+        name: name,
+        description: Faker::Lorem.sentence,
+        min_minutes: min_minutes,
+        max_minutes: max_minutes,
+        priority: priority,
+        active: active,
+      )
+    end
+
+    def self.pricing_rule(
+      rate_card : RateCard? = nil,
+      duration_band : DurationBand? = nil,
+      charge_category : PricingRule::ChargeCategory = PricingRule::ChargeCategory::VENUE_HIRE,
+      charge_basis : PricingRule::ChargeBasis = PricingRule::ChargeBasis::FIXED,
+      amount_cents : Int32 = 15_000,
+      customer_type : PricingRule::CustomerType? = nil,
+      day_type : PricingRule::DayType? = nil,
+      min_attendees : Int32? = nil,
+      max_attendees : Int32? = nil,
+      active : Bool = true,
+      stackable : Bool = false,
+      priority : Int32 = 100,
+    )
+      card = rate_card || self.rate_card.save!
+      PricingRule.new(
+        rate_card_id: card.id.not_nil!,
+        duration_band_id: duration_band.try(&.id),
+        name: "rule-#{RANDOM.hex(4)}",
+        description: Faker::Lorem.sentence,
+        charge_category: charge_category,
+        charge_basis: charge_basis,
+        amount_cents: amount_cents,
+        customer_type: customer_type.try(&.to_s),
+        day_type: day_type.try(&.to_s),
+        min_attendees: min_attendees,
+        max_attendees: max_attendees,
+        active: active,
+        stackable: stackable,
+        priority: priority,
+      )
+    end
+
+    def self.booking_quote(
+      booking : Booking? = nil,
+      rate_card : RateCard? = nil,
+      status : BookingQuote::QuoteStatus = BookingQuote::QuoteStatus::DRAFT,
+      subtotal_cents : Int32 = 10_000,
+      tax_cents : Int32 = 1_000,
+      total_cents : Int32 = 11_000,
+      currency : String = "AUD",
+      accepted_at : Time? = nil,
+    )
+      target_booking = booking || begin
+        tenant = Tenant.first? || self.tenant.save!
+        self.booking(
+          tenant.id,
+          "asset-#{RANDOM.hex(4)}",
+          1.hour.from_now,
+          2.hours.from_now
+        ).save!
+      end
+
+      BookingQuote.new(
+        booking_id: target_booking.id.not_nil!,
+        rate_card_id: rate_card.try(&.id),
+        status: status,
+        subtotal_cents: subtotal_cents,
+        tax_cents: tax_cents,
+        total_cents: total_cents,
+        currency: currency,
+        accepted_at: accepted_at,
+      )
+    end
+
+    def self.booking_quote_line_item(
+      quote : BookingQuote? = nil,
+      pricing_rule : PricingRule? = nil,
+      description : String = "line-item-#{RANDOM.hex(3)}",
+      charge_category : PricingRule::ChargeCategory = PricingRule::ChargeCategory::VENUE_HIRE,
+      charge_basis : PricingRule::ChargeBasis = PricingRule::ChargeBasis::FIXED,
+      quantity : Float64 = 1.0,
+      unit_amount_cents : Int32 = 10_000,
+      total_amount_cents : Int32 = 10_000,
+      approved : Bool = false,
+    )
+      target_quote = quote || self.booking_quote.save!
+      BookingQuoteLineItem.new(
+        quote_id: target_quote.id.not_nil!,
+        pricing_rule_id: pricing_rule.try(&.id),
+        description: description,
+        charge_category: charge_category,
+        charge_basis: charge_basis,
+        quantity: quantity,
+        unit_amount_cents: unit_amount_cents,
+        total_amount_cents: total_amount_cents,
+        approved: approved,
+      )
+    end
+
+    def self.booking_payment(
+      quote : BookingQuote? = nil,
+      booking : Booking? = nil,
+      amount_cents : Int32 = 11_000,
+      status : BookingPayment::PaymentStatus = BookingPayment::PaymentStatus::PENDING,
+      payment_method : BookingPayment::PaymentMethod = BookingPayment::PaymentMethod::UNKNOWN,
+      currency : String = "AUD",
+      provider : String? = "stripe",
+      reference : String? = "payment-#{RANDOM.hex(6)}",
+      paid_at : Time? = nil,
+    )
+      target_quote = quote
+      target_booking = booking
+
+      if target_quote.nil? && target_booking.nil?
+        target_quote = self.booking_quote.save!
+        target_booking = target_quote.booking
+      elsif target_quote && target_booking.nil?
+        target_booking = target_quote.booking
+      elsif target_booking && target_quote.nil?
+        target_quote = self.booking_quote(booking: target_booking).save!
+      end
+
+      BookingPayment.new(
+        quote_id: target_quote.not_nil!.id.not_nil!,
+        booking_id: target_booking.not_nil!.id.not_nil!,
+        amount_cents: amount_cents,
+        status: status,
+        payment_method: payment_method,
+        currency: currency,
+        provider: provider,
+        reference: reference,
+        paid_at: paid_at,
+      )
+    end
+
+    def self.rate_card_history(
+      rate_card : RateCard? = nil,
+      user : User? = nil,
+      action : String = "update",
+      changed_fields : Array(String) = ["name"],
+    )
+      card = rate_card || self.rate_card.save!
+      actor_email = user.try(&.email.to_s) || Faker::Internet.email
+      actor_id = user.try(&.id)
+      RateCardHistory.new(
+        rate_card_id: card.id.not_nil!,
+        user_id: actor_id,
+        email: actor_email,
+        action: action,
+        changed_fields: changed_fields,
+      )
+    end
+
+    def self.booking_quote_history(
+      quote : BookingQuote? = nil,
+      user : User? = nil,
+      action : String = "update",
+      changed_fields : Array(String) = ["status"],
+    )
+      target_quote = quote || self.booking_quote.save!
+      actor_email = user.try(&.email.to_s) || Faker::Internet.email
+      actor_id = user.try(&.id)
+      BookingQuoteHistory.new(
+        quote_id: target_quote.id.not_nil!,
+        user_id: actor_id,
+        email: actor_email,
+        action: action,
+        changed_fields: changed_fields,
       )
     end
 
