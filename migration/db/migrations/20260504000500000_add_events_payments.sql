@@ -370,6 +370,7 @@ CREATE TABLE IF NOT EXISTS "booking_quote_line_items"(
   quote_id UUID NOT NULL REFERENCES "booking_quotes"(id) ON DELETE CASCADE,
 
   pricing_rule_id UUID REFERENCES "pricing_rules"(id) ON DELETE SET NULL,
+  rate_card_assignment_id UUID REFERENCES "rate_card_assignments"(id) ON DELETE SET NULL,
 
   description TEXT NOT NULL,
 
@@ -393,6 +394,7 @@ CREATE TABLE IF NOT EXISTS "booking_quote_line_items"(
 
 CREATE INDEX IF NOT EXISTS booking_quote_line_items_quote_id_idx ON "booking_quote_line_items" USING BTREE (quote_id);
 CREATE INDEX IF NOT EXISTS booking_quote_line_items_pricing_rule_id_idx ON "booking_quote_line_items" USING BTREE (pricing_rule_id);
+CREATE INDEX IF NOT EXISTS booking_quote_line_items_rate_card_assignment_id_idx ON "booking_quote_line_items" USING BTREE (rate_card_assignment_id);
 CREATE INDEX IF NOT EXISTS booking_quote_line_items_charge_category_idx ON "booking_quote_line_items" USING BTREE (charge_category);
 CREATE INDEX IF NOT EXISTS booking_quote_line_items_approved_idx ON "booking_quote_line_items" USING BTREE (approved);
 

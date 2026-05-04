@@ -930,6 +930,7 @@ module PlaceOS::Model
     def self.booking_quote_line_item(
       quote : BookingQuote? = nil,
       pricing_rule : PricingRule? = nil,
+      rate_card_assignment : RateCardAssignment? = nil,
       description : String = "line-item-#{RANDOM.hex(3)}",
       charge_category : PricingRule::ChargeCategory = PricingRule::ChargeCategory::VENUE_HIRE,
       charge_basis : PricingRule::ChargeBasis = PricingRule::ChargeBasis::FIXED,
@@ -942,6 +943,7 @@ module PlaceOS::Model
       BookingQuoteLineItem.new(
         quote_id: target_quote.id.not_nil!,
         pricing_rule_id: pricing_rule.try(&.id),
+        rate_card_assignment_id: rate_card_assignment.try(&.id),
         description: description,
         charge_category: charge_category,
         charge_basis: charge_basis,

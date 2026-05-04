@@ -17,14 +17,19 @@ module PlaceOS::Model
       Tenant.clear
     end
 
-    it "saves and links to quote and pricing rule" do
+    it "saves and links to quote, pricing rule, and rate card assignment" do
       card = Generator.rate_card.save!
       rule = Generator.pricing_rule(rate_card: card).save!
+      assignment = Generator.rate_card_assignment(
+        rate_card: card,
+        space: Generator.control_system.save!
+      ).save!
       quote = Generator.booking_quote(rate_card: card).save!
 
       item = Generator.booking_quote_line_item(
         quote: quote,
         pricing_rule: rule,
+        rate_card_assignment: assignment,
         charge_category: PricingRule::ChargeCategory::ASSET_HIRE,
         charge_basis: PricingRule::ChargeBasis::PER_BOOKING,
       ).save!
@@ -32,6 +37,7 @@ module PlaceOS::Model
       found = BookingQuoteLineItem.find!(item.id.not_nil!)
       found.quote_id.should eq quote.id
       found.pricing_rule_id.should eq rule.id
+      found.rate_card_assignment_id.should eq assignment.id
       found.charge_category.should eq PricingRule::ChargeCategory::ASSET_HIRE
       found.charge_basis.should eq PricingRule::ChargeBasis::PER_BOOKING
     end

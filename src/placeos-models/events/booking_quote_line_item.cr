@@ -5,6 +5,7 @@ require "../base/model"
 require "./booking_quote"
 require "./booking_quote_history"
 require "./pricing_rule"
+require "./rate_card_assignment"
 
 module PlaceOS::Model
   module NumericToFloat64Converter
@@ -39,6 +40,9 @@ module PlaceOS::Model
 
     attribute pricing_rule_id : UUID?
     belongs_to :pricing_rule, class_name: PricingRule, foreign_key: pricing_rule_id
+
+    attribute rate_card_assignment_id : UUID?
+    belongs_to :rate_card_assignment, class_name: RateCardAssignment, foreign_key: rate_card_assignment_id
 
     attribute description : String
 
