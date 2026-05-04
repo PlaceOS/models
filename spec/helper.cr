@@ -26,6 +26,15 @@ Spec.after_suite do
   # Models that inherit directly from ::PgORM::Base (not ModelBase) —
   # cleared in dependency order (children first so FKs don't fire).
   [
+    PlaceOS::Model::BookingPayment,
+    PlaceOS::Model::BookingQuoteLineItem,
+    PlaceOS::Model::BookingQuoteHistory,
+    PlaceOS::Model::BookingQuote,
+    PlaceOS::Model::PricingRule,
+    PlaceOS::Model::DurationBand,
+    PlaceOS::Model::RateCardAssignment,
+    PlaceOS::Model::RateCardHistory,
+    PlaceOS::Model::RateCard,
     PlaceOS::Model::GroupHistory,
     PlaceOS::Model::GroupInvitation,
     PlaceOS::Model::GroupZone,
