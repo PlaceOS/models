@@ -140,7 +140,7 @@ module PlaceOS::Model
           num_tests.times do
             User.clear
             Array.new(4) { Generator.user(admin: true).save! }
-              .map do |u|
+              .map { |u|
                 future do
                   begin
                     u.destroy
@@ -149,7 +149,7 @@ module PlaceOS::Model
                     errors << e
                   end
                 end
-              end.each &.get
+              }.each &.get
           end
 
           errors.size.should eq num_tests
@@ -320,9 +320,9 @@ module PlaceOS::Model
       it "#find_by_emails" do
         existing = Authority.find_by_domain("localhost")
         authority = existing || Generator.authority.save!
-        expected_users = Array.new(5) do
+        expected_users = Array.new(5) {
           Generator.user(authority).save!
-        end
+        }
 
         # User with pun email and different authority
         not_expected = Generator.user(Generator.authority("https://unexpected.com").save!)

@@ -183,9 +183,9 @@ module PlaceOS::Model
       end
 
       it "limits number of stored versions" do
-        changes = Array(JSON::Any).new(2 * Utilities::Versions::MAX_VERSIONS) do |i|
+        changes = Array(JSON::Any).new(2 * Utilities::Versions::MAX_VERSIONS) { |i|
           JSON::Any.new({"test" => JSON::Any.new(i.to_i64)})
-        end
+        }
 
         metadata = Generator.metadata
         metadata.details = changes.first

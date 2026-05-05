@@ -76,3 +76,6 @@ Style/VerboseNilType:
 
 Lint/UnusedRescueVariable:
   Enabled: false
+
+Style/MultilineCurlyBlock:
+  Enabled: false
