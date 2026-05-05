@@ -4,6 +4,7 @@ require "./base/model"
 require "./attendee"
 require "./tenant"
 require "./utilities/jsonb_query_helper"
+require "./utilities/sanitization"
 require "./email"
 
 module PlaceOS::Model
@@ -44,38 +45,38 @@ module PlaceOS::Model
       DECLINED
     end
 
-    attribute booking_type : String
+    attribute booking_type : String, sanitize: :text
     attribute booking_start : Int64
     attribute booking_end : Int64
     attribute timezone : String?
     attribute asset_id : String
     attribute user_id : String?
     attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter
-    attribute user_name : String
+    attribute user_name : String, sanitize: :text
     attribute zones : Array(String) = -> { [] of String }
     # used to hold information relating to the state of the booking process
-    attribute process_state : String?
+    attribute process_state : String?, sanitize: :text
     attribute last_changed : Int64?
     attribute approved : Bool = false
     attribute approved_at : Int64?
     attribute rejected : Bool = false
     attribute rejected_at : Int64?
     attribute approver_id : String?
-    attribute approver_name : String?
+    attribute approver_name : String?, sanitize: :text
     attribute approver_email : String?, format: "email"
-    attribute department : String?
-    attribute title : String?
+    attribute department : String?, sanitize: :text
+    attribute title : String?, sanitize: :text
     attribute checked_in : Bool = false
     attribute checked_in_at : Int64?
     attribute checked_out_at : Int64?
-    attribute description : String?
+    attribute description : String?, sanitize: :common
     attribute deleted : Bool = false
     attribute deleted_at : Int64?
     attribute booked_by_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter
-    attribute booked_by_name : String
+    attribute booked_by_name : String, sanitize: :text
     # if we want to record the system that performed the bookings
     # (kiosk, mobile, swipe etc)
-    attribute booked_from : String?
+    attribute booked_from : String?, sanitize: :text
     attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new)
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
@@ -219,6 +220,10 @@ module PlaceOS::Model
       } } if history.size > 3
       update_assets
       survey_trigger
+      # Sanitize extension_data string values to prevent HTML injection in emails
+      if (ext = @extension_data) && @extension_data_changed
+        @extension_data = Sanitization.sanitize_strings(ext)
+      end
     end
 
     before_update :cleanup_recurring_instances
@@ -678,12 +683,12 @@ module PlaceOS::Model
     end
 
     private def get_children
-      return nil unless parent?
+      return unless parent?
       Booking.where(parent_id: id).to_a
     end
 
     private def get_parent
-      return nil if parent?
+      return if parent?
       Booking.where(id: parent_id).to_a[0]
     end
 

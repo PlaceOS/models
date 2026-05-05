@@ -6,13 +6,13 @@ module PlaceOS::Model
 
     table :shortener
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute uri : String
-    attribute description : String = ""
+    attribute description : String = "", sanitize: :common
 
     attribute user_id : String
     attribute user_email : PlaceOS::Model::Email, format: "email", converter: PlaceOS::Model::EmailConverter
-    attribute user_name : String
+    attribute user_name : String, sanitize: :text
 
     attribute redirect_count : Int64 = 0
     attribute enabled : Bool = true

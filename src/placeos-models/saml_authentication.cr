@@ -9,7 +9,7 @@ module PlaceOS::Model
 
     table :adfs_strat
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
 
     # The name of your application
     attribute issuer : String = "place.technology"
@@ -37,7 +37,7 @@ module PlaceOS::Model
     attribute idp_cert_fingerprint : String?
 
     # Name for the attribute service (Defaults to Required attributes)
-    attribute attribute_service_name : String?
+    attribute attribute_service_name : String?, sanitize: :text
 
     # Used to map Attribute Names in a SAMLResponse to entries in the OmniAuth info hash
     attribute attribute_statements : Hash(String, Array(String)) = {

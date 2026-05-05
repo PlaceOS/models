@@ -10,8 +10,8 @@ module PlaceOS::Model
 
     table :trigger
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
 
     # Full path allows resolution in macros
     attribute actions : PlaceOS::Model::Trigger::Actions = -> { Actions.new }, es_ignore: true

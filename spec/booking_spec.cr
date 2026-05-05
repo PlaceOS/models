@@ -742,4 +742,28 @@ module PlaceOS::Model
     deleted_booking.should_not be_nil
     deleted_booking.not_nil!.deleted.should be_true
   end
+
+  it "sanitizes extension_data string values before saving", tags: "extension_data_sanitization" do
+    tenant_id = Generator.tenant.id
+    user_email = "test@place.tech"
+
+    booking = Booking.new(
+      booking_type: "desk",
+      asset_ids: ["desk-1"],
+      booking_start: 1.hour.from_now.to_unix,
+      booking_end: 2.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "Test User",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "Test User",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1234",
+      history: [] of Booking::History
+    )
+    booking.change_extension_data(JSON::Any.new({"note" => JSON::Any.new("<script>alert('xss')</script>hello")}))
+    booking.save!
+
+    saved = Booking.find!(booking.id.not_nil!)
+    saved.extension_data["note"].as_s.should eq "hello"
+  end
 end

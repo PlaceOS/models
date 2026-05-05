@@ -10,8 +10,8 @@ module PlaceOS::Model
 
     table :api_key
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
 
     attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope::PUBLIC], converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::UserJWT::Scope), es_type: "keyword"
 
@@ -78,7 +78,7 @@ module PlaceOS::Model
 
     @[JSON::Field(ignore: true)]
     getter x_api_key : String? do
-      return nil if self.persisted?
+      return if self.persisted?
       "#{self.safe_id}.#{self.secret}"
     end
 

@@ -23,8 +23,8 @@ module PlaceOS::Model
       VISITOR_CHECKEDOUT
     end
 
-    attribute title : String
-    attribute description : String = ""
+    attribute title : String, sanitize: :text
+    attribute description : String = "", sanitize: :common
     attribute trigger : TriggerType = TriggerType::NONE, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Survey::TriggerType),
       description: "Triggers on booking states: RESERVED, CHECKEDIN, CHECKEDOUT, REJECTED, CANCELLED, VISITOR_CHECKEDIN, VISITOR_CHECKEDOUT"
     attribute zone_id : String = ""

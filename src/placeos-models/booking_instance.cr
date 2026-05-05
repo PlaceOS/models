@@ -1,6 +1,7 @@
 require "json"
 require "./base/model"
 require "./booking"
+require "./utilities/sanitization"
 
 module PlaceOS::Model
   class BookingInstance < ModelWithAutoKey
@@ -27,6 +28,12 @@ module PlaceOS::Model
 
     # property so we can set this if we've already fetched the parent
     property parent_booking : Booking { Booking.find(self.id) }
+
+    before_save do
+      if (ext = @extension_data) && @extension_data_changed
+        @extension_data = Sanitization.sanitize_strings(ext)
+      end
+    end
 
     scope :by_tenant do |tenant_id|
       where(tenant_id: tenant_id)

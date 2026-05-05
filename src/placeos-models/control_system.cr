@@ -5,6 +5,7 @@ require "future"
 require "./converter/time_location"
 
 require "./base/model"
+require "./utilities/sanitization"
 require "./settings"
 require "./email"
 require "./utilities/settings_helper"
@@ -20,8 +21,8 @@ module PlaceOS::Model
 
     table :sys
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
 
     # Room search meta-data
     # Building + Level are both filtered using zones
@@ -29,9 +30,9 @@ module PlaceOS::Model
     attribute email : Email?, converter: PlaceOS::Model::EmailConverter
     attribute bookable : Bool = false
     attribute public : Bool = false
-    attribute display_name : String?
-    attribute code : String?
-    attribute type : String?
+    attribute display_name : String?, sanitize: :text
+    attribute code : String?, sanitize: :text
+    attribute type : String?, sanitize: :text
     attribute capacity : Int32 = 0
     attribute map_id : String?
     attribute approval : Bool = false
@@ -138,6 +139,12 @@ module PlaceOS::Model
       return if this.support_url.blank?
       this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
     }
+
+    before_save do
+      if (feat = @features) && @features_changed
+        @features = Sanitization.sanitize_strings(feat)
+      end
+    end
 
     before_save :clean_urls
 
