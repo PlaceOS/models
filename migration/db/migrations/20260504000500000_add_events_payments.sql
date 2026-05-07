@@ -368,6 +368,7 @@ CREATE TABLE IF NOT EXISTS "booking_quote_line_items"(
   id UUID PRIMARY KEY DEFAULT uuidv7(),
 
   quote_id UUID NOT NULL REFERENCES "booking_quotes"(id) ON DELETE CASCADE,
+  booking_id BIGINT REFERENCES "bookings"(id) ON DELETE SET NULL,
 
   pricing_rule_id UUID REFERENCES "pricing_rules"(id) ON DELETE SET NULL,
   rate_card_assignment_id UUID REFERENCES "rate_card_assignments"(id) ON DELETE SET NULL,
@@ -383,6 +384,7 @@ CREATE TABLE IF NOT EXISTS "booking_quote_line_items"(
   total_amount_cents INTEGER NOT NULL,
 
   approved BOOLEAN NOT NULL DEFAULT FALSE,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
 
   metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
 
@@ -393,10 +395,62 @@ CREATE TABLE IF NOT EXISTS "booking_quote_line_items"(
 );
 
 CREATE INDEX IF NOT EXISTS booking_quote_line_items_quote_id_idx ON "booking_quote_line_items" USING BTREE (quote_id);
+CREATE INDEX IF NOT EXISTS booking_quote_line_items_booking_id_idx ON "booking_quote_line_items" USING BTREE (booking_id);
 CREATE INDEX IF NOT EXISTS booking_quote_line_items_pricing_rule_id_idx ON "booking_quote_line_items" USING BTREE (pricing_rule_id);
 CREATE INDEX IF NOT EXISTS booking_quote_line_items_rate_card_assignment_id_idx ON "booking_quote_line_items" USING BTREE (rate_card_assignment_id);
 CREATE INDEX IF NOT EXISTS booking_quote_line_items_charge_category_idx ON "booking_quote_line_items" USING BTREE (charge_category);
 CREATE INDEX IF NOT EXISTS booking_quote_line_items_approved_idx ON "booking_quote_line_items" USING BTREE (approved);
+CREATE INDEX IF NOT EXISTS booking_quote_line_items_deleted_idx ON "booking_quote_line_items" USING BTREE (deleted);
+
+-- +micrate StatementBegin
+CREATE OR REPLACE FUNCTION booking_quote_line_items_handle_booking_delete()
+  RETURNS trigger
+AS
+$$
+BEGIN
+  UPDATE booking_quote_line_items
+  SET booking_id = NULL,
+      approved = FALSE,
+      deleted = TRUE,
+      updated_at = now()
+  WHERE booking_id = OLD.id;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+-- +micrate StatementEnd
+
+DROP TRIGGER IF EXISTS trg_booking_quote_line_items_booking_delete ON bookings;
+CREATE TRIGGER trg_booking_quote_line_items_booking_delete
+  BEFORE DELETE
+  ON bookings
+  FOR EACH ROW
+EXECUTE FUNCTION booking_quote_line_items_handle_booking_delete();
+
+-- +micrate StatementBegin
+CREATE OR REPLACE FUNCTION booking_quote_line_items_handle_booking_soft_delete()
+  RETURNS trigger
+AS
+$$
+BEGIN
+  IF NEW.deleted = TRUE AND COALESCE(OLD.deleted, FALSE) = FALSE THEN
+    UPDATE booking_quote_line_items
+    SET approved = FALSE,
+        deleted = TRUE,
+        updated_at = now()
+    WHERE booking_id = NEW.id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+-- +micrate StatementEnd
+
+DROP TRIGGER IF EXISTS trg_booking_quote_line_items_booking_soft_delete ON bookings;
+CREATE TRIGGER trg_booking_quote_line_items_booking_soft_delete
+  AFTER UPDATE OF deleted
+  ON bookings
+  FOR EACH ROW
+EXECUTE FUNCTION booking_quote_line_items_handle_booking_soft_delete();
 
 CREATE TABLE IF NOT EXISTS "booking_payments"(
   id UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -441,6 +495,11 @@ DROP TABLE IF EXISTS "pricing_rules";
 DROP TABLE IF EXISTS "duration_bands";
 DROP TABLE IF EXISTS "rate_card_assignments";
 DROP TABLE IF EXISTS "rate_cards";
+
+DROP TRIGGER IF EXISTS trg_booking_quote_line_items_booking_delete ON bookings;
+DROP TRIGGER IF EXISTS trg_booking_quote_line_items_booking_soft_delete ON bookings;
+DROP FUNCTION IF EXISTS booking_quote_line_items_handle_booking_delete();
+DROP FUNCTION IF EXISTS booking_quote_line_items_handle_booking_soft_delete();
 
 DROP TYPE IF EXISTS public.payment_method;
 DROP TYPE IF EXISTS public.payment_status;

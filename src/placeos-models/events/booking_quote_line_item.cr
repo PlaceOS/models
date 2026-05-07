@@ -2,6 +2,7 @@ require "uuid"
 require "uuid/json"
 
 require "../base/model"
+require "../booking"
 require "./booking_quote"
 require "./booking_quote_history"
 require "./pricing_rule"
@@ -38,6 +39,9 @@ module PlaceOS::Model
     attribute quote_id : UUID
     belongs_to :quote, class_name: BookingQuote, foreign_key: quote_id
 
+    attribute booking_id : Int64?
+    belongs_to :booking, class_name: Booking, foreign_key: booking_id
+
     attribute pricing_rule_id : UUID?
     belongs_to :pricing_rule, class_name: PricingRule, foreign_key: pricing_rule_id
 
@@ -55,6 +59,7 @@ module PlaceOS::Model
     attribute total_amount_cents : Int32
 
     attribute approved : Bool = false
+    attribute deleted : Bool = false
     attribute metadata : JSON::Any = JSON::Any.new({} of String => JSON::Any)
 
     validates :quote_id, presence: true

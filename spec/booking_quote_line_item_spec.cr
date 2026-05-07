@@ -36,6 +36,7 @@ module PlaceOS::Model
 
       found = BookingQuoteLineItem.find!(item.id.not_nil!)
       found.quote_id.should eq quote.id
+      found.booking_id.should eq quote.booking_id
       found.pricing_rule_id.should eq rule.id
       found.rate_card_assignment_id.should eq assignment.id
       found.charge_category.should eq PricingRule::ChargeCategory::ASSET_HIRE
@@ -45,6 +46,49 @@ module PlaceOS::Model
     it "defaults approved to false" do
       item = Generator.booking_quote_line_item
       item.approved.should be_false
+      item.deleted.should be_false
+    end
+
+    it "marks a line item deleted and unapproved when its linked booking is deleted" do
+      tenant = Generator.tenant.save!
+      parent_booking = Generator.booking(tenant.id, "asset-parent", 1.hour.from_now, 2.hours.from_now).save!
+      sub_booking = Generator.booking(tenant.id, "asset-sub", 1.hour.from_now, 2.hours.from_now).save!
+      quote = Generator.booking_quote(booking: parent_booking).save!
+
+      item = Generator.booking_quote_line_item(
+        quote: quote,
+        booking: sub_booking,
+        approved: true,
+      ).save!
+
+      sub_booking.destroy
+      item.reload!
+
+      item.booking_id.should be_nil
+      item.approved.should be_false
+      item.deleted.should be_true
+    end
+
+    it "marks a line item deleted and unapproved when its linked booking is soft deleted" do
+      tenant = Generator.tenant.save!
+      parent_booking = Generator.booking(tenant.id, "asset-parent", 1.hour.from_now, 2.hours.from_now).save!
+      sub_booking = Generator.booking(tenant.id, "asset-sub", 1.hour.from_now, 2.hours.from_now).save!
+      quote = Generator.booking_quote(booking: parent_booking).save!
+
+      item = Generator.booking_quote_line_item(
+        quote: quote,
+        booking: sub_booking,
+        approved: true,
+      ).save!
+
+      sub_booking.deleted = true
+      sub_booking.deleted_at = Time.utc.to_unix
+      sub_booking.save!
+      item.reload!
+
+      item.booking_id.should eq sub_booking.id
+      item.approved.should be_false
+      item.deleted.should be_true
     end
 
     it "validates required fields" do

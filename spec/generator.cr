@@ -929,6 +929,7 @@ module PlaceOS::Model
 
     def self.booking_quote_line_item(
       quote : BookingQuote? = nil,
+      booking : Booking? = nil,
       pricing_rule : PricingRule? = nil,
       rate_card_assignment : RateCardAssignment? = nil,
       description : String = "line-item-#{RANDOM.hex(3)}",
@@ -940,8 +941,10 @@ module PlaceOS::Model
       approved : Bool = false,
     )
       target_quote = quote || self.booking_quote.save!
+      target_booking = booking || target_quote.booking
       BookingQuoteLineItem.new(
         quote_id: target_quote.id.not_nil!,
+        booking_id: target_booking.try(&.id),
         pricing_rule_id: pricing_rule.try(&.id),
         rate_card_assignment_id: rate_card_assignment.try(&.id),
         description: description,
