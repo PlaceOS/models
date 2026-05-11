@@ -27,8 +27,8 @@ module PlaceOS::Model
 
     table :playlists
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
 
     belongs_to Authority, foreign_key: "authority_id"
 

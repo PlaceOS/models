@@ -19,7 +19,7 @@ module PlaceOS::Model
       end
     end
 
-    attribute name : String?
+    attribute name : String?, sanitize: :text
     attribute domain : String
     attribute email_domain : String? = nil
     attribute platform : String

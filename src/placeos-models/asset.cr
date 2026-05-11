@@ -1,6 +1,7 @@
 require "./base/model"
 require "./asset_type"
 require "./asset_purchase_order"
+require "./utilities/sanitization"
 
 module PlaceOS::Model
   class Asset < ModelBase
@@ -13,19 +14,19 @@ module PlaceOS::Model
     attribute other_data : JSON::Any?
     attribute barcode : String?
 
-    attribute name : String?
+    attribute name : String?, sanitize: :text
     attribute client_ids : JSON::Any? # {floorsense_id: "", other_id: ""} etc
     attribute map_id : String?
     attribute bookable : Bool = true
     attribute accessible : Bool = false
     attribute zones : Array(String) = [] of String, es_type: "keyword"
     attribute place_groups : Array(String) = [] of String, es_type: "keyword"
-    attribute assigned_to : String?   # email
-    attribute assigned_name : String? # name of user
+    attribute assigned_to : String?                    # email
+    attribute assigned_name : String?, sanitize: :text # name of user
     # queryable with AND and OR operators
     attribute features : Array(String) = [] of String, es_type: "keyword"
     attribute images : Array(String) = [] of String, es_type: "keyword"
-    attribute notes : String? # email
+    attribute notes : String?, sanitize: :common # email
     attribute security_system_groups : Array(String) = [] of String, es_type: "keyword"
 
     # attribute parent_id : String? # nested resource like lockers and locker banks
@@ -40,6 +41,15 @@ module PlaceOS::Model
 
     validates :asset_type_id, presence: true
     validates :zone_id, presence: true
+
+    before_save do
+      if (data = @other_data) && @other_data_changed
+        @other_data = Sanitization.sanitize_strings(data)
+      end
+      if (feat = @features) && @features_changed
+        @features = Sanitization.sanitize_strings(feat)
+      end
+    end
 
     before_destroy :cleanup_bookings
 

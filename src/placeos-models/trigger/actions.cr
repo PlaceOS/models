@@ -6,7 +6,7 @@ module PlaceOS::Model
   class Trigger::Actions < SubModel
     class Email < SubModel
       attribute emails : Array(String) = [] of String
-      attribute content : String = ""
+      attribute content : String = "", sanitize: :common
 
       # Validation
       #############################################################################################

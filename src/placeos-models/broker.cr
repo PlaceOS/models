@@ -17,8 +17,8 @@ module PlaceOS::Model
 
     attribute auth_type : AuthType = AuthType::UserPassword, converter: Enum::ValueConverter(PlaceOS::Model::Broker::AuthType)
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
 
     attribute host : String
     attribute port : Int32 = 1883 # Default MQTT port for non-tls connections

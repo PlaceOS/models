@@ -8,7 +8,7 @@ module PlaceOS::Model
     table :asset_category
 
     # i.e. a tablet
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String?
     attribute hidden : Bool = false, es_subfield: "keyword"
 

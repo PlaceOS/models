@@ -20,8 +20,8 @@ module PlaceOS::Model
 
     table :metadata
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
     attribute details : JSON::Any
     attribute editors : Set(String) = -> { Set(String).new }
 

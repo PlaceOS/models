@@ -13,8 +13,8 @@ module PlaceOS::Model
       PLAYSTHROUGH
     end
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
     attribute uri : String
     attribute playback_type : PlaybackType = PlaybackType::STATIC, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::SignagePlugin::PlaybackType)
 

@@ -6,3 +6,6 @@ dependencies:
     github: Sija/retriable.cr
   pg-orm:
     github: spider-gazelle/pg-orm
+  sanitize:
+    github: straight-shoota/sanitize
+    branch: master
