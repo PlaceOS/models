@@ -1,3 +1,9 @@
+## v9.90.1 (2026-05-11)
+
+### Fix
+
+- **booking**: recurring bookings clash checks
+
 ## v9.90.0 (2026-04-29)
 
 ### Feat
