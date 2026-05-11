@@ -539,7 +539,7 @@ module PlaceOS::Model
       end
 
       asset_check_sql = ignore_assets ? "" : "AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}"
-      overrides = Booking.find_all_by_sql(<<-SQL, tenant_id, rec_ending, starting, end_time, start_time, booking_type)
+      overrides = Booking.find_all_by_sql(<<-SQL, tenant_id, rec_ending, starting, end_time, start_time, booking_type, self.id)
         SELECT b.* FROM "bookings" b
         JOIN booking_instances i ON b.id = i.id
         WHERE b.tenant_id = $1
@@ -549,6 +549,7 @@ module PlaceOS::Model
           AND i.ending_time > $5
           AND i.checked_out_at IS NULL
           AND b.booking_type = $6
+          AND ($7::bigint IS NULL OR b.id != $7::bigint)
           #{asset_check_sql}
           AND b.rejected <> TRUE
           AND i.deleted <> TRUE
@@ -580,7 +581,7 @@ module PlaceOS::Model
       ending = self.booking_end
 
       asset_check_sql = ignore_assets ? "" : "AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}"
-      clashing = BookingInstance.find_one_by_sql?(<<-SQL, tenant_id, ending, starting, booking_type)
+      clashing = BookingInstance.find_one_by_sql?(<<-SQL, tenant_id, ending, starting, booking_type, self.id)
         SELECT i.* FROM "booking_instances" i
         JOIN bookings b ON i.id = b.id
         WHERE i.tenant_id = $1
@@ -588,6 +589,7 @@ module PlaceOS::Model
           AND i.booking_end > $3
           AND i.checked_out_at IS NULL
           AND b.booking_type = $4
+          AND ($5::bigint IS NULL OR b.id != $5::bigint)
           #{asset_check_sql}
           AND b.rejected <> TRUE
           AND i.deleted <> TRUE

@@ -52,5 +52,7 @@ module PlaceOS::Model
       instance.updated_at = self.updated_at
       instance
     end
+
+    validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.hydrate_booking.clashing? }
   end
 end
