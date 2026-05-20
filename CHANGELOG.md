@@ -1,3 +1,9 @@
+## v9.91.0 (2026-05-20)
+
+### Feat
+
+- **oauth_token**: add OAuthToken model + migration ([#315](https://github.com/PlaceOS/models/pull/315))
+
 ## v9.90.1 (2026-05-11)
 
 ### Fix
