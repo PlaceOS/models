@@ -10,7 +10,7 @@ module PlaceOS::Model
 
     attribute identifier : String?, es_type: "keyword"
     attribute serial_number : String?
-    attribute other_data : JSON::Any?, sanitize: :text
+    attribute other_data : JSON::Any?, sanitize: :common
     attribute barcode : String?
 
     attribute name : String?, sanitize: :text

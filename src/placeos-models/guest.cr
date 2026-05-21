@@ -18,7 +18,7 @@ module PlaceOS::Model
     attribute banned : Bool = false
     attribute dangerous : Bool = false
     attribute searchable : String?
-    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new), sanitize: :text
+    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new), sanitize: :common
 
     attribute checked_in : Bool?, persistence: false, show: true, ignore_deserialize: true
     attribute visit_expected : Bool?, persistence: false, show: true, ignore_deserialize: true

@@ -76,7 +76,7 @@ module PlaceOS::Model
     # if we want to record the system that performed the bookings
     # (kiosk, mobile, swipe etc)
     attribute booked_from : String?, sanitize: :text
-    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new), sanitize: :text
+    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new), sanitize: :common
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
     attribute email_digest : String?, ignore_deserialize: true
