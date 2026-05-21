@@ -4,7 +4,6 @@ require "./base/model"
 require "./attendee"
 require "./tenant"
 require "./utilities/jsonb_query_helper"
-require "./utilities/sanitization"
 require "./email"
 
 module PlaceOS::Model
@@ -77,7 +76,7 @@ module PlaceOS::Model
     # if we want to record the system that performed the bookings
     # (kiosk, mobile, swipe etc)
     attribute booked_from : String?, sanitize: :text
-    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new)
+    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new), sanitize: :text
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
     attribute email_digest : String?, ignore_deserialize: true
@@ -220,10 +219,6 @@ module PlaceOS::Model
       } } if history.size > 3
       update_assets
       survey_trigger
-      # Sanitize extension_data string values to prevent HTML injection in emails
-      if (ext = @extension_data) && @extension_data_changed
-        @extension_data = Sanitization.sanitize_strings(ext)
-      end
     end
 
     before_update :cleanup_recurring_instances

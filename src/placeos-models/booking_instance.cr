@@ -1,7 +1,6 @@
 require "json"
 require "./base/model"
 require "./booking"
-require "./utilities/sanitization"
 
 module PlaceOS::Model
   class BookingInstance < ModelWithAutoKey
@@ -23,17 +22,11 @@ module PlaceOS::Model
     attribute deleted : Bool = false
     attribute deleted_at : Int64?
 
-    attribute extension_data : JSON::Any? = nil
+    attribute extension_data : JSON::Any? = nil, sanitize: :text
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
     # property so we can set this if we've already fetched the parent
     property parent_booking : Booking { Booking.find(self.id) }
-
-    before_save do
-      if (ext = @extension_data) && @extension_data_changed
-        @extension_data = Sanitization.sanitize_strings(ext)
-      end
-    end
 
     scope :by_tenant do |tenant_id|
       where(tenant_id: tenant_id)

@@ -1,7 +1,6 @@
 require "time"
 
 require "./base/model"
-require "./utilities/sanitization"
 require "./settings"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
@@ -19,7 +18,7 @@ module PlaceOS::Model
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common
-    attribute tags : Set(String) = -> { Set(String).new }
+    attribute tags : Set(String) = -> { Set(String).new }, sanitize: :text
 
     # =============================
     # Additional top level metadata that is fairly common
@@ -122,12 +121,6 @@ module PlaceOS::Model
     ###############################################################################################
 
     before_destroy :remove_zone
-
-    before_save do
-      if (tag_values = @tags) && @tags_changed
-        @tags = Sanitization.sanitize_strings(tag_values)
-      end
-    end
 
     before_save :check_triggers
 

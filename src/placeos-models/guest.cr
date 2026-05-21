@@ -4,7 +4,6 @@ require "./tenant"
 require "./attendee"
 require "./booking"
 require "./event_metadata"
-require "./utilities/sanitization"
 
 module PlaceOS::Model
   class Guest < ModelWithAutoKey
@@ -19,7 +18,7 @@ module PlaceOS::Model
     attribute banned : Bool = false
     attribute dangerous : Bool = false
     attribute searchable : String?
-    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new)
+    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new), sanitize: :text
 
     attribute checked_in : Bool?, persistence: false, show: true, ignore_deserialize: true
     attribute visit_expected : Bool?, persistence: false, show: true, ignore_deserialize: true
@@ -37,12 +36,6 @@ module PlaceOS::Model
       foreign_key: "guest_id",
       dependent: :destroy
     )
-
-    before_save do
-      if (ext = @extension_data) && @extension_data_changed
-        @extension_data = Sanitization.sanitize_strings(ext)
-      end
-    end
 
     def change_extension_data(data : JSON::Any)
       @extension_data = data

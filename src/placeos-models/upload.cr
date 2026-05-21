@@ -4,7 +4,6 @@ require "upload-signer"
 require "./base/model"
 require "./storage"
 require "./email"
-require "./utilities/sanitization"
 
 module PlaceOS::Model
   class Upload < ModelBase
@@ -41,7 +40,7 @@ module PlaceOS::Model
 
     # so we can tag which system the upload belongs to
     # allowing us to filter for relevancy
-    attribute tags : Array(String) = -> { [] of String }
+    attribute tags : Array(String) = -> { [] of String }, sanitize: :text
 
     belongs_to Storage
     belongs_to User, foreign_key: "uploaded_by", association_name: "user"
@@ -66,12 +65,6 @@ module PlaceOS::Model
 
     def part_data_changed(flag = true)
       @part_data_changed = flag
-    end
-
-    before_save do
-      if (tag_values = @tags) && @tags_changed
-        @tags = Sanitization.sanitize_strings(tag_values)
-      end
     end
 
     before_destroy :delete_data

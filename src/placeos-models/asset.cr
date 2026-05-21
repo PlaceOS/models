@@ -1,7 +1,6 @@
 require "./base/model"
 require "./asset_type"
 require "./asset_purchase_order"
-require "./utilities/sanitization"
 
 module PlaceOS::Model
   class Asset < ModelBase
@@ -11,7 +10,7 @@ module PlaceOS::Model
 
     attribute identifier : String?, es_type: "keyword"
     attribute serial_number : String?
-    attribute other_data : JSON::Any?
+    attribute other_data : JSON::Any?, sanitize: :text
     attribute barcode : String?
 
     attribute name : String?, sanitize: :text
@@ -24,7 +23,7 @@ module PlaceOS::Model
     attribute assigned_to : String?                    # email
     attribute assigned_name : String?, sanitize: :text # name of user
     # queryable with AND and OR operators
-    attribute features : Array(String) = [] of String, es_type: "keyword"
+    attribute features : Array(String) = [] of String, sanitize: :text, es_type: "keyword"
     attribute images : Array(String) = [] of String, es_type: "keyword"
     attribute notes : String?, sanitize: :common # email
     attribute security_system_groups : Array(String) = [] of String, es_type: "keyword"
@@ -41,15 +40,6 @@ module PlaceOS::Model
 
     validates :asset_type_id, presence: true
     validates :zone_id, presence: true
-
-    before_save do
-      if (data = @other_data) && @other_data_changed
-        @other_data = Sanitization.sanitize_strings(data)
-      end
-      if (feat = @features) && @features_changed
-        @features = Sanitization.sanitize_strings(feat)
-      end
-    end
 
     before_destroy :cleanup_bookings
 

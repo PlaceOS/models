@@ -1,5 +1,3 @@
-require "../utilities/sanitization"
-
 module PlaceOS::Model
   class Survey < ModelWithAutoKey
     class Question < ModelWithAutoKey
@@ -7,11 +5,11 @@ module PlaceOS::Model
       attribute title : String, sanitize: :text
       attribute description : String?, sanitize: :common
       attribute type : String
-      attribute options : JSON::Any = JSON::Any.new({} of String => JSON::Any)
+      attribute options : JSON::Any = JSON::Any.new({} of String => JSON::Any), sanitize: :common
       attribute required : Bool = false
-      attribute choices : JSON::Any = JSON::Any.new({} of String => JSON::Any)
+      attribute choices : JSON::Any = JSON::Any.new({} of String => JSON::Any), sanitize: :common
       attribute max_rating : Int32?
-      attribute tags : Array(String) = [] of String
+      attribute tags : Array(String) = [] of String, sanitize: :text
       attribute deleted_at : Int64?
 
       attribute deleted : Bool, persistence: false, show: true, ignore_deserialize: true
@@ -49,18 +47,6 @@ module PlaceOS::Model
         self.new_record = true
         @id = nil
         @deleted_at = nil
-      end
-
-      before_save do
-        if (opts = @options) && @options_changed
-          @options = Sanitization.sanitize_strings(opts, policy: :common)
-        end
-        if (ch = @choices) && @choices_changed
-          @choices = Sanitization.sanitize_strings(ch, policy: :common)
-        end
-        if (tag_values = @tags) && @tags_changed
-          @tags = Sanitization.sanitize_strings(tag_values)
-        end
       end
 
       validates :title, :type, presence: true
