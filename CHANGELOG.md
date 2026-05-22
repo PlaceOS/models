@@ -1,3 +1,9 @@
+## v9.92.0 (2026-05-22)
+
+### Feat
+
+- [PPT-2454] sanitize attributes ([#313](https://github.com/PlaceOS/models/pull/313))
+
 ## v9.91.0 (2026-05-20)
 
 ### Feat
