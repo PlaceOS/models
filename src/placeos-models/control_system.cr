@@ -20,18 +20,18 @@ module PlaceOS::Model
 
     table :sys
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
 
     # Room search meta-data
     # Building + Level are both filtered using zones
-    attribute features : Set(String) = -> { Set(String).new }
+    attribute features : Set(String) = -> { Set(String).new }, sanitize: :text
     attribute email : Email?, converter: PlaceOS::Model::EmailConverter
     attribute bookable : Bool = false
     attribute public : Bool = false
-    attribute display_name : String?
-    attribute code : String?
-    attribute type : String?
+    attribute display_name : String?, sanitize: :text
+    attribute code : String?, sanitize: :text
+    attribute type : String?, sanitize: :text
     attribute capacity : Int32 = 0
     attribute map_id : String?
     attribute approval : Bool = false

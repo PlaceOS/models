@@ -85,7 +85,7 @@ module PlaceOS::Model
     # Retrieve the parent relation
     #
     def parent
-      return nil unless p_id = parent_id
+      return unless p_id = parent_id
 
       case ParentType.from_id?(p_id)
       in Zone          then Zone.find(p_id)

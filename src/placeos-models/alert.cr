@@ -21,8 +21,8 @@ module PlaceOS::Model
       CUSTOM
     end
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute description : String = "", sanitize: :common
     attribute enabled : Bool = true, es_subfield: "keyword"
     attribute any_match : Bool = false, es_subfield: "keyword"
 

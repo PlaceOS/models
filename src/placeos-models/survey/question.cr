@@ -2,14 +2,14 @@ module PlaceOS::Model
   class Survey < ModelWithAutoKey
     class Question < ModelWithAutoKey
       table :questions
-      attribute title : String
-      attribute description : String?
+      attribute title : String, sanitize: :text
+      attribute description : String?, sanitize: :common
       attribute type : String
-      attribute options : JSON::Any = JSON::Any.new({} of String => JSON::Any)
+      attribute options : JSON::Any = JSON::Any.new({} of String => JSON::Any), sanitize: :common
       attribute required : Bool = false
-      attribute choices : JSON::Any = JSON::Any.new({} of String => JSON::Any)
+      attribute choices : JSON::Any = JSON::Any.new({} of String => JSON::Any), sanitize: :common
       attribute max_rating : Int32?
-      attribute tags : Array(String) = [] of String
+      attribute tags : Array(String) = [] of String, sanitize: :text
       attribute deleted_at : Int64?
 
       attribute deleted : Bool, persistence: false, show: true, ignore_deserialize: true

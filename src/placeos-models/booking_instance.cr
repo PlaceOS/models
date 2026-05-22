@@ -22,7 +22,7 @@ module PlaceOS::Model
     attribute deleted : Bool = false
     attribute deleted_at : Int64?
 
-    attribute extension_data : JSON::Any? = nil
+    attribute extension_data : JSON::Any? = nil, sanitize: :common
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
     # property so we can set this if we've already fetched the parent

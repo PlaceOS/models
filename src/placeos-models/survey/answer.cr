@@ -3,7 +3,7 @@ module PlaceOS::Model
     class Answer < ModelWithAutoKey
       table :answers
       attribute type : String
-      attribute answer_json : JSON::Any = JSON::Any.new({} of String => JSON::Any)
+      attribute answer_json : JSON::Any = JSON::Any.new({} of String => JSON::Any), sanitize: :common
 
       belongs_to Survey::Question, foreign_key: "question_id", pk_type: Int64, serialize: true
       belongs_to Survey, pk_type: Int64, serialize: true

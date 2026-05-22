@@ -27,7 +27,7 @@ module PlaceOS::Model
     attribute event_end : Int64
     attribute cancelled : Bool = false
 
-    attribute ext_data : JSON::Any?
+    attribute ext_data : JSON::Any?, sanitize: :common
 
     attribute setup_time : Int64 = 0
     attribute breakdown_time : Int64 = 0

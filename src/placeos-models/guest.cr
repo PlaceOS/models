@@ -9,16 +9,16 @@ module PlaceOS::Model
   class Guest < ModelWithAutoKey
     table :guests
     attribute email : String, format: "email"
-    attribute name : String?
-    attribute preferred_name : String?
-    attribute phone : String?
-    attribute organisation : String?
-    attribute notes : String?
+    attribute name : String?, sanitize: :text
+    attribute preferred_name : String?, sanitize: :text
+    attribute phone : String?, sanitize: :text
+    attribute organisation : String?, sanitize: :text
+    attribute notes : String?, sanitize: :common
     attribute photo : String?
     attribute banned : Bool = false
     attribute dangerous : Bool = false
     attribute searchable : String?
-    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new)
+    attribute extension_data : JSON::Any = JSON::Any.new(Hash(String, JSON::Any).new), sanitize: :common
 
     attribute checked_in : Bool?, persistence: false, show: true, ignore_deserialize: true
     attribute visit_expected : Bool?, persistence: false, show: true, ignore_deserialize: true

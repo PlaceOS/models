@@ -9,7 +9,7 @@ module PlaceOS::Model
   class DoorkeeperApplication < ModelWithAutoKey
     table :oauth_applications
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute secret : String
     attribute scopes : String = "public"
     attribute owner_id : String, es_type: "keyword"
