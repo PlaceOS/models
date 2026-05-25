@@ -1,3 +1,9 @@
+## v9.92.1 (2026-05-25)
+
+### Fix
+
+- **driver**: apply update_available flag without modifying timestamps
+
 ## v9.92.0 (2026-05-22)
 
 ### Feat
