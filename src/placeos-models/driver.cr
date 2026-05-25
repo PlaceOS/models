@@ -167,7 +167,13 @@ module PlaceOS::Model
       return if info.commit[0...self.commit.size] == self.commit
       self.update_available = true
       self.update_info = info
-      self.save!
+      # Persist the flag directly rather than via `save!` so the periodic update
+      # check doesn't bump `updated_at` (it's not a user-driven change to the
+      # driver). The direct update path skips converters, so serialise the
+      # `update_info` JSONB value ourselves.
+      self.class.update(self.id, {update_available: true, update_info: info.to_json})
+      clear_changes_information
+      self
     end
 
     # Returns the list of Drivers which has update available

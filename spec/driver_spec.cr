@@ -54,6 +54,25 @@ module PlaceOS::Model
       list.size.should eq(1)
     end
 
+    it "marking an available update does not bump updated_at" do
+      driver = Generator.driver(role: Driver::Role::Service)
+      driver.commit = "abcdefg"
+      driver.save!
+
+      # Force a known, older `updated_at` directly so a regression (a fresh
+      # `updated_at`) would be unmistakable.
+      past = 1.hour.ago
+      Driver.where(id: driver.id.as(String)).update_all({updated_at: past})
+
+      info = Driver::UpdateInfo.new("abcdefhijkl", "new fake version", "fake author")
+      driver.process_update_info(info)
+
+      reloaded = Driver.find!(driver.id.as(String))
+      reloaded.update_available.should be_true
+      reloaded.update_info.try(&.commit).should eq("abcdefhijkl")
+      reloaded.updated_at.to_unix.should eq(past.to_unix)
+    end
+
     describe "callbacks" do
       it "#cleanup_modules removes driver modules" do
         mod = Generator.module.save!
