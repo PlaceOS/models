@@ -37,6 +37,27 @@ module PlaceOS::Model
       item.save.should eq true
     end
 
+    it "has unique tags" do
+      item = Generator.item
+      item.tags << "hello"
+      item.tags << "hello"
+      item.tags << "bye"
+      item.save!
+
+      Playlist::Item.find!(item.id.as(String)).tags.should eq Set{"hello", "bye"}
+    end
+
+    it ".with_tag" do
+      items = (0..5).map do |n|
+        item = Generator.item
+        item.tags = (0..n).map(&.to_s).to_set
+        item.save!
+      end
+
+      Playlist::Item.with_tag("0").to_a.compact_map(&.id).sort!.should eq items.compact_map(&.id).sort!
+      Playlist::Item.with_tag("3").to_a.compact_map(&.id).sort!.should eq items[3..].compact_map(&.id).sort!
+    end
+
     it "cleans up playlists when an item is deleted" do
       revision = Generator.revision
 

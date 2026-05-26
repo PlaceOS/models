@@ -19,6 +19,7 @@ module PlaceOS::Model
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common
+    attribute tags : Set(String) = -> { Set(String).new }, sanitize: :text
 
     belongs_to Authority, foreign_key: "authority_id"
 
@@ -48,6 +49,10 @@ module PlaceOS::Model
 
     def self.items(item_ids : Array(String)) : Array(Playlist::Item)
       Playlist::Item.where(id: item_ids).to_a
+    end
+
+    def self.with_tag(tag : String)
+      Playlist::Item.where("$1 = Any(tags)", tag)
     end
 
     def self.update_counts(metrics : Hash(String, Int32)) : Int64
