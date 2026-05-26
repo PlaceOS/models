@@ -47,19 +47,16 @@ module PlaceOS::Model
     attribute valid_from : Int64? = nil
     attribute valid_until : Int64? = nil
 
-    # hours in the timezone that the playlist should play
-    attribute play_hours : String? = nil
-
     # start playing the playlist at exactly this time or on CRON schedule
     # play_at will ignore timezones
     attribute play_at : Int64? = nil
-    attribute play_cron : String? = nil
+    attribute play_cron : String = "0 0 * * *" # midnight every day
 
     # how many minutes should a scheduled playlist play for / should it takeover the displays
-    attribute play_at_period : Int32? = nil
-    attribute play_at_takeover : Bool = false
+    attribute play_period : Int32 = 1440 # 1 day in minutes
+    attribute play_takeover : Bool = false
 
-    def should_present?(now : Time = Time.utc, timezone : Bool = false) : Bool
+    def should_present?(now : Time = Time.utc) : Bool
       return false unless enabled
 
       now_unix = now.to_unix
@@ -68,38 +65,7 @@ module PlaceOS::Model
       return false if starting && starting > now_unix
       return false if ending && ending <= now_unix
 
-      if timezone && (hours = play_hours.presence)
-        return between?(hours, now)
-      end
-
       true
-    end
-
-    def between?(times : String, now : Time) : Bool
-      start_str, end_str = times.split('-', 2)
-
-      # Parse hours/minutes manually (faster + avoids timezone parsing issues)
-      start_hour = start_str[0, 2].to_i
-      start_min = start_str[3, 2].to_i
-      end_hour = end_str[0, 2].to_i
-      end_min = end_str[3, 2].to_i
-
-      now_minutes =
-        now.hour * 60 + now.minute
-
-      start_minutes =
-        start_hour * 60 + start_min
-
-      end_minutes =
-        end_hour * 60 + end_min
-
-      if start_minutes <= end_minutes
-        # Normal range (same day)
-        now_minutes >= start_minutes && now_minutes < end_minutes
-      else
-        # Overnight range (crosses midnight)
-        now_minutes >= start_minutes || now_minutes < end_minutes
-      end
     end
 
     def systems
@@ -164,19 +130,12 @@ module PlaceOS::Model
 
     validates :name, presence: true
     validates :default_duration, presence: true, numericality: {greater_than: 999}
-
-    # valid format:
-    validates :play_hours, format: {
-      :message => "must be in the form: 10:30-16:00",
-      :with    => /\A(?:[01]\d|2[0-3]):[0-5]\d-(?:[01]\d|2[0-3]):[0-5]\d\z/,
-    }
+    validates :play_cron, presence: true
 
     # ensure crons valid
     validate ->(this : Playlist) {
-      if (cron = this.play_cron.presence).nil?
-        this.play_cron = nil
-        return
-      end
+      cron = this.play_cron
+      return if cron.blank?
 
       begin
         CronParser.new(cron)
