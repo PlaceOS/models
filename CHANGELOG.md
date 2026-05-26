@@ -1,3 +1,9 @@
+## v9.93.0 (2026-05-26)
+
+### Feat
+
+- **playlist**: refactor schedules ([#316](https://github.com/PlaceOS/models/pull/316))
+
 ## v9.92.1 (2026-05-25)
 
 ### Fix
