@@ -1,3 +1,9 @@
+## v9.94.1 (2026-05-27)
+
+### Fix
+
+- **pending_mail**: add es support and sanitization
+
 ## v9.94.0 (2026-05-27)
 
 ### Feat
