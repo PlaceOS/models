@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS "pending_mail"(
     authority_id TEXT NOT NULL REFERENCES "authority"(id) ON DELETE CASCADE,
     user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
 
+    send_at TIMESTAMPTZ,
     expiry TIMESTAMPTZ,
 
     send_to TEXT[] NOT NULL DEFAULT '{}',

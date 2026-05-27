@@ -15,6 +15,7 @@ module PlaceOS::Model
       mail.cc = ["cc@place.technology"]
       mail.send_from = "Sender@Place.Technology"
       mail.reply_to = "reply@place.technology"
+      mail.send_at = Time.utc(2029, 6, 1)
       mail.expiry = Time.utc(2030, 1, 1)
       mail.sent_at = Time.utc(2026, 1, 2)
       mail.sent_by = "signage-worker-1"
@@ -31,6 +32,7 @@ module PlaceOS::Model
       found.send_from.should eq "Sender@Place.Technology"
       found.authority_id.should eq mail.authority_id
       found.user_id.should eq mail.user_id
+      found.send_at.should eq Time.utc(2029, 6, 1)
       found.expiry.should eq Time.utc(2030, 1, 1)
 
       # monitoring fields default empty, persist when set
