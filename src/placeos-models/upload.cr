@@ -76,5 +76,17 @@ module PlaceOS::Model
       signer = UploadSigner.signer(UploadSigner::StorageType.from_value(cloud_fs.storage_type.value), cloud_fs.access_key, cloud_fs.decrypt_secret, cloud_fs.region, endpoint: cloud_fs.endpoint)
       signer.delete_file(cloud_fs.bucket_name, self.object_key, self.resumable_id)
     end
+
+    before_destroy :remove_from_pending_mail
+
+    # Prune this upload's id from any pending_mail attachment arrays
+    protected def remove_from_pending_mail
+      ::PgORM::Database.exec_sql(<<-SQL, self.id)
+        UPDATE pending_mail
+        SET attachments = array_remove(attachments, $1),
+            resource_attachments = array_remove(resource_attachments, $1)
+        WHERE $1 = ANY(attachments) OR $1 = ANY(resource_attachments)
+      SQL
+    end
   end
 end
