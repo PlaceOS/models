@@ -1,3 +1,9 @@
+## v9.94.0 (2026-05-27)
+
+### Feat
+
+- add pending mail table ([#317](https://github.com/PlaceOS/models/pull/317))
+
 ## v9.93.0 (2026-05-26)
 
 ### Feat
