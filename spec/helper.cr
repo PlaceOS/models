@@ -26,6 +26,7 @@ Spec.after_suite do
   # Models that inherit directly from ::PgORM::Base (not ModelBase) —
   # cleared in dependency order (children first so FKs don't fire).
   [
+    PlaceOS::Model::PendingMail,
     PlaceOS::Model::GroupHistory,
     PlaceOS::Model::GroupInvitation,
     PlaceOS::Model::GroupZone,

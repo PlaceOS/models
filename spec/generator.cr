@@ -947,5 +947,22 @@ module PlaceOS::Model
         playlist_item_id: pi.id.not_nil!,
       )
     end
+
+    def self.pending_mail(
+      authority : Authority? = nil,
+      user : User? = nil,
+      send_to : Array(String) = ["recipient@place.technology"],
+    )
+      authority ||= Authority.find_by_domain("localhost") || self.authority.save!
+      user ||= self.user(authority: authority).save!
+
+      PendingMail.new(
+        authority_id: authority.id.not_nil!,
+        user_id: user.id.not_nil!,
+        send_to: send_to,
+        template: ["welcome", "email"],
+        args: {"name" => "Jen", "count" => 3_i64} of String => (String | Int64 | Float64 | Bool | Nil),
+      )
+    end
   end
 end

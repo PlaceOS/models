@@ -120,14 +120,20 @@ module PlaceOS::Model
     # Callbacks
     ###############################################################################################
 
-    before_destroy :remove_zone
+    before_destroy :remove_array_references
 
     before_save :check_triggers
 
     after_save :update_triggers
 
-    # Removes self from ControlSystems
-    protected def remove_zone
+    # Tables (other than `sys`) holding a `zones` text-array that references
+    # zone ids. Rows are pruned in-place when this zone is destroyed.
+    ZONE_ARRAY_REFERENCES = {"asset", "pending_mail"}
+
+    # Prune this zone's id from every array column that references zones.
+    # ControlSystems get special handling (a version bump so caches /
+    # change-feeds invalidate); the remaining tables are updated in-place.
+    protected def remove_array_references
       self.systems.try &.each do |cs|
         zones = cs.zones
         if zones
@@ -138,6 +144,15 @@ module PlaceOS::Model
 
           cs.save!
         end
+      end
+
+      zone_id = self.id
+      ZONE_ARRAY_REFERENCES.each do |table|
+        ::PgORM::Database.exec_sql(<<-SQL, zone_id)
+          UPDATE #{table}
+          SET zones = array_remove(zones, $1)
+          WHERE $1 = ANY(zones)
+        SQL
       end
     end
 
