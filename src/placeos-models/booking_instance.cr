@@ -22,6 +22,7 @@ module PlaceOS::Model
     attribute deleted : Bool = false
     attribute deleted_at : Int64?
 
+    attribute process_state : String?, sanitize: :text
     attribute extension_data : JSON::Any? = nil, sanitize: :common
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
@@ -43,6 +44,7 @@ module PlaceOS::Model
       instance.checked_out_at = self.checked_out_at
       instance.deleted = self.deleted
       instance.deleted_at = self.deleted_at
+      instance.process_state = self.process_state
       if ext_data = self.extension_data
         instance.extension_data = ext_data
       end

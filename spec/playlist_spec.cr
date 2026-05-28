@@ -117,24 +117,34 @@ module PlaceOS::Model
       })
     end
 
-    it "defaults play_cron and play_period" do
+    it "defaults to a single schedule" do
       playlist = Generator.playlist
       playlist.save.should eq true
 
       playlist = Playlist.find!(playlist.id.as(String))
-      playlist.play_cron.should eq "0 0 * * *"
-      playlist.play_period.should eq 1440
+      playlist.schedules.size.should eq 1
+      schedule = playlist.schedules.first
+      schedule.play_cron.should eq "0 0 * * *"
+      schedule.play_period.should eq 1440
+      schedule.play_takeover.should eq false
+      schedule.play_at.should be_nil
     end
 
-    it "validates CRONs are valid" do
+    it "validates each schedule's cron" do
       playlist = Generator.playlist
-      playlist.play_cron = "not valid"
+      playlist.schedules = [Playlist::Schedule.new(play_cron: "not valid")]
       playlist.save.should eq false
+      playlist.errors.first.field.should eq :schedules
 
-      playlist.errors.first.field.should eq :play_cron
-
-      playlist.play_cron = "*/2 * * * *"
+      playlist.schedules = [Playlist::Schedule.new(play_cron: "*/2 * * * *")]
       playlist.save.should eq true
+    end
+
+    it "requires at least one schedule" do
+      playlist = Generator.playlist
+      playlist.schedules = [] of Playlist::Schedule
+      playlist.save.should eq false
+      playlist.errors.first.field.should eq :schedules
     end
 
     it "can calculate the last time the display was updated" do

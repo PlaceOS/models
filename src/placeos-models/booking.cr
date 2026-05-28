@@ -872,7 +872,8 @@ module PlaceOS::Model
         checked_in_at: self.checked_in_at,
         checked_out_at: self.checked_out_at,
         deleted: self.deleted,
-        deleted_at: self.deleted_at
+        deleted_at: self.deleted_at,
+        process_state: self.process_state,
       )
       instance.parent_booking = self
       instance
@@ -896,6 +897,7 @@ module PlaceOS::Model
         inst.checked_out_at = self.checked_out_at if self.checked_out_at_changed?
         inst.deleted = self.deleted if self.deleted_changed?
         inst.deleted_at = self.deleted_at if self.deleted_at_changed?
+        inst.process_state = self.process_state if self.process_state_changed?
       else
         original_start = if change = self.booking_start_change
                            (change[0] || change[1]).as(Int64)
@@ -922,7 +924,8 @@ module PlaceOS::Model
           checked_in_at: self.checked_in_at,
           checked_out_at: self.checked_out_at,
           deleted: self.deleted,
-          deleted_at: self.deleted_at
+          deleted_at: self.deleted_at,
+          process_state: self.process_state,
         )
       end
 

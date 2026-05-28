@@ -1,8 +1,13 @@
-require "cron_parser"
 require "./base/model"
 require "./upload"
 require "./control_system"
 require "./zone"
+
+# Schedule is referenced by the `attribute schedules` declaration below, so
+# it must be loaded before the class body opens. The remaining playlist
+# submodels (item, revision, checker) are loaded via `require "./playlist/*"`
+# at the bottom of this file.
+require "./playlist/schedule"
 
 module PlaceOS::Model
   class Playlist < ModelBase
@@ -47,14 +52,11 @@ module PlaceOS::Model
     attribute valid_from : Int64? = nil
     attribute valid_until : Int64? = nil
 
-    # start playing the playlist at exactly this time or on CRON schedule
-    # play_at will ignore timezones
-    attribute play_at : Int64? = nil
-    attribute play_cron : String = "0 0 * * *" # midnight every day
-
-    # how many minutes should a scheduled playlist play for / should it takeover the displays
-    attribute play_period : Int32 = 1440 # 1 day in minutes
-    attribute play_takeover : Bool = false
+    # when this playlist should play — at least one schedule is required, and
+    # each schedule must validate. Stored as a JSONB array.
+    attribute schedules : Array(Playlist::Schedule) = -> { [Playlist::Schedule.new] },
+      converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Playlist::Schedule),
+      es_ignore: true
 
     def should_present?(now : Time = Time.utc) : Bool
       return false unless enabled
@@ -130,17 +132,15 @@ module PlaceOS::Model
 
     validates :name, presence: true
     validates :default_duration, presence: true, numericality: {greater_than: 999}
-    validates :play_cron, presence: true
+    # presence on an array attribute ⇒ at least one element
+    validates :schedules, presence: true
 
-    # ensure crons valid
+    # each schedule must be individually valid
     validate ->(this : Playlist) {
-      cron = this.play_cron
-      return if cron.blank?
-
-      begin
-        CronParser.new(cron)
-      rescue error
-        this.validation_error(:play_cron, "invalid: #{error.message}")
+      this.schedules.each_with_index do |schedule, index|
+        if message = schedule.validation_message
+          this.validation_error(:schedules, "schedule #{index + 1}: #{message}")
+        end
       end
     }
   end

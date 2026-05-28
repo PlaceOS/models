@@ -315,6 +315,56 @@ module PlaceOS::Model
       end.should eq bookings.map(&.instance)
     end
 
+    it "persists process_state on a booking instance and inherits it from the parent" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.process_state = "approved"
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query).instances
+
+      # `to_instance` should carry the parent booking's process_state through.
+      booking_instance = booking.to_instance(times[1].to_unix)
+      booking_instance.process_state.should eq "approved"
+
+      # the instance can override and that override must round-trip the DB.
+      booking_instance.process_state = "checked_in"
+      booking_instance.save!
+
+      reloaded = BookingInstance
+        .where(id: booking.id.as(Int64), instance_start: times[1].to_unix)
+        .first
+      reloaded.process_state.should eq "checked_in"
+    end
+
+    it "propagates a changed parent process_state to an existing booking instance" do
+      booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+      booking.recurrence_type = :daily
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      start_query = Time.local(2020, 1, 5, 5, 0, 0, location: timezone)
+      end_query = Time.local(2020, 1, 13, 5, 0, 0, location: timezone)
+      times = booking.calculate_daily(start_query, end_query).instances
+
+      # seed a stored instance row for `as_instance` to update
+      booking_instance = booking.to_instance(times[1].to_unix)
+      booking_instance.save!
+
+      # mutate the parent's process_state and run it through as_instance
+      hydrated = booking.hydrate_instance(times[1].to_unix)
+      hydrated.process_state = "approved"
+      hydrated.as_instance.save!
+
+      reloaded = BookingInstance
+        .where(id: booking.id.as(Int64), instance_start: times[1].to_unix)
+        .first
+      reloaded.process_state.should eq "approved"
+    end
+
     it "should generate a hydrated bookings responses with modified instances out of the query range" do
       booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
       booking.recurrence_type = :daily
