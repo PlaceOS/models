@@ -78,7 +78,7 @@ module PlaceOS::Model
     end
 
     it "rejects non-scalar (nested) args on deserialization" do
-      authority = Authority.find_by_domain("localhost").as(Authority)
+      authority = Generator.localhost_authority
       user = Generator.user(authority: authority).save!
 
       json = %({
@@ -112,7 +112,7 @@ module PlaceOS::Model
     end
 
     it "prunes the upload id from attachment arrays when an upload is deleted" do
-      authority = Authority.find_by_domain("localhost").as(Authority)
+      authority = Generator.localhost_authority
       user = Generator.user(authority: authority).save!
 
       # build an upload with no storage so destroy skips the cloud delete

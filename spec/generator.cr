@@ -434,7 +434,30 @@ module PlaceOS::Model
       )
     end
 
-    class_getter asset_zone : Zone { self.zone.save! }
+    @@asset_zone : Zone? = nil
+
+    # Cached zone reused by `Generator.asset`. Verified on access — if a prior
+    # spec called `Zone.clear`, the in-memory reference is stale and would
+    # cause an `fk_zone` violation; re-seed in that case.
+    def self.asset_zone : Zone
+      cached = @@asset_zone
+      if cached && (zid = cached.id) && Zone.find?(zid)
+        return cached
+      end
+      @@asset_zone = self.zone.save!
+    end
+
+    # `Authority` with `domain == "localhost"`, find-or-create. Specs that
+    # need the shared `localhost` authority can rely on this across any
+    # test-ordering (a prior `Authority.clear` doesn't break us).
+    def self.localhost_authority : Authority
+      existing = Authority.find_by_domain("localhost")
+      return existing if existing
+      auth = self.authority
+      auth.domain = "localhost"
+      auth.save!
+      auth
+    end
 
     def self.asset(asset_type = Generator.asset_type.save!, purchase_order = Generator.asset_purchase_order.save!)
       Asset.new(
