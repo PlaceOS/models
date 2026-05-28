@@ -1,3 +1,9 @@
+## v9.95.0 (2026-05-28)
+
+### Feat
+
+- add multiple schedules to playlists
+
 ## v9.94.1 (2026-05-27)
 
 ### Fix
