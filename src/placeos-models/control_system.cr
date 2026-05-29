@@ -73,6 +73,8 @@ module PlaceOS::Model
     attribute signage_last_seen : Time = -> { 5.hours.ago }, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
     belongs_to Playlist::Item, foreign_key: "playlist_item_id"
 
+    attribute space_config : Hash(String, String | Int32 | Int64 | Float64 | Bool | Nil) = {} of String => (String | Int32 | Int64 | Float64 | Bool | Nil)
+
     def update_last_seen_time(item_id : String? = nil)
       system_id = self.id.as(String)
 
