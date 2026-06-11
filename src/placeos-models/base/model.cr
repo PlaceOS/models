@@ -112,6 +112,27 @@ module PlaceOS::Model
   end
 
   # :nodoc:
+  # persists a nullable string array to a postgres text[] column, preserving
+  # NULL (pg-orm itself coerces nil arrays to empty arrays on write)
+  module DBNilTextArrConverter
+    def self.from_rs(rs : ::DB::ResultSet)
+      rs.read(Array(String)?)
+    end
+
+    def self.from_json(pull : JSON::PullParser) : Array(String)?
+      pull.read_null_or { Array(String).new(pull) }
+    end
+
+    def self.to_json(value : Array(String)?, builder : JSON::Builder)
+      value.to_json(builder)
+    end
+
+    def self.to_rs(value : Array(String)?)
+      value ? PQ::Param.encode_array(value) : nil
+    end
+  end
+
+  # :nodoc:
   module DBHashConverter(K, V)
     def self.from_rs(rs : ::DB::ResultSet)
       vals = JSON::Any.new(rs.read(JSON::PullParser)).to_json

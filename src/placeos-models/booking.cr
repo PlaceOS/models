@@ -538,7 +538,8 @@ module PlaceOS::Model
         rec_ending = max_period.from_now.to_unix
       end
 
-      asset_check_sql = ignore_assets ? "" : "AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}"
+      # instances may override the parent booking's assets and approval state
+      asset_check_sql = ignore_assets ? "" : "AND COALESCE(NULLIF(i.asset_ids, '{}'), b.asset_ids) && #{Associations.format_list_for_postgres(asset_ids)}"
       overrides = Booking.find_all_by_sql(<<-SQL, tenant_id, rec_ending, starting, end_time, start_time, booking_type, self.id)
         SELECT b.* FROM "bookings" b
         JOIN booking_instances i ON b.id = i.id
@@ -551,7 +552,7 @@ module PlaceOS::Model
           AND b.booking_type = $6
           AND ($7::bigint IS NULL OR b.id != $7::bigint)
           #{asset_check_sql}
-          AND b.rejected <> TRUE
+          AND COALESCE(i.rejected, b.rejected) <> TRUE
           AND i.deleted <> TRUE
       SQL
 
@@ -572,7 +573,12 @@ module PlaceOS::Model
         )
       query = query.where("id != ?", id) unless id.nil?
       Booking.expand_bookings!(starting_tz, rec_ending_tz, query.to_a + overrides).bookings.select! do |other_booking|
-        expanded.find { |this_booking| this_booking.booking_start < other_booking.booking_end && this_booking.booking_end > other_booking.booking_start }
+        expanded.find do |this_booking|
+          next false unless this_booking.booking_start < other_booking.booking_end && this_booking.booking_end > other_booking.booking_start
+          # instance overrides may have moved individual occurrences onto
+          # different assets, so we check each pair of occurrences
+          ignore_assets || !(this_booking.asset_ids & other_booking.asset_ids).empty?
+        end
       end
     end
 
@@ -580,7 +586,8 @@ module PlaceOS::Model
       starting = self.booking_start
       ending = self.booking_end
 
-      asset_check_sql = ignore_assets ? "" : "AND b.asset_ids && #{Associations.format_list_for_postgres(asset_ids)}"
+      # instances may override the parent booking's assets and approval state
+      asset_check_sql = ignore_assets ? "" : "AND COALESCE(NULLIF(i.asset_ids, '{}'), b.asset_ids) && #{Associations.format_list_for_postgres(asset_ids)}"
       clashing = BookingInstance.find_one_by_sql?(<<-SQL, tenant_id, ending, starting, booking_type, self.id)
         SELECT i.* FROM "booking_instances" i
         JOIN bookings b ON i.id = b.id
@@ -591,7 +598,7 @@ module PlaceOS::Model
           AND b.booking_type = $4
           AND ($5::bigint IS NULL OR b.id != $5::bigint)
           #{asset_check_sql}
-          AND b.rejected <> TRUE
+          AND COALESCE(i.rejected, b.rejected) <> TRUE
           AND i.deleted <> TRUE
         LIMIT 1
       SQL
@@ -606,7 +613,11 @@ module PlaceOS::Model
           starting, ending, ending, starting, booking_type
         )
       query = query.where("id != ?", id) unless id.nil?
-      Booking.expand_bookings!(starting_tz, ending_tz, query.to_a).bookings
+      expanded = Booking.expand_bookings!(starting_tz, ending_tz, query.to_a).bookings
+      # expansion applies instance overrides which may have moved an
+      # individual occurrence onto different assets
+      expanded.select! { |booking| !(booking.asset_ids & self.asset_ids).empty? } unless ignore_assets
+      expanded
     end
 
     def clashing_bookings(ignore_assets : Bool = false) : Array(Booking)
@@ -930,6 +941,15 @@ module PlaceOS::Model
       end
 
       inst.extension_data = self.extension_data if self.extension_data_changed?
+      inst.approved = self.approved if self.approved_changed?
+      inst.approved_at = self.approved_at if self.approved_at_changed?
+      inst.rejected = self.rejected if self.rejected_changed?
+      inst.rejected_at = self.rejected_at if self.rejected_at_changed?
+      inst.approver_id = self.approver_id if self.approver_id_changed?
+      inst.approver_name = self.approver_name if self.approver_name_changed?
+      inst.approver_email = self.approver_email if self.approver_email_changed?
+      inst.asset_id = self.asset_id if self.asset_id_changed?
+      inst.asset_ids = self.asset_ids if self.asset_ids_changed?
       inst.parent_booking = self
       inst
     end
