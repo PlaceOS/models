@@ -1,3 +1,9 @@
+## v9.97.0 (2026-06-11)
+
+### Feat
+
+- ensure PKCE support is enabled for auth
+
 ## v9.96.0 (2026-06-11)
 
 ### Feat
