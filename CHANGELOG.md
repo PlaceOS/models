@@ -1,3 +1,9 @@
+## v9.96.0 (2026-06-11)
+
+### Feat
+
+- **booking_instance**: add additional fields
+
 ## v9.95.0 (2026-05-28)
 
 ### Feat
