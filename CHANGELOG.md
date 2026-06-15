@@ -1,3 +1,9 @@
+## v9.98.0 (2026-06-15)
+
+### Feat
+
+- [PPT-2540] add expiry support to api key ([#319](https://github.com/PlaceOS/models/pull/319))
+
 ## v9.97.0 (2026-06-11)
 
 ### Feat
