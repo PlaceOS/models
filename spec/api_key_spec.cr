@@ -177,6 +177,30 @@ module PlaceOS::Model
         json = JSON.parse(key.to_public_json).as_h
         json.has_key?("expires_at").should be_true
       end
+
+      it "converts ttl to expires_at on create" do
+        key = Generator.api_key
+        key.ttl = 3600
+        key.save!
+        key.expires_at.should_not be_nil
+        (key.expires_at.not_nil! - Time.utc).should be_close(3600.seconds, 5.seconds)
+        key.ttl.should be_nil
+        JSON.parse(key.to_json).as_h.has_key?("ttl").should be_false
+      end
+
+      it "round-trips with ttl from JSON input, no ttl in output" do
+        authority = Generator.authority.save!
+        json_input = Generator.api_key.to_json
+        hash = JSON.parse(json_input).as_h
+        hash["ttl"] = JSON::Any.new(3600_i64)
+        key = ApiKey.from_trusted_json(hash.to_json)
+        key.user = Generator.user(authority).save!
+        key.save!
+        key.expires_at.should_not be_nil
+        json_out = JSON.parse(key.to_public_json).as_h
+        json_out.has_key?("ttl").should be_false
+        json_out.has_key?("expires_at").should be_true
+      end
     end
   end
 end

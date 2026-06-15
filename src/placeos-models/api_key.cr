@@ -20,7 +20,7 @@ module PlaceOS::Model
     attribute secret : String = -> { Random::Secure.urlsafe_base64(32) }, mass_assignment: false
 
     attribute expires_at : Time?, converter: Time::EpochConverterOptional, type: "integer", format: "Int64"
-    @[JSON::Field(ignore_deserialize: true)]
+    @[JSON::Field(ignore_serialize: true)]
     property ttl : Int32? = nil
 
     belongs_to User
