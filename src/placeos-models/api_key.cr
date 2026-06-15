@@ -19,6 +19,10 @@ module PlaceOS::Model
 
     attribute secret : String = -> { Random::Secure.urlsafe_base64(32) }, mass_assignment: false
 
+    attribute expires_at : Time?, converter: Time::EpochConverterOptional, type: "integer", format: "Int64"
+    @[JSON::Field(ignore_serialize: true)]
+    property ttl : Int32? = nil
+
     belongs_to User
     belongs_to Authority
 
@@ -38,7 +42,7 @@ module PlaceOS::Model
 
     define_to_json :public, only: [
       :name, :description, :scopes, :user_id, :authority_id, :created_at,
-      :updated_at,
+      :updated_at, :expires_at,
     ], methods: [:user, :authority, :x_api_key, :permissions, :id]
 
     # Validation
@@ -57,6 +61,7 @@ module PlaceOS::Model
     before_create :set_authority
     before_create :x_api_key
     before_create :hash!
+    before_create :convert_ttl!
 
     protected def safe_id
       self.new_record = true
@@ -73,6 +78,26 @@ module PlaceOS::Model
       self
     end
 
+    def convert_ttl!
+      if ttl = @ttl
+        ttl_expires_at = Time.utc + ttl.seconds
+        if (existing = @expires_at) && existing < ttl_expires_at
+          # Keep existing — it's sooner
+        else
+          @expires_at = ttl_expires_at
+        end
+        @ttl = nil
+      end
+    end
+
+    validate ->(this : ApiKey) {
+      if (exp = this.expires_at) && exp <= Time.utc
+        this.validation_error(:expires_at, message: "must be in the future")
+      end
+      if (ttl = this.ttl) && ttl < 1
+        this.validation_error(:ttl, message: "must be positive")
+      end
+    }
     # Token Methods
     ###############################################################################################
 
@@ -93,6 +118,14 @@ module PlaceOS::Model
       end
 
       model
+    end
+
+    def expired? : Bool
+      if expires_at = @expires_at
+        expires_at <= Time.utc
+      else
+        false
+      end
     end
 
     def build_jwt
