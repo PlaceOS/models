@@ -1,3 +1,9 @@
+## v9.98.1 (2026-06-18)
+
+### Fix
+
+- **booking**: instance clashing checks
+
 ## v9.98.0 (2026-06-15)
 
 ### Feat
