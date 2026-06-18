@@ -134,7 +134,14 @@ module PlaceOS::Model
       instance
     end
 
-    validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.hydrate_booking.clashing? }
+    # the clash validation only needs to run when the booked slot itself (time
+    # or asset) changes. approving, rejecting or checking in an existing instance
+    # must not be blocked by a clash it did not introduce.
+    def slot_changed? : Bool
+      booking_start_changed? || booking_end_changed? || asset_id_changed? || asset_ids_changed?
+    end
+
+    validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.slot_changed? || !this.hydrate_booking.clashing? }
     validate :asset_ids, "must be unique", ->(this : self) { this.unique_ids? }
   end
 end

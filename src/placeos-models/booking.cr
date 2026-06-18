@@ -200,7 +200,7 @@ module PlaceOS::Model
         true
       end
     end
-    validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.clashing? }
+    validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.slot_changed? || !this.clashing? }
     validate :asset_ids, "must be unique", ->(this : self) { this.unique_ids? }
     validate :booking_end, "must be after booking_start", ->(this : self) { this.booking_end > this.booking_start }
     validate :instance, "must not be set", ->(this : self) { this.instance.nil? }
@@ -501,6 +501,13 @@ module PlaceOS::Model
     def clashing? : Bool
       return false if self.deleted || self.rejected || self.checked_out_at || self.booking_type.downcase == "visitor"
       clashing_bookings.size > 0
+    end
+
+    # the clash validation only needs to run when the booked slot itself (time
+    # or asset) changes. approving, rejecting or checking in an existing booking
+    # must not be blocked by a clash it did not introduce.
+    def slot_changed? : Bool
+      booking_start_changed? || booking_end_changed? || asset_id_changed? || asset_ids_changed?
     end
 
     protected def recurring_clash_check(ignore_assets : Bool = false) : Array(Booking)
