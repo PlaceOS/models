@@ -553,8 +553,10 @@ module PlaceOS::Model
         WHERE b.tenant_id = $1
           AND i.booking_start < $2
           AND i.booking_end > $3
-          AND i.starting_time < $4
-          AND i.ending_time > $5
+          AND (CASE WHEN i.starting_time <= i.ending_time
+                    THEN i.starting_time < $4 AND i.ending_time > $5
+                    ELSE i.starting_time < $4 OR i.ending_time > $5
+               END)
           AND i.checked_out_at IS NULL
           AND b.booking_type = $6
           AND ($7::bigint IS NULL OR b.id != $7::bigint)
@@ -571,12 +573,21 @@ module PlaceOS::Model
       expanded = Booking.expand_bookings!(starting_tz, rec_ending_tz, [self]).bookings
 
       # starting - booking_length ensures we capture overlaps
+      #
+      # starting_time / ending_time are the *UTC* time-of-day of the booking. An
+      # all-day (or overnight) booking in a timezone east of UTC wraps past UTC
+      # midnight, so its stored window is inverted (starting_time > ending_time)
+      # and the naive `starting_time < ? AND ending_time > ?` overlap test would
+      # wrongly exclude it. The CASE keeps the fast, index-friendly test for the
+      # common non-wrapping rows and switches to the wrap-aware test (OR) for the
+      # minority of rows that cross midnight. The exact per-occurrence comparison
+      # below still confirms any candidate this pre-filter admits.
       asset_check_where = ignore_assets ? "" : "AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} "
       query = Booking
         .by_tenant(tenant_id)
         .where(
-          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_end > ? AND booking_start < ?)) AND checked_out_at IS NULL AND starting_time < ? AND ending_time > ? AND booking_type = ? #{asset_check_where}AND rejected <> TRUE AND deleted <> TRUE",
-          starting, starting, rec_ending, end_time, start_time, booking_type
+          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_end > ? AND booking_start < ?)) AND checked_out_at IS NULL AND (CASE WHEN starting_time <= ending_time THEN starting_time < ? AND ending_time > ? ELSE starting_time < ? OR ending_time > ? END) AND booking_type = ? #{asset_check_where}AND rejected <> TRUE AND deleted <> TRUE",
+          starting, starting, rec_ending, end_time, start_time, end_time, start_time, booking_type
         )
       query = query.where("id != ?", id) unless id.nil?
       Booking.expand_bookings!(starting_tz, rec_ending_tz, query.to_a + overrides).bookings.select! do |other_booking|
