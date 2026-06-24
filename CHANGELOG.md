@@ -1,3 +1,9 @@
+## v9.98.2 (2026-06-24)
+
+### Fix
+
+- **booking**: recurring booking clash detection
+
 ## v9.98.1 (2026-06-18)
 
 ### Fix
