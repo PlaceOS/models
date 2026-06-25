@@ -200,7 +200,7 @@ module PlaceOS::Model
         true
       end
     end
-    validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.slot_changed? || !this.clashing? }
+    validate :booking_start, "must not clash with an existing booking", ->(this : self) { this.skip_clash_check || !this.slot_changed? || !this.clashing? }
     validate :asset_ids, "must be unique", ->(this : self) { this.unique_ids? }
     validate :booking_end, "must be after booking_start", ->(this : self) { this.booking_end > this.booking_start }
     validate :instance, "must not be set", ->(this : self) { this.instance.nil? }
@@ -500,17 +500,31 @@ module PlaceOS::Model
 
     def clashing? : Bool
       return false if self.deleted || self.rejected || self.checked_out_at || self.booking_type.downcase == "visitor"
-      clashing_bookings.size > 0
+      # existence check only -- stop at the first clash we find
+      !clashing_bookings(limit: 1).empty?
     end
 
-    # the clash validation only needs to run when the booked slot itself (time
-    # or asset) changes. approving, rejecting or checking in an existing booking
-    # must not be blocked by a clash it did not introduce.
+    # transient flag (never (de)serialised, so API clients cannot set it):
+    # callers that have already performed an explicit clash check -- e.g. the
+    # bookings controller, which needs the full clashing list for its 409
+    # response -- set this so save! does not redundantly re-run the (expensive)
+    # clash detection.
+    @[JSON::Field(ignore: true)]
+    @[YAML::Field(ignore: true)]
+    property skip_clash_check : Bool = false
+
+    # the clash validation only needs to run when the booked slot itself changes:
+    # the time, the asset(s), or -- for a recurring booking -- the recurrence
+    # pattern (which adds/removes occupied occurrences). approving, rejecting or
+    # checking in an existing booking must not be blocked by a clash it did not
+    # introduce.
     def slot_changed? : Bool
-      booking_start_changed? || booking_end_changed? || asset_id_changed? || asset_ids_changed?
+      booking_start_changed? || booking_end_changed? || asset_id_changed? || asset_ids_changed? ||
+        recurrence_type_changed? || recurrence_days_changed? || recurrence_interval_changed? ||
+        recurrence_end_changed? || recurrence_nth_of_month_changed?
     end
 
-    protected def recurring_clash_check(ignore_assets : Bool = false) : Array(Booking)
+    protected def recurring_clash_check(ignore_assets : Bool = false, limit : Int32? = nil) : Array(Booking)
       # we need to check for clashes against each recurrence
       starting = self.booking_start
       ending = self.booking_end
@@ -545,8 +559,11 @@ module PlaceOS::Model
         rec_ending = max_period.from_now.to_unix
       end
 
+      # build the asset overlap literal once and reuse it across both fragments
+      asset_list = ignore_assets ? "" : Associations.format_list_for_postgres(asset_ids)
+
       # instances may override the parent booking's assets and approval state
-      asset_check_sql = ignore_assets ? "" : "AND COALESCE(NULLIF(i.asset_ids, '{}'), b.asset_ids) && #{Associations.format_list_for_postgres(asset_ids)}"
+      asset_check_sql = ignore_assets ? "" : "AND COALESCE(NULLIF(i.asset_ids, '{}'), b.asset_ids) && #{asset_list}"
       overrides = Booking.find_all_by_sql(<<-SQL, tenant_id, rec_ending, starting, end_time, start_time, booking_type, self.id)
         SELECT b.* FROM "bookings" b
         JOIN booking_instances i ON b.id = i.id
@@ -572,8 +589,6 @@ module PlaceOS::Model
 
       expanded = Booking.expand_bookings!(starting_tz, rec_ending_tz, [self]).bookings
 
-      # starting - booking_length ensures we capture overlaps
-      #
       # starting_time / ending_time are the *UTC* time-of-day of the booking. An
       # all-day (or overnight) booking in a timezone east of UTC wraps past UTC
       # midnight, so its stored window is inverted (starting_time > ending_time)
@@ -582,30 +597,81 @@ module PlaceOS::Model
       # common non-wrapping rows and switches to the wrap-aware test (OR) for the
       # minority of rows that cross midnight. The exact per-occurrence comparison
       # below still confirms any candidate this pre-filter admits.
-      asset_check_where = ignore_assets ? "" : "AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} "
+      #
+      # `booking_start < rec_ending` bounds the recurring branch: a series whose
+      # first occurrence already starts after our window can have no occurrence
+      # in range, so the index can prune it.
+      asset_check_where = ignore_assets ? "" : "AND asset_ids && #{asset_list} "
       query = Booking
         .by_tenant(tenant_id)
         .where(
-          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE') OR (booking_end > ? AND booking_start < ?)) AND checked_out_at IS NULL AND (CASE WHEN starting_time <= ending_time THEN starting_time < ? AND ending_time > ? ELSE starting_time < ? OR ending_time > ? END) AND booking_type = ? #{asset_check_where}AND rejected <> TRUE AND deleted <> TRUE",
-          starting, starting, rec_ending, end_time, start_time, end_time, start_time, booking_type
+          "(((recurrence_end > ? OR recurrence_end IS NULL) AND recurrence_type <> 'NONE' AND booking_start < ?) OR (booking_end > ? AND booking_start < ?)) AND checked_out_at IS NULL AND (CASE WHEN starting_time <= ending_time THEN starting_time < ? AND ending_time > ? ELSE starting_time < ? OR ending_time > ? END) AND booking_type = ? #{asset_check_where}AND rejected <> TRUE AND deleted <> TRUE",
+          starting, rec_ending, starting, rec_ending, end_time, start_time, end_time, start_time, booking_type
         )
       query = query.where("id != ?", id) unless id.nil?
-      Booking.expand_bookings!(starting_tz, rec_ending_tz, query.to_a + overrides).bookings.select! do |other_booking|
-        expanded.find do |this_booking|
-          next false unless this_booking.booking_start < other_booking.booking_end && this_booking.booking_end > other_booking.booking_start
-          # instance overrides may have moved individual occurrences onto
-          # different assets, so we check each pair of occurrences
-          ignore_assets || !(this_booking.asset_ids & other_booking.asset_ids).empty?
-        end
-      end
+      others = Booking.expand_bookings!(starting_tz, rec_ending_tz, query.to_a + overrides).bookings
+
+      overlapping_occurrences(expanded, others, ignore_assets, limit)
     end
 
-    protected def regular_clash_check(ignore_assets : Bool = false) : Array(Booking)
+    # sweep-line overlap detection between the new booking's occurrences (`mine`,
+    # via `expanded`) and the candidate occurrences (`others`). Both are sorted by
+    # start and a single forward-only pointer over `mine` keeps this amortised
+    # O(n + m) rather than O(n * m). Returns the candidate occurrences that
+    # overlap -- in time, and (unless ignore_assets) on a shared asset -- at least
+    # one of the new booking's occurrences, stopping once `limit` are found.
+    private def overlapping_occurrences(
+      expanded : Array(Booking),
+      others : Array(Booking),
+      ignore_assets : Bool,
+      limit : Int32?,
+    ) : Array(Booking)
+      result = [] of Booking
+      return result if expanded.empty?
+
+      mine = expanded.sort_by(&.booking_start)
+      others.sort_by!(&.booking_start)
+
+      lo = 0
+      others.each do |other|
+        # an override may have flagged an individual occurrence as gone
+        next if other.checked_out_at || other.rejected || other.deleted
+
+        o_start = other.booking_start
+        o_end = other.booking_end
+
+        # occurrences ending at/before this candidate's start cannot overlap it,
+        # nor any later candidate (starts only increase) -- discard them for good
+        while lo < mine.size && mine[lo].booking_end <= o_start
+          lo += 1
+        end
+        break if lo >= mine.size
+
+        idx = lo
+        while idx < mine.size && mine[idx].booking_start < o_end
+          this_b = mine[idx]
+          if this_b.booking_end > o_start && (ignore_assets || !(this_b.asset_ids & other.asset_ids).empty?)
+            result << other
+            break
+          end
+          idx += 1
+        end
+
+        break if limit && result.size >= limit
+      end
+
+      result
+    end
+
+    protected def regular_clash_check(ignore_assets : Bool = false, limit : Int32? = nil) : Array(Booking)
       starting = self.booking_start
       ending = self.booking_end
 
+      # build the asset overlap literal once and reuse it across both fragments
+      asset_list = ignore_assets ? "" : Associations.format_list_for_postgres(asset_ids)
+
       # instances may override the parent booking's assets and approval state
-      asset_check_sql = ignore_assets ? "" : "AND COALESCE(NULLIF(i.asset_ids, '{}'), b.asset_ids) && #{Associations.format_list_for_postgres(asset_ids)}"
+      asset_check_sql = ignore_assets ? "" : "AND COALESCE(NULLIF(i.asset_ids, '{}'), b.asset_ids) && #{asset_list}"
       clashing = BookingInstance.find_one_by_sql?(<<-SQL, tenant_id, ending, starting, booking_type, self.id)
         SELECT i.* FROM "booking_instances" i
         JOIN bookings b ON i.id = b.id
@@ -623,7 +689,7 @@ module PlaceOS::Model
       return [clashing.hydrate_booking] if clashing
 
       # find any valid recurring bookings in the time period
-      asset_check_where = ignore_assets ? "" : "AND asset_ids && #{Associations.format_list_for_postgres(asset_ids)} "
+      asset_check_where = ignore_assets ? "" : "AND asset_ids && #{asset_list} "
       query = Booking
         .by_tenant(tenant_id)
         .where(
@@ -632,31 +698,33 @@ module PlaceOS::Model
         )
       query = query.where("id != ?", id) unless id.nil?
       expanded = Booking.expand_bookings!(starting_tz, ending_tz, query.to_a).bookings
-      # expansion applies instance overrides which may have moved an
-      # individual occurrence onto different assets
-      expanded.select! { |booking| !(booking.asset_ids & self.asset_ids).empty? } unless ignore_assets
-      expanded
+
+      # expansion applies instance overrides which may have moved an individual
+      # occurrence onto different assets, or flagged it gone. filter here (rather
+      # than via an outer pass) so `limit` counts only genuine clashes.
+      result = [] of Booking
+      expanded.each do |booking|
+        next if booking.checked_out_at || booking.rejected || booking.deleted
+        next if !ignore_assets && (booking.asset_ids & self.asset_ids).empty?
+        result << booking
+        break if limit && result.size >= limit
+      end
+      result
     end
 
-    def clashing_bookings(ignore_assets : Bool = false) : Array(Booking)
+    def clashing_bookings(ignore_assets : Bool = false, limit : Int32? = nil) : Array(Booking)
       return [] of Booking if self.booking_type.downcase == "visitor"
 
       update_assets
 
-      # we need to check for clashes against each recurrence
-      starting = self.booking_start
-      ending = self.booking_end
-
-      # find any overrides that might clash with the bookings
-      candidates = if recurring_booking?
-                     recurring_clash_check(ignore_assets)
-                   else
-                     regular_clash_check(ignore_assets)
-                   end
-
-      # we need to do this as booking instances may only set checked out / deleted flags
-      # so the early clashing check misses these
-      candidates.reject! { |booking| booking.checked_out_at || booking.rejected || booking.deleted }
+      # checked-out / rejected / deleted occurrences (including those an instance
+      # override flags after the SQL pre-filter) are dropped inside each path so
+      # that `limit` counts only genuine clashes.
+      if recurring_booking?
+        recurring_clash_check(ignore_assets, limit)
+      else
+        regular_clash_check(ignore_assets, limit)
+      end
     end
 
     def as_h(include_attendees : Bool = true)
@@ -969,6 +1037,9 @@ module PlaceOS::Model
       inst.asset_id = self.asset_id if self.asset_id_changed?
       inst.asset_ids = self.asset_ids if self.asset_ids_changed?
       inst.parent_booking = self
+      # a controller that already ran an explicit clash check opts the instance
+      # save out of re-running it too
+      inst.skip_clash_check = self.skip_clash_check
       inst
     end
 

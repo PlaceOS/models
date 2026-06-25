@@ -134,6 +134,13 @@ module PlaceOS::Model
       instance
     end
 
+    # transient flag (never (de)serialised, so API clients cannot set it): set by
+    # `Booking#as_instance` when the caller has already run an explicit clash
+    # check, so save! does not redundantly re-run it.
+    @[JSON::Field(ignore: true)]
+    @[YAML::Field(ignore: true)]
+    property skip_clash_check : Bool = false
+
     # the clash validation only needs to run when the booked slot itself (time
     # or asset) changes. approving, rejecting or checking in an existing instance
     # must not be blocked by a clash it did not introduce.
@@ -141,7 +148,7 @@ module PlaceOS::Model
       booking_start_changed? || booking_end_changed? || asset_id_changed? || asset_ids_changed?
     end
 
-    validate :booking_start, "must not clash with an existing booking", ->(this : self) { !this.slot_changed? || !this.hydrate_booking.clashing? }
+    validate :booking_start, "must not clash with an existing booking", ->(this : self) { this.skip_clash_check || !this.slot_changed? || !this.hydrate_booking.clashing? }
     validate :asset_ids, "must be unique", ->(this : self) { this.unique_ids? }
   end
 end

@@ -31,7 +31,14 @@ module PlaceOS::Model
       Booking.clear
       BookingInstance.clear
       Tenant.clear
-      tenant_id = Generator.tenant(domain: "recurrence.dev").id.as(Int64)
+    end
+
+    # created inside each example (not the global before_each): another spec
+    # file's global before_each may clear the tenants table after ours runs, so
+    # make the tenant right before it is needed to stay resilient in a combined
+    # suite run.
+    new_tenant = -> do
+      tenant_id = Generator.tenant(domain: "utcwrap.dev").id.as(Int64)
     end
 
     # a daily-recurring booking with an explicit local start/end-of-day window
@@ -46,6 +53,7 @@ module PlaceOS::Model
     end
 
     it "detects a clash between two all-day recurring bookings (UTC wrap) -- prod repro" do
+      new_tenant.call
       asset = "desk.4-SE-076"
 
       # b1: all-day booking, Perth local 00:00 -> 23:59. In UTC this is
@@ -75,6 +83,7 @@ module PlaceOS::Model
     end
 
     it "control: detects the clash when neither window wraps UTC midnight" do
+      new_tenant.call
       asset = "desk.control"
 
       # midday Perth window (10:00 -> 12:00 = UTC 02:00 -> 04:00), no wrap.
