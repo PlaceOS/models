@@ -1,3 +1,9 @@
+## v9.98.3 (2026-06-25)
+
+### Fix
+
+- **booking**: performance improvements and clash checks
+
 ## v9.98.2 (2026-06-24)
 
 ### Fix
