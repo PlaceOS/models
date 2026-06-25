@@ -115,6 +115,21 @@ module PlaceOS::Model
         ids = data.map { |d| JSON.parse(d).as_h["id"].to_s }
         ids.sort.should eq zone_ids.sort
       end
+
+      it "#space_config" do
+        cs = Generator.control_system.save!
+        cs.space_config["enabled"] = false
+        cs.space_config["allow_recurrence_bookings"] = "disabled"
+        cs.space_config["threshold"] = 0.25
+        cs.space_config["temp"] = 50
+        cs.space_config["i64"] = 20_i64
+        cs.space_config["none"] = nil
+        cs.save
+
+        cs.space_config["enabled"].should be_false
+        cs.space_config["allow_recurrence_bookings"].should eq("disabled")
+        cs.space_config["threshold"].should eq 0.25
+      end
     end
 
     describe "validation" do
