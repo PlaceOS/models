@@ -1,3 +1,9 @@
+## v9.98.4 (2026-06-26)
+
+### Fix
+
+- **group**: improve performance of zone_children_map
+
 ## v9.98.3 (2026-06-25)
 
 ### Fix
