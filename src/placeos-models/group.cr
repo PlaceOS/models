@@ -140,6 +140,13 @@ module PlaceOS::Model
       end
     end
 
+    # Full `{zone_id => Permissions}` map for the user within `subsystem`.
+    # Public entry point for callers that want to resolve once and cache the
+    # whole map (e.g. a per-request memo), instead of re-resolving per query.
+    def self.resolve_subsystem_permissions(authority_id : String, subsystem : String, user_id : String) : Hash(String, Permissions)
+      resolve_user_permissions(authority_id, subsystem, user_id)
+    end
+
     # Resolve the full `{zone_id => Permissions}` map for the user within
     # `subsystem`.
     #
@@ -189,11 +196,18 @@ module PlaceOS::Model
       group_depths = compute_group_depths(all_group_ids, parent_of)
       group_descendants = compute_group_descendants(all_group_ids, parent_of)
 
-      zone_children = zone_children_map
       rows_by_group = Hash(UUID, Array(GroupZone)).new
+      anchor_zone_ids = [] of String
       GroupZone.where(group_id: member_group_ids).each do |gz|
         (rows_by_group[gz.group_id] ||= [] of GroupZone) << gz
+        anchor_zone_ids << gz.zone_id
       end
+      return result if rows_by_group.empty?
+
+      # The walk only ever descends from these grant anchors, so fetch just
+      # those subtrees (a recursive descent in Postgres) rather than loading
+      # the entire zone table into memory.
+      zone_children = zone_children_map(anchor_zone_ids)
 
       rows_by_group.each do |owner_id, rows|
         # Which zones does *this* owner have direct rows on? Used to apply
@@ -347,14 +361,29 @@ module PlaceOS::Model
       best
     end
 
-    # Build a zone → children lookup for the full zone table. Zones are
-    # typically a modest number and we need arbitrary subtree walks, so a
-    # single pass here is cheaper than per-group recursive CTEs.
-    private def self.zone_children_map : Hash(String, Array(String))
+    # Build a zone → children lookup restricted to the subtrees rooted at
+    # `anchor_zone_ids` (the grant anchors). The resolver only ever walks down
+    # from those anchors, so a recursive descent in Postgres returns exactly
+    # the rows it needs and avoids loading the entire zone table into memory.
+    private def self.zone_children_map(anchor_zone_ids : Array(String)) : Hash(String, Array(String))
       children = {} of String => Array(String)
-      sql = %(SELECT id, parent_id FROM "zone" WHERE parent_id IS NOT NULL)
+      anchors = anchor_zone_ids.uniq
+      return children if anchors.empty?
+
+      placeholders = (1..anchors.size).map { |i| "$#{i}" }.join(", ")
+      sql = <<-SQL
+        WITH RECURSIVE subtree AS (
+          SELECT id, parent_id FROM "zone" WHERE id IN (#{placeholders})
+          UNION
+          SELECT z.id, z.parent_id FROM "zone" z
+          INNER JOIN subtree s ON z.parent_id = s.id
+        )
+        SELECT id, parent_id FROM subtree WHERE parent_id IS NOT NULL
+      SQL
+
+      args = anchors.map(&.as(::PgORM::Value))
       ::PgORM::Database.connection do |conn|
-        conn.query(sql) do |rs|
+        conn.query(sql, args: args) do |rs|
           rs.each do
             id = rs.read(String)
             parent_id = rs.read(String)
