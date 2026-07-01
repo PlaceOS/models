@@ -147,6 +147,26 @@ module PlaceOS::Model
       playlist.errors.first.field.should eq :schedules
     end
 
+    it "does not require a schedule for distribution playlists" do
+      playlist = Generator.playlist(distribution: true)
+      playlist.schedules = [] of Playlist::Schedule
+      playlist.save.should eq true
+    end
+
+    it "prevents the distribution flag from changing after creation" do
+      playlist = Generator.playlist
+      playlist.save.should eq true
+
+      playlist.distribution = true
+      playlist.save.should eq false
+      playlist.errors.first.field.should eq :distribution
+
+      # unrelated updates that leave the flag untouched are still allowed
+      playlist = Playlist.find!(playlist.id.as(String))
+      playlist.name = "renamed"
+      playlist.save.should eq true
+    end
+
     it "can calculate the last time the display was updated" do
       revision1 = Generator.revision.save!
       sleep 500.milliseconds

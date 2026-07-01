@@ -88,6 +88,7 @@ module PlaceOS::Model
       name : String = Faker::Hacker.noun,
       description : String = "",
       authority : Authority? = nil,
+      distribution : Bool = false,
     )
       unless authority
         # look up an existing authority
@@ -98,9 +99,26 @@ module PlaceOS::Model
       play = Playlist.new(
         name: name,
         description: description,
-        authority_id: authority.id
+        authority_id: authority.id,
+        distribution: distribution,
       )
       play
+    end
+
+    def self.item_schedule(
+      playlist : Playlist? = nil,
+      item : Playlist::Item? = nil,
+      schedules : Array(Playlist::Schedule) = [Playlist::Schedule.new],
+    )
+      playlist ||= self.playlist(distribution: true).save!
+      authority = Authority.find!(playlist.authority_id.not_nil!)
+      item ||= self.item(authority: authority).save!
+
+      schedule = Playlist::ItemSchedule.new
+      schedule.playlist_id = playlist.id
+      schedule.item_id = item.id
+      schedule.schedules = schedules
+      schedule
     end
 
     def self.signage_plugin(

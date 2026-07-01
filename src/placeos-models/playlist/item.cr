@@ -146,51 +146,72 @@ module PlaceOS::Model
 
     before_destroy :cleanup_playlists
 
-    # Reject any bookings that are current
+    # Remove this item (and any distribution schedules wrapping it) from the
+    # revisions that reference them, then bump the owning playlists' timestamps.
     protected def cleanup_playlists
-      # grab all the playlists that contain this item
-      sql_query = %[
-        SELECT array_agg(DISTINCT playlist_id) AS playlist_ids
-        FROM playlist_revisions
-        WHERE '#{self.id}' = ANY(items)
-      ]
+      reference_ids = revision_reference_ids
+      ref_array = Associations.format_list_for_postgres(reference_ids)
 
+      # grab all the playlists that reference this item / its schedules
       playlist_ids = ::PgORM::Database.connection do |conn|
-        conn.query_one(sql_query, &.read(Array(String)?))
+        conn.query_one(%[
+          SELECT array_agg(DISTINCT playlist_id) AS playlist_ids
+          FROM playlist_revisions
+          WHERE items && #{ref_array}
+        ], &.read(Array(String)?))
       end
 
-      # remove the item from playlist revisions
+      # remove the references from playlist revisions, preserving item order
       ::PgORM::Database.exec_sql(%[
         UPDATE playlist_revisions
-        SET items = array_remove(items, '#{self.id}')
-        WHERE '#{self.id}' = ANY(items)
+        SET items = COALESCE((
+          SELECT array_agg(elem ORDER BY ord)
+          FROM unnest(items) WITH ORDINALITY AS t(elem, ord)
+          WHERE elem <> ALL(#{ref_array})
+        ), '{}'::text[])
+        WHERE items && #{ref_array}
       ])
 
-      # update the playlist timestamps
-      return unless playlist_ids
-      return if playlist_ids.empty?
-
-      ::PgORM::Database.exec_sql(%[
-        UPDATE playlists
-        SET updated_at = CURRENT_TIMESTAMP
-        WHERE id IN ('#{playlist_ids.join("', '")}')
-      ])
+      bump_playlist_timestamps(playlist_ids)
     end
 
     after_update :update_playlists
 
     def update_playlists
-      # grab all the playlists that contain this item
-      sql_query = %[
-        SELECT array_agg(DISTINCT playlist_id) AS playlist_ids
-        FROM playlist_revisions
-        WHERE '#{self.id}' = ANY(items)
-      ]
+      ref_array = Associations.format_list_for_postgres(revision_reference_ids)
 
+      # grab all the playlists that reference this item / its schedules
       playlist_ids = ::PgORM::Database.connection do |conn|
-        conn.query_one(sql_query, &.read(Array(String)?))
+        conn.query_one(%[
+          SELECT array_agg(DISTINCT playlist_id) AS playlist_ids
+          FROM playlist_revisions
+          WHERE items && #{ref_array}
+        ], &.read(Array(String)?))
       end
 
+      bump_playlist_timestamps(playlist_ids)
+    end
+
+    # ids referenced by playlist revisions for this item: the item itself
+    # (scheduling playlists) plus any item_schedules wrapping it (distribution
+    # playlists reference the schedule id, not the item id)
+    protected def revision_reference_ids : Array(String)
+      item_id = self.id.as(String)
+
+      schedule_ids = ::PgORM::Database.connection do |conn|
+        conn.query_one(%[
+          SELECT array_agg(id)
+          FROM playlist_item_schedules
+          WHERE item_id = '#{item_id}'
+        ], &.read(Array(String)?))
+      end
+
+      ids = [item_id]
+      ids.concat(schedule_ids) if schedule_ids
+      ids
+    end
+
+    protected def bump_playlist_timestamps(playlist_ids : Array(String)?)
       return unless playlist_ids
       return if playlist_ids.empty?
 

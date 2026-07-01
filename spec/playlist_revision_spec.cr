@@ -3,8 +3,54 @@ require "./helper"
 module PlaceOS::Model
   describe Playlist::Revision do
     Spec.before_each do
+      Playlist::ItemSchedule.clear
       Playlist::Revision.clear
       Playlist::Item.clear
+      Playlist.clear
+    end
+
+    it "fetches item schedules for distribution playlists" do
+      playlist = Generator.playlist(distribution: true).save!
+
+      schedule1 = Generator.item_schedule(playlist: playlist).save!
+      schedule2 = Generator.item_schedule(playlist: playlist).save!
+
+      revision = Generator.revision(playlist: playlist)
+      revision.items = [schedule1.id.as(String), schedule2.id.as(String)]
+      revision.save!
+
+      items = revision.fetch_items
+      items.map(&.id.as(String)).to_a.sort!.should eq [schedule1.id.as(String), schedule2.id.as(String)].sort!
+    end
+
+    it "does not wipe item schedules when a distribution revision is saved" do
+      playlist = Generator.playlist(distribution: true).save!
+
+      schedule = Generator.item_schedule(playlist: playlist).save!
+      schedule_id = schedule.id.as(String)
+
+      revision = Generator.revision(playlist: playlist)
+      revision.items = [schedule_id]
+      # check_items must not treat schedule ids as orphaned media items
+      revision.save!
+
+      revision.items.should eq [schedule_id]
+      Playlist::Revision.find!(revision.id.as(String)).items.should eq [schedule_id]
+    end
+
+    it "removes item schedule references when the underlying item is deleted" do
+      playlist = Generator.playlist(distribution: true).save!
+
+      item = Generator.item.save!
+      schedule = Generator.item_schedule(playlist: playlist, item: item).save!
+      schedule_id = schedule.id.as(String)
+
+      revision = Generator.revision(playlist: playlist)
+      revision.items = [schedule_id]
+      revision.save!
+
+      item.destroy
+      Playlist::Revision.find!(revision.id.as(String)).items.should eq [] of String
     end
 
     test_round_trip(Playlist::Revision)

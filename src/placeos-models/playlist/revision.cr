@@ -1,5 +1,6 @@
 require "../base/model"
 require "./item"
+require "./item_schedule"
 
 module PlaceOS::Model
   class Playlist::Revision < ModelBase
@@ -19,11 +20,17 @@ module PlaceOS::Model
     attribute approved_by_name : String?, sanitize: :text, mass_assignment: false
     attribute approved_by_email : PlaceOS::Model::Email?, format: "email", converter: PlaceOS::Model::EmailConverter, mass_assignment: false
 
+    # update items to support either media item or an item_schedule
+    # based on the playlist distribution flag
     attribute items : Array(String) = [] of String, es_type: "keyword"
     belongs_to Playlist, foreign_key: "playlist_id"
 
     def fetch_items
-      Playlist::Item.where(id: items)
+      if playlist!.distribution
+        Playlist::ItemSchedule.where(id: items)
+      else
+        Playlist::Item.where(id: items)
+      end
     end
 
     def clone : Playlist::Revision
@@ -79,6 +86,10 @@ module PlaceOS::Model
     before_save :check_items
 
     def check_items
+      # distribution playlists reference item schedules, everything else
+      # references media items directly
+      table = playlist!.distribution ? "playlist_item_schedules" : "playlist_items"
+
       sql_query = %[
         WITH input_ids AS (
           SELECT unnest(#{Associations.format_list_for_postgres(self.items)}) AS id
@@ -86,8 +97,8 @@ module PlaceOS::Model
 
         SELECT ARRAY_AGG(input_ids.id)
         FROM input_ids
-        LEFT JOIN playlist_items ON input_ids.id = playlist_items.id
-        WHERE playlist_items.id IS NULL;
+        LEFT JOIN #{table} ON input_ids.id = #{table}.id
+        WHERE #{table}.id IS NULL;
       ]
 
       remove_ids = ::PgORM::Database.connection do |conn|

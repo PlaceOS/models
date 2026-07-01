@@ -45,6 +45,11 @@ module PlaceOS::Model
     attribute random : Bool = false
     attribute enabled : Bool = true
 
+    # If the playlist is used to manage individually scheduled items
+    # then it should be flagged as a distribution playlist
+    # each item will have its own schedule (via item_schedule table)
+    attribute distribution : Bool = false
+
     # time in milliseconds
     attribute default_duration : Int32 = 10_000
 
@@ -52,8 +57,8 @@ module PlaceOS::Model
     attribute valid_from : Int64? = nil
     attribute valid_until : Int64? = nil
 
-    # when this playlist should play — at least one schedule is required, and
-    # each schedule must validate. Stored as a JSONB array.
+    # when this playlist should play — at least one schedule is required unless a distribution,
+    # and each schedule must validate. Stored as a JSONB array.
     attribute schedules : Array(Playlist::Schedule) = -> { [Playlist::Schedule.new] },
       converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Playlist::Schedule),
       es_ignore: true
@@ -132,15 +137,30 @@ module PlaceOS::Model
 
     validates :name, presence: true
     validates :default_duration, presence: true, numericality: {greater_than: 999}
-    # presence on an array attribute ⇒ at least one element
-    validates :schedules, presence: true
 
-    # each schedule must be individually valid
+    # distribution playlists schedule each item individually, so the
+    # playlist-level schedules don't apply. Everything else requires at least
+    # one schedule, and each schedule must be individually valid.
     validate ->(this : Playlist) {
+      return if this.distribution
+
+      if this.schedules.empty?
+        this.validation_error(:schedules, "is required")
+        return
+      end
+
       this.schedules.each_with_index do |schedule, index|
         if message = schedule.validation_message
           this.validation_error(:schedules, "schedule #{index + 1}: #{message}")
         end
+      end
+    }
+
+    # the distribution flag determines how items are interpreted, so it must be
+    # fixed at creation time to avoid orphaning existing item references.
+    validate ->(this : Playlist) {
+      if this.persisted? && this.distribution_changed?
+        this.validation_error(:distribution, "cannot be changed after creation")
       end
     }
   end
