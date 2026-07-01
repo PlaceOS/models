@@ -1,3 +1,9 @@
+## v9.99.0 (2026-07-01)
+
+### Feat
+
+- **playlist/item_schedule**: add individual content schedules
+
 ## v9.98.4 (2026-06-26)
 
 ### Fix
