@@ -1,3 +1,9 @@
+## v9.100.0 (2026-07-02)
+
+### Feat
+
+- **assets**: categories and types to have unique names scoped to authority
+
 ## v9.99.0 (2026-07-01)
 
 ### Feat
