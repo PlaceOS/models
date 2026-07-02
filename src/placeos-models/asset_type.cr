@@ -29,6 +29,12 @@ module PlaceOS::Model
     validates :brand, presence: true
     validates :category_id, presence: true
 
+    # Asset type names must be unique within a category. Model-level only —
+    # deliberately not a DB unique constraint — for backwards compatibility.
+    ensure_unique :name, scope: [:category_id, :name] do |category_id, name|
+      {category_id, name.strip}
+    end
+
     # Metadata
     ###############################################################################################
 

@@ -16,6 +16,10 @@ module PlaceOS::Model
     attribute description : String?
     attribute hidden : Bool = false, es_subfield: "keyword"
 
+    # NOTE: nilable at the DB level for backwards compatibility with pre-existing
+    # rows, but required at the model level (see the presence validation below).
+    belongs_to Authority, foreign_key: "authority_id"
+
     belongs_to AssetCategory, foreign_key: "parent_category_id", association_name: "parent_category"
 
     has_many(
@@ -34,5 +38,14 @@ module PlaceOS::Model
     ###############################################################################################
 
     validates :name, presence: true
+
+    # Enforced at the model level (nilable in the DB) for backwards compatibility.
+    validates :authority_id, presence: true
+
+    # Category names must be unique within an authority. Model-level only —
+    # deliberately not a DB unique constraint — so legacy rows are unaffected.
+    ensure_unique :name, scope: [:authority_id, :name] do |authority_id, name|
+      {authority_id, name.strip}
+    end
   end
 end

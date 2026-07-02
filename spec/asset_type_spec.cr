@@ -18,5 +18,25 @@ module PlaceOS::Model
       JSON.parse(asset_type.to_json)["asset_count"].should eq 0
       asset_type.asset_count.should eq 0
     end
+
+    it "enforces name uniqueness scoped to the category" do
+      category = Generator.asset_category.save!
+      Generator.asset_type(category).tap(&.name = "iPad Pro").save!
+
+      duplicate = Generator.asset_type(category)
+      duplicate.name = "iPad Pro"
+      duplicate.valid?.should be_false
+      duplicate.errors.map(&.field).should contain(:name)
+    end
+
+    it "allows the same name under a different category" do
+      Generator.asset_type(Generator.asset_category.save!).tap(&.name = "iPad Pro").save!
+
+      other_category = Generator.asset_category.save!
+      other = Generator.asset_type(other_category)
+      other.name = "iPad Pro"
+      other.valid?.should be_true
+      other.save!.persisted?.should be_true
+    end
   end
 end

@@ -438,9 +438,10 @@ module PlaceOS::Model
       )
     end
 
-    def self.asset_category
+    def self.asset_category(authority : Authority = localhost_authority)
       AssetCategory.new(
         name: Faker::Hacker.noun,
+        authority_id: authority.id,
       )
     end
 
