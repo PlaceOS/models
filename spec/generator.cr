@@ -440,14 +440,17 @@ module PlaceOS::Model
 
     def self.asset_category(authority : Authority = localhost_authority)
       AssetCategory.new(
-        name: Faker::Hacker.noun,
+        # name is unique per-authority; keep it unique so suites that don't
+        # clear the table between examples don't collide.
+        name: "#{Faker::Hacker.noun}-#{RANDOM.hex(4)}",
         authority_id: authority.id,
       )
     end
 
     def self.asset_type(category = Generator.asset_category.save!)
       AssetType.new(
-        name: Faker::Hacker.noun,
+        # name is unique per-category; keep it unique for the same reason.
+        name: "#{Faker::Hacker.noun}-#{RANDOM.hex(4)}",
         brand: Faker::Hacker.noun,
         category_id: category.id,
       )
