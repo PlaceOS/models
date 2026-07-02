@@ -1,3 +1,9 @@
+## v9.100.1 (2026-07-02)
+
+### Fix
+
+- **spec/generator**: improve randomness
+
 ## v9.100.0 (2026-07-02)
 
 ### Feat
