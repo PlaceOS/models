@@ -1,3 +1,9 @@
+## v9.101.0 (2026-07-20)
+
+### Feat
+
+- [PPT-2505] added space_config field to control system model ([#318](https://github.com/PlaceOS/models/pull/318))
+
 ## v9.100.1 (2026-07-02)
 
 ### Fix
