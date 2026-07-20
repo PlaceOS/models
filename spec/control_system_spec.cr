@@ -118,12 +118,14 @@ module PlaceOS::Model
 
       it "#space_config" do
         cs = Generator.control_system.save!
-        cs.space_config["enabled"] = false
-        cs.space_config["allow_recurrence_bookings"] = "disabled"
-        cs.space_config["threshold"] = 0.25
-        cs.space_config["temp"] = 50
-        cs.space_config["i64"] = 20_i64
-        cs.space_config["none"] = nil
+        space_config = {} of String => (String | Int32 | Int64 | Float64 | Bool | Nil)
+        space_config["enabled"] = false
+        space_config["allow_recurrence_bookings"] = "disabled"
+        space_config["threshold"] = 0.25
+        space_config["temp"] = 50
+        space_config["i64"] = 20_i64
+        space_config["none"] = nil
+        cs.space_config = JSON.parse(space_config.to_json).as_h
         cs.save
 
         cs.space_config["enabled"].should be_false
