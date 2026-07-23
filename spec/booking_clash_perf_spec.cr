@@ -96,7 +96,7 @@ module PlaceOS::Model
         b1 = recurring.call("desk-1", start_time, end_time, 0b1111111, rec_end)
         b1.save!
         b2 = recurring.call("desk-1", start_time + 30.minutes, end_time + 30.minutes, 0b1111111, rec_end)
-        b2.clashing_bookings.map(&.id).uniq.should contain b1.id
+        b2.clashing_bookings.map(&.id).uniq!.should contain b1.id
         b2.clashing?.should be_true
       end
 

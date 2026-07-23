@@ -82,5 +82,19 @@ module PlaceOS::Model
       plugin.save.should eq false
       plugin.errors.any? { |e| e.field == :uri }.should eq true
     end
+
+    it "defaults plugin_type to Plugin" do
+      plugin = Generator.signage_plugin.save!
+
+      found = SignagePlugin.find(plugin.id.as(String))
+      found.plugin_type.should eq SignagePlugin::PluginType::Plugin
+    end
+
+    it "persists a Widget plugin_type" do
+      plugin = Generator.widget_plugin.save!
+
+      found = SignagePlugin.find(plugin.id.as(String))
+      found.plugin_type.should eq SignagePlugin::PluginType::Widget
+    end
   end
 end
