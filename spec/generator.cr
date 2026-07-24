@@ -144,6 +144,64 @@ module PlaceOS::Model
       )
     end
 
+    def self.widget_plugin(
+      name : String = Faker::Hacker.noun,
+      authority : Authority? = nil,
+      **args,
+    )
+      plugin = signage_plugin(**args, name: name, authority: authority)
+      plugin.plugin_type = SignagePlugin::PluginType::Widget
+      plugin
+    end
+
+    def self.layout(
+      plugin : SignagePlugin? = nil,
+      position : SignageTemplate::Layout::Position = SignageTemplate::Layout::Position::Top,
+      x_pos : Float32? = nil,
+      y_pos : Float32? = 0.25_f32,
+      plugin_params : Hash(String, JSON::Any) = {} of String => JSON::Any,
+    )
+      SignageTemplate::Layout.new(
+        position: position,
+        plugin_id: plugin.try(&.id),
+        x_pos: x_pos,
+        y_pos: y_pos,
+        plugin_params: plugin_params,
+      )
+    end
+
+    def self.signage_template(
+      name : String = Faker::Hacker.noun,
+      authority : Authority? = nil,
+      layouts : Array(SignageTemplate::Layout) = [] of SignageTemplate::Layout,
+      tags : Array(String) = [] of String,
+    )
+      unless authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
+      template = SignageTemplate.new
+      template.name = name
+      template.authority_id = authority.id.as(String)
+      template.layouts = layouts
+      template.tags = tags
+      template
+    end
+
+    def self.system_template(
+      template : SignageTemplate? = nil,
+      control_system : ControlSystem = control_system.save!,
+      schedule : Playlist::Schedule? = nil,
+    )
+      template ||= signage_template.save!
+      sys_template = SignageTemplate::SystemTemplate.new
+      sys_template.control_system_id = control_system.id.as(String)
+      sys_template.template_id = template.id.as(UUID)
+      sys_template.schedule = schedule
+      sys_template
+    end
+
     def self.revision(playlist : Playlist = playlist.save!, user : User = user.save!)
       rev = Playlist::Revision.new
       rev.playlist_id = playlist.id

@@ -13,10 +13,18 @@ module PlaceOS::Model
       PLAYSTHROUGH
     end
 
+    enum PluginType
+      Plugin
+      Widget
+    end
+
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common
     attribute uri : String
     attribute playback_type : PlaybackType = PlaybackType::STATIC, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::SignagePlugin::PlaybackType)
+
+    # widgets are embeddable in signage templates; plugins play in playlists
+    attribute plugin_type : PluginType = PluginType::Plugin, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::SignagePlugin::PluginType)
 
     belongs_to Authority, foreign_key: "authority_id"
 
