@@ -1,3 +1,9 @@
+## v9.102.0 (2026-07-24)
+
+### Feat
+
+- **signage**: add widget support ([#320](https://github.com/PlaceOS/models/pull/320))
+
 ## v9.101.0 (2026-07-20)
 
 ### Feat
