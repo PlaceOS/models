@@ -1,3 +1,9 @@
+## v9.103.0 (2026-07-26)
+
+### Feat
+
+- **signage**: template approval workflow and zone associations
+
 ## v9.102.0 (2026-07-24)
 
 ### Feat
