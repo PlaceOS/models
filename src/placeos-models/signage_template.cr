@@ -3,9 +3,11 @@ require "uuid/json"
 
 require "./base/model"
 require "./authority"
+require "./email"
 require "./history"
 require "./signage_plugin"
 require "./playlist"
+require "./user"
 require "./signage_template/layout"
 
 module PlaceOS::Model
@@ -38,6 +40,53 @@ module PlaceOS::Model
 
     attribute full_screen_takeover : Bool = false
 
+    # Approval
+    ###############################################################################################
+
+    attribute approval_requested : Bool = false, mass_assignment: false
+    attribute requested_by_id : String?, mass_assignment: false
+
+    attribute approved : Bool = false, mass_assignment: false
+    attribute approved_by_id : String?, mass_assignment: false
+    attribute approved_by_name : String?, sanitize: :text, mass_assignment: false
+    attribute approved_by_email : PlaceOS::Model::Email?, format: "email", converter: PlaceOS::Model::EmailConverter, mass_assignment: false
+
+    def approver=(user)
+      self.approved_by_id = user.id.as(String)
+      self.approved_by_name = user.name
+      self.approved_by_email = user.email
+      self.approved = true
+    end
+
+    # approved templates should not be edited in place, so drafts are
+    # separate rows referencing the approved parent they were copied from.
+    # Drafts are removed at the DB level when the parent is deleted
+    # (ON DELETE CASCADE)
+    attribute live_template_id : UUID? = nil, es_type: "keyword"
+    belongs_to :live_template, class_name: PlaceOS::Model::SignageTemplate, foreign_key: live_template_id
+
+    def draft? : Bool
+      !live_template_id.nil?
+    end
+
+    # promotes this draft onto the approved template it references: copies
+    # the display fields, records the approver on the live template and
+    # removes the draft — all in a single transaction
+    def approve_draft!(user_model_who_approved : User) : SignageTemplate
+      raise ::PlaceOS::Model::Error.new("template #{id} is not a draft") unless draft?
+
+      live = self.live_template
+      ::PgORM::Database.transaction do
+        live.background_item_id = self.background_item_id
+        live.layouts = self.layouts
+        live.full_screen_takeover = self.full_screen_takeover
+        live.approver = user_model_who_approved
+        live.save!
+        self.destroy
+      end
+      live
+    end
+
     # Helpers
     ###############################################################################################
 
@@ -46,8 +95,13 @@ module PlaceOS::Model
     end
 
     def systems
-      sys_ids = system_templates.to_a.map(&.control_system_id).uniq!
+      sys_ids = system_templates.to_a.compact_map(&.control_system_id).uniq!
       ControlSystem.where(id: sys_ids)
+    end
+
+    def zones
+      zone_ids = system_templates.to_a.compact_map(&.zone_id).uniq!
+      Zone.where(id: zone_ids)
     end
 
     # Validation
@@ -118,9 +172,11 @@ module PlaceOS::Model
 
     before_save :record_template_history
 
-    # tracks which fields changed on updates (creates are not recorded)
+    # tracks which fields changed on updates (creates and draft edits are
+    # not recorded, history is captured when a draft is approved)
     protected def record_template_history
       return unless persisted?
+      return if draft?
 
       changed_fields = [] of String
       changed_fields << "name" if name_changed?
@@ -129,6 +185,9 @@ module PlaceOS::Model
       changed_fields << "background_item_id" if background_item_id_changed?
       changed_fields << "layouts" if layouts_changed?
       changed_fields << "full_screen_takeover" if full_screen_takeover_changed?
+      changed_fields << "approval_requested" if approval_requested_changed?
+      changed_fields << "approved" if approved_changed?
+      changed_fields << "live_template_id" if live_template_id_changed?
 
       return if changed_fields.empty?
 

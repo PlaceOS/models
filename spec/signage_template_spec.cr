@@ -214,6 +214,121 @@ module PlaceOS::Model
       end
     end
 
+    describe "approval" do
+      it "defaults to unapproved" do
+        template = Generator.signage_template.save!
+
+        found = SignageTemplate.find!(template.id.as(UUID))
+        found.approval_requested.should eq false
+        found.approved.should eq false
+        found.approved_by_id.should be_nil
+      end
+
+      it "records the approver" do
+        template = Generator.signage_template.save!
+        user = Generator.user.save!
+
+        template.approver = user
+        template.save!
+
+        found = SignageTemplate.find!(template.id.as(UUID))
+        found.approved.should eq true
+        found.approved_by_id.should eq user.id
+        found.approved_by_name.should eq user.name
+        found.approved_by_email.should eq user.email
+
+        History.count.should eq 1
+        History.all.to_a.first.changed_fields.should eq ["approved"]
+      end
+
+      it "removes draft rows when the approved parent is deleted" do
+        parent = Generator.signage_template.save!
+        draft = Generator.signage_template
+        draft.live_template_id = parent.id
+        draft.save!
+
+        found = SignageTemplate.find!(draft.id.as(UUID))
+        found.live_template_id.should eq parent.id
+
+        parent.destroy
+        SignageTemplate.find?(draft.id.as(UUID)).should be_nil
+      end
+
+      it "leaves the approved parent when a draft is deleted" do
+        parent = Generator.signage_template.save!
+        draft = Generator.signage_template
+        draft.live_template_id = parent.id
+        draft.save!
+
+        draft.destroy
+
+        SignageTemplate.find?(parent.id.as(UUID)).should_not be_nil
+      end
+
+      it "does not record history for draft edits" do
+        parent = Generator.signage_template.save!
+        draft = Generator.signage_template
+        draft.live_template_id = parent.id
+        draft.save!
+
+        draft.name = "draft edit"
+        draft.layouts = [Generator.layout]
+        draft.save!
+
+        History.count.should eq 0
+      end
+
+      it "approves a draft onto the live template" do
+        user = Generator.user.save!
+        item = Generator.item.save!
+        parent = Generator.signage_template.save!
+
+        draft = Generator.signage_template(layouts: [Generator.layout])
+        draft.live_template_id = parent.id
+        draft.background_item_id = item.id
+        draft.full_screen_takeover = true
+        draft.save!
+
+        live = draft.approve_draft!(user)
+        live.id.should eq parent.id
+
+        found = SignageTemplate.find!(parent.id.as(UUID))
+        found.background_item_id.should eq item.id
+        found.layouts.size.should eq 1
+        found.full_screen_takeover.should eq true
+        found.approved.should eq true
+        found.approved_by_id.should eq user.id
+        found.approved_by_name.should eq user.name
+
+        # the draft is removed once applied
+        SignageTemplate.find?(draft.id.as(UUID)).should be_nil
+
+        # the promotion is recorded against the live template
+        History.count.should eq 1
+        History.all.to_a.first.changed_fields.should contain "approved"
+      end
+
+      it "raises when approving a template that is not a draft" do
+        user = Generator.user.save!
+        template = Generator.signage_template.save!
+
+        expect_raises(PlaceOS::Model::Error, "is not a draft") do
+          template.approve_draft!(user)
+        end
+      end
+
+      it "records approval requests in history" do
+        template = Generator.signage_template.save!
+
+        template.approval_requested = true
+        template.requested_by_id = Generator.user.save!.id
+        template.save!
+
+        History.count.should eq 1
+        History.all.to_a.first.changed_fields.should eq ["approval_requested"]
+      end
+    end
+
     it "clears background_item_id when the media item is deleted" do
       item = Generator.item.save!
       template = Generator.signage_template

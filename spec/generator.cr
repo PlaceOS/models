@@ -191,12 +191,16 @@ module PlaceOS::Model
 
     def self.system_template(
       template : SignageTemplate? = nil,
-      control_system : ControlSystem = control_system.save!,
+      control_system : ControlSystem? = nil,
+      zone : Zone? = nil,
       schedule : Playlist::Schedule? = nil,
     )
       template ||= signage_template.save!
+      control_system = self.control_system.save! if control_system.nil? && zone.nil?
+
       sys_template = SignageTemplate::SystemTemplate.new
-      sys_template.control_system_id = control_system.id.as(String)
+      sys_template.control_system_id = control_system.id.as(String) if control_system
+      sys_template.zone_id = zone.id.as(String) if zone
       sys_template.template_id = template.id.as(UUID)
       sys_template.schedule = schedule
       sys_template
