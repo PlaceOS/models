@@ -1055,6 +1055,26 @@ module PlaceOS::Model
       )
     end
 
+    def self.group_signage_template(
+      group : Group? = nil,
+      signage_template : SignageTemplate? = nil,
+    )
+      authority = if group
+                    Authority.find!(group.authority_id)
+                  elsif signage_template
+                    Authority.find!(signage_template.authority_id)
+                  else
+                    existing = Authority.find_by_domain("localhost")
+                    existing || self.authority.save!
+                  end
+      g = group || self.group(authority: authority).save!
+      template = signage_template || self.signage_template(authority: authority).save!
+      GroupSignageTemplate.new(
+        group_id: g.id.not_nil!,
+        signage_template_id: template.id.not_nil!,
+      )
+    end
+
     def self.pending_mail(
       authority : Authority? = nil,
       user : User? = nil,
