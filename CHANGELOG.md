@@ -1,3 +1,9 @@
+## v9.104.0 (2026-07-27)
+
+### Feat
+
+- **signage**: allow templates to be managed by groups
+
 ## v9.103.0 (2026-07-26)
 
 ### Feat
