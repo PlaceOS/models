@@ -84,6 +84,29 @@ module PlaceOS::Model
     def accessible_zone_ids : Array(String)
       Group.accessible_zone_ids(authority.id.not_nil!, subsystem, user.id.not_nil!)
     end
+
+    # Runs the SQL-subquery form and returns the sorted zone-id set
+    # (nil when the builder returned no query).
+    def accessible_zones_sql_set(
+      required : Permissions = Permissions::Read,
+      subsystems : Array(String)? = nil,
+    ) : Array(String)?
+      sql = Group.accessible_zones_sql(
+        authority.id.not_nil!, subsystems || [subsystem], user.id.not_nil!, required,
+      )
+      return nil if sql.nil?
+      ::PgORM::Database.connection do |db|
+        db.query_all("SELECT * FROM #{sql} AS q(zone_id)", &.read(String))
+      end.sort!
+    end
+
+    # The reference set derived from the in-memory resolver, filtered the
+    # same way callers of the SQL form filter (Manage is a superset).
+    def resolver_zone_set(required : Permissions = Permissions::Read) : Array(String)
+      Group.resolve_subsystem_permissions(authority.id.not_nil!, subsystem, user.id.not_nil!)
+        .compact_map { |zid, perms| zid if perms.manage? || (perms & required) != Permissions::None }
+        .sort!
+    end
   end
 
   # End-to-end tests for the subsystem-scoped permission resolution on
@@ -326,6 +349,115 @@ module PlaceOS::Model
         f.effective_permissions(
           [unreachable_zone.id.not_nil!, f.room_101.id.not_nil!],
         ).should eq Permissions::Read
+      end
+    end
+
+    describe "accessible_zones_sql" do
+      it "propagates zone grants down the zone tree" do
+        f = GroupPermissionsFixture.build
+        Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Read).save!
+        Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
+
+        expected = [f.floor_1, f.room_101, f.room_102].map(&.id.not_nil!).sort!
+        f.accessible_zones_sql_set.should eq expected
+        f.accessible_zones_sql_set.should eq f.resolver_zone_set
+      end
+
+      it "deny row zeroes out a zone subtree" do
+        f = GroupPermissionsFixture.build
+        Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::All).save!
+        Generator.group_zone(group: f.team_a, zone: f.building, permissions: Permissions::All).save!
+        Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::All, deny: true).save!
+
+        expected = [f.building, f.floor_2].map(&.id.not_nil!).sort!
+        f.accessible_zones_sql_set.should eq expected
+        f.accessible_zones_sql_set.should eq f.resolver_zone_set
+      end
+
+      it "honours more-specific rows for the required bits" do
+        f = GroupPermissionsFixture.build
+        Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::All).save!
+        Generator.group_zone(
+          group: f.team_a, zone: f.floor_1,
+          permissions: Permissions::Read | Permissions::Update,
+        ).save!
+        # more-specific row on room_101 drops Update
+        Generator.group_zone(group: f.team_a, zone: f.room_101, permissions: Permissions::Read).save!
+
+        expected = [f.floor_1, f.room_102].map(&.id.not_nil!).sort!
+        f.accessible_zones_sql_set(Permissions::Update).should eq expected
+        f.accessible_zones_sql_set(Permissions::Update).should eq f.resolver_zone_set(Permissions::Update)
+
+        # for Read, all three qualify
+        read_expected = [f.floor_1, f.room_101, f.room_102].map(&.id.not_nil!).sort!
+        f.accessible_zones_sql_set.should eq read_expected
+      end
+
+      it "distinguishes anchor and descendant permissions" do
+        f = GroupPermissionsFixture.build
+        # user holds Read via root, but an explicit Update-only entry on
+        # team_a governs descendants of root-owned grants
+        Generator.group_user(user: f.user, group: f.root, permissions: Permissions::Read).save!
+        Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Update).save!
+        Generator.group_zone(group: f.root, zone: f.building, permissions: Permissions::All).save!
+
+        # Update reaches the descendants only — not the anchor itself
+        expected = [f.floor_1, f.floor_2, f.room_101, f.room_102].map(&.id.not_nil!).sort!
+        f.accessible_zones_sql_set(Permissions::Update).should eq expected
+        f.accessible_zones_sql_set(Permissions::Update).should eq f.resolver_zone_set(Permissions::Update)
+
+        # Read holds at the anchor only
+        f.accessible_zones_sql_set(Permissions::Read).should eq [f.building.id.not_nil!]
+        f.accessible_zones_sql_set(Permissions::Read).should eq f.resolver_zone_set(Permissions::Read)
+      end
+
+      it "unions grants across subsystems" do
+        f = GroupPermissionsFixture.build("signage")
+        support_group = Generator.group(authority: f.authority, parent: f.root, subsystems: ["support"]).save!
+
+        Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Read).save!
+        Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
+        Generator.group_user(user: f.user, group: support_group, permissions: Permissions::Read).save!
+        Generator.group_zone(group: support_group, zone: f.floor_2, permissions: Permissions::Read).save!
+
+        expected = [f.floor_1, f.room_101, f.room_102, f.floor_2].map(&.id.not_nil!).sort!
+        f.accessible_zones_sql_set(Permissions::Read, ["signage", "support"]).should eq expected
+
+        # a single subsystem sees only its own grants
+        f.accessible_zones_sql_set(Permissions::Read, ["support"])
+          .should eq [f.floor_2.id.not_nil!]
+      end
+
+      it "lets another owner grant access below a different owner's deny" do
+        f = GroupPermissionsFixture.build
+        Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::All).save!
+        Generator.group_zone(group: f.team_a, zone: f.building, permissions: Permissions::All).save!
+        Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::All, deny: true).save!
+
+        Generator.group_user(user: f.user, group: f.team_b, permissions: Permissions::Read).save!
+        Generator.group_zone(group: f.team_b, zone: f.room_101, permissions: Permissions::Read).save!
+
+        expected = [f.building, f.floor_2, f.room_101].map(&.id.not_nil!).sort!
+        f.accessible_zones_sql_set.should eq expected
+        f.accessible_zones_sql_set.should eq f.resolver_zone_set
+      end
+
+      it "returns nil when nothing qualifies" do
+        f = GroupPermissionsFixture.build
+
+        # no membership at all
+        f.accessible_zones_sql_set.should be_nil
+
+        # membership but no zone grants
+        Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Read).save!
+        f.accessible_zones_sql_set.should be_nil
+
+        # grants exist but in a different subsystem
+        Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
+        f.accessible_zones_sql_set(Permissions::Read, ["other-subsystem"]).should be_nil
+
+        # grants exist but don't include the required bits (and no Manage)
+        f.accessible_zones_sql_set(Permissions::Delete).should be_nil
       end
     end
   end

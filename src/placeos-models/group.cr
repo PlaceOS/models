@@ -147,6 +147,119 @@ module PlaceOS::Model
       resolve_user_permissions(authority_id, subsystem, user_id)
     end
 
+    # Returns a self-contained SQL subquery (single column: zone id)
+    # yielding every zone where the user's effective permissions within any
+    # of `subsystems` satisfy `required` (Manage is a superset). The same
+    # rules as `resolve_subsystem_permissions` apply, but only the
+    # anchor-level grant decisions are made in Crystal (bounded by the
+    # explicit GroupUser / GroupZone rows) — the zone-subtree expansion runs
+    # in the database via a recursive CTE, so the qualifying zone set is
+    # never materialised in application memory. Returns nil when the user
+    # holds no qualifying grants (callers should treat nil as an empty set).
+    def self.accessible_zones_sql(
+      authority_id : String,
+      subsystems : Array(String),
+      user_id : String,
+      required : Permissions,
+    ) : String?
+      direct_memberships = user_direct_memberships(authority_id, user_id)
+      return nil if direct_memberships.empty?
+
+      authority_groups = Group.where(authority_id: authority_id).to_a
+      return nil if authority_groups.empty?
+
+      parent_of = {} of UUID => UUID
+      all_group_ids = [] of UUID
+      member_group_ids = [] of UUID
+      authority_groups.each do |g|
+        gid = g.id.not_nil!
+        all_group_ids << gid
+        if (parent = g.parent_id)
+          parent_of[gid] = parent
+        end
+        member_group_ids << gid if g.subsystems.any? { |sub| subsystems.includes?(sub) }
+      end
+      return nil if member_group_ids.empty?
+
+      effective_memberships = walk_up_memberships(direct_memberships, all_group_ids, parent_of)
+      group_depths = compute_group_depths(all_group_ids, parent_of)
+      group_descendants = compute_group_descendants(all_group_ids, parent_of)
+
+      rows_by_group = Hash(UUID, Array(GroupZone)).new
+      GroupZone.where(group_id: member_group_ids).each do |gz|
+        (rows_by_group[gz.group_id] ||= [] of GroupZone) << gz
+      end
+      return nil if rows_by_group.empty?
+
+      satisfies = ->(perms : Permissions) do
+        perms.manage? || (perms & required) != Permissions::None
+      end
+
+      # zones readable at their own anchor row
+      anchor_hits = Set(String).new
+      # (anchor zone, owner) pairs whose subtrees are readable — expanded in SQL
+      walk_seeds = Set({String, UUID}).new
+      # every explicit row halts other walks of the same owner (replace
+      # semantics; deny rows contribute nothing but still stop the walk)
+      stops = Set({String, UUID}).new
+
+      rows_by_group.each do |owner_id, rows|
+        anchor_perms = effective_memberships[owner_id]?
+        reaching_descendant = deepest_explicit_in_subtree(
+          owner_id, direct_memberships, group_descendants, group_depths,
+        )
+        descendant_perms = effective_memberships[reaching_descendant]?
+
+        rows.each do |row|
+          stops << {row.zone_id, owner_id}
+
+          grant_perms = row.deny ? Permissions::None : Permissions.new(row.permissions)
+          next if grant_perms == Permissions::None
+
+          if (perms = anchor_perms) && satisfies.call(perms & grant_perms)
+            anchor_hits << row.zone_id
+          end
+          if (perms = descendant_perms) && satisfies.call(perms & grant_perms)
+            walk_seeds << {row.zone_id, owner_id}
+          end
+        end
+      end
+      return nil if anchor_hits.empty? && walk_seeds.empty?
+
+      escape = ->(value : String) { "'#{value.gsub("'", "''")}'" }
+      anchors_sql = anchor_hits.join(", ") { |zid| "(#{escape.call(zid)})" }
+
+      if walk_seeds.empty?
+        return "(SELECT zone_id FROM (VALUES #{anchors_sql}) AS anchors(zone_id))"
+      end
+
+      seeds_sql = walk_seeds.join(", ") { |(zid, owner)| "(#{escape.call(zid)}, #{escape.call(owner.to_s)})" }
+      stops_sql = stops.join(", ") { |(zid, owner)| "(#{escape.call(zid)}, #{escape.call(owner.to_s)})" }
+
+      # seed anchors are excluded from the walk results (`WHERE NOT seed`) —
+      # readability at the anchor itself is decided solely by anchor_hits
+      walk_sql = <<-SQL
+        WITH RECURSIVE walk(zone_id, owner_id, seed) AS (
+            SELECT v.zone_id, v.owner_id, TRUE FROM (VALUES #{seeds_sql}) AS v(zone_id, owner_id)
+          UNION
+            SELECT z.id, w.owner_id, FALSE
+            FROM "zone" z
+            INNER JOIN walk w ON z.parent_id = w.zone_id
+            WHERE NOT EXISTS (
+              SELECT 1 FROM (VALUES #{stops_sql}) AS s(zone_id, owner_id)
+              WHERE s.zone_id = z.id AND s.owner_id = w.owner_id
+            )
+        )
+        SELECT zone_id FROM walk WHERE NOT seed
+        SQL
+
+      if anchor_hits.empty?
+        "(#{walk_sql})"
+      else
+        "(#{walk_sql}\nUNION\nSELECT zone_id FROM (VALUES #{anchors_sql}) AS anchors(zone_id))"
+      end
+    end
+
     # Resolve the full `{zone_id => Permissions}` map for the user within
     # `subsystem`.
     #
