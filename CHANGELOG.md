@@ -1,3 +1,9 @@
+## v9.105.0 (2026-07-27)
+
+### Feat
+
+- **group**: accessible zones as an SQL subquery
+
 ## v9.104.0 (2026-07-27)
 
 ### Feat
