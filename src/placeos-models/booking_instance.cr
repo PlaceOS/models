@@ -100,8 +100,14 @@ module PlaceOS::Model
       instance.deleted = self.deleted
       instance.deleted_at = self.deleted_at
       instance.process_state = self.process_state
-      if ext_data = self.extension_data
-        instance.extension_data = ext_data
+      # extension data on an instance is an override of individual keys, not a
+      # wholesale replacement: any key the instance does not set must keep
+      # tracking the parent series. an empty override is treated as no override
+      # at all, so an occurrence can never be stranded on a blank snapshot.
+      if (ext_data = self.extension_data) && (overrides = ext_data.as_h?) && !overrides.empty?
+        merged = instance.extension_data.as_h.dup
+        overrides.each { |key, value| merged[key] = value }
+        instance.extension_data = JSON::Any.new(merged)
       end
       instance.history = self.history
 
