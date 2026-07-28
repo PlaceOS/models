@@ -1,3 +1,9 @@
+## v9.105.1 (2026-07-28)
+
+### Fix
+
+- **booking_instance**: extension_data is an override, not a replacement
+
 ## v9.105.0 (2026-07-27)
 
 ### Feat
