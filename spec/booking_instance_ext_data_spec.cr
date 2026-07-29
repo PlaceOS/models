@@ -19,7 +19,7 @@ module PlaceOS::Model
 
     booking = uninitialized Booking
 
-    Spec.before_each do
+    before_each do
       Booking.clear
       BookingInstance.clear
       Tenant.clear
