@@ -1,3 +1,9 @@
+## v9.105.2 (2026-07-29)
+
+### Fix
+
+- **user**: logged_out_at does not map well in ES, ignore it
+
 ## v9.105.1 (2026-07-28)
 
 ### Fix
