@@ -100,14 +100,12 @@ module PlaceOS::Model
       instance.deleted = self.deleted
       instance.deleted_at = self.deleted_at
       instance.process_state = self.process_state
-      # extension data on an instance is an override of individual keys, not a
-      # wholesale replacement: any key the instance does not set must keep
-      # tracking the parent series. an empty override is treated as no override
-      # at all, so an occurrence can never be stranded on a blank snapshot.
-      if (ext_data = self.extension_data) && (overrides = ext_data.as_h?) && !overrides.empty?
-        merged = instance.extension_data.as_h.dup
-        overrides.each { |key, value| merged[key] = value }
-        instance.extension_data = JSON::Any.new(merged)
+      # A non-empty extension data object is a complete snapshot for this
+      # occurrence and replaces the parent booking's extension data wholesale.
+      # Nil, JSON null, and an empty object mean there is no instance snapshot,
+      # so the occurrence continues to inherit from the parent booking.
+      if (ext_data = self.extension_data) && (snapshot = ext_data.as_h?) && !snapshot.empty?
+        instance.extension_data = ext_data
       end
       instance.history = self.history
 
@@ -156,5 +154,9 @@ module PlaceOS::Model
 
     validate :booking_start, "must not clash with an existing booking", ->(this : self) { this.skip_clash_check || !this.slot_changed? || !this.hydrate_booking.clashing? }
     validate :asset_ids, "must be unique", ->(this : self) { this.unique_ids? }
+    validate :extension_data, "must be a JSON object", ->(this : self) do
+      data = this.extension_data
+      data.nil? || data.raw.nil? || !data.as_h?.nil?
+    end
   end
 end

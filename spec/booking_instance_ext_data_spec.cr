@@ -1,9 +1,10 @@
 require "./helper"
 
 module PlaceOS::Model
-  # `booking_instances.extension_data` is an *override* of individual keys, not
-  # a replacement for the parent series' extension data. Anything an occurrence
-  # does not explicitly set has to keep tracking the parent booking.
+  # `booking_instances.extension_data` is a complete snapshot when present.
+  # An occurrence only inherits from the parent while it has no non-empty object
+  # stored; once extension data is explicitly changed, later series edits must
+  # not alter that occurrence's snapshot.
   describe BookingInstance do
     timezone = Time::Location.load("Australia/Perth")
     start_time = Time.local(2020, 1, 10, 7, 0, 0, location: timezone)
@@ -46,7 +47,11 @@ module PlaceOS::Model
       instance.skip_clash_check = true
       instance.save!
 
-      hydrated = instance.hydrate_booking(booking)
+      reloaded = BookingInstance.find_one_by_sql?(<<-SQL, booking.id, times[1].to_unix).not_nil!
+        SELECT i.* FROM "booking_instances" i WHERE i.id = $1 AND i.instance_start = $2 LIMIT 1
+      SQL
+
+      hydrated = reloaded.hydrate_booking(booking)
       hydrated.asset_id.should eq "parking-bay-7"
       hydrated.extension_data.as_h["plate_number"].should eq JSON::Any.new("testplate1")
       hydrated.extension_data.as_h["location"].should eq JSON::Any.new("Test Street")
@@ -60,28 +65,54 @@ module PlaceOS::Model
       instance.skip_clash_check = true
       instance.save!
 
-      hydrated = instance.hydrate_booking(booking)
+      reloaded = BookingInstance.find_one_by_sql?(<<-SQL, booking.id, times[1].to_unix).not_nil!
+        SELECT i.* FROM "booking_instances" i WHERE i.id = $1 AND i.instance_start = $2 LIMIT 1
+      SQL
+
+      hydrated = reloaded.hydrate_booking(booking)
       hydrated.extension_data.as_h["plate_number"].should eq JSON::Any.new("testplate1")
     end
 
-    it "merges the instance's own keys over the series, leaving the rest inherited" do
+    it "rejects non-object extension data" do
       times = booking.calculate_daily(start_query, end_query).instances
 
       instance = booking.to_instance(times[1].to_unix)
-      instance.extension_data = JSON.parse(%({"plate_number": "testplate2"}))
+      instance.extension_data = JSON.parse(%(["not", "an", "object"]))
+      instance.skip_clash_check = true
+
+      instance.save.should be_false
+      instance.errors.map(&.field).should contain(:extension_data)
+    end
+
+    it "uses a non-empty instance value as the complete extension-data snapshot" do
+      times = booking.calculate_daily(start_query, end_query).instances
+
+      instance = booking.to_instance(times[1].to_unix)
+      instance.extension_data = JSON.parse(%({
+        "location": "Snapshot Street",
+        "plate_number": "testplate2"
+      }))
       instance.skip_clash_check = true
       instance.save!
 
-      hydrated = instance.hydrate_booking(booking)
+      reloaded = BookingInstance.find_one_by_sql?(<<-SQL, booking.id, times[1].to_unix).not_nil!
+        SELECT i.* FROM "booking_instances" i WHERE i.id = $1 AND i.instance_start = $2 LIMIT 1
+      SQL
+
+      hydrated = reloaded.hydrate_booking(booking)
       hydrated.extension_data.as_h["plate_number"].should eq JSON::Any.new("testplate2")
-      hydrated.extension_data.as_h["location"].should eq JSON::Any.new("Test Street")
+      hydrated.extension_data.as_h["location"].should eq JSON::Any.new("Snapshot Street")
+      hydrated.extension_data.as_h.has_key?("vehicle_type").should be_false
     end
 
-    it "picks up later changes to the series for keys it does not override" do
+    it "keeps its snapshot when the series extension data changes later" do
       times = booking.calculate_daily(start_query, end_query).instances
 
       instance = booking.to_instance(times[1].to_unix)
-      instance.extension_data = JSON.parse(%({"plate_number": "testplate2"}))
+      instance.extension_data = JSON.parse(%({
+        "location": "Snapshot Street",
+        "plate_number": "testplate2"
+      }))
       instance.skip_clash_check = true
       instance.save!
 
@@ -97,8 +128,9 @@ module PlaceOS::Model
         SELECT i.* FROM "booking_instances" i WHERE i.id = $1 AND i.instance_start = $2 LIMIT 1
       SQL
 
-      hydrated.extension_data.as_h["location"].should eq JSON::Any.new("Second Street")
+      hydrated.extension_data.as_h["location"].should eq JSON::Any.new("Snapshot Street")
       hydrated.extension_data.as_h["plate_number"].should eq JSON::Any.new("testplate2")
+      hydrated.extension_data.as_h.has_key?("vehicle_type").should be_false
     end
 
     it "does not mutate the parent booking's extension data while hydrating" do
