@@ -1,3 +1,9 @@
+## v9.105.3 (2026-07-30)
+
+### Fix
+
+- **booking_instance**: restore extension data snapshots
+
 ## v9.105.2 (2026-07-29)
 
 ### Fix
