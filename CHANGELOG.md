@@ -1,3 +1,9 @@
+## v9.106.0 (2026-07-30)
+
+### Feat
+
+- [PPT-2596] Add ai support agent models ([#321](https://github.com/PlaceOS/models/pull/321))
+
 ## v9.105.3 (2026-07-30)
 
 ### Fix
