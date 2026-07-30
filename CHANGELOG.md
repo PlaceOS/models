@@ -1,3 +1,9 @@
+## v9.106.1 (2026-07-30)
+
+### Fix
+
+- **user**: logged_out_at should have a timezone
+
 ## v9.106.0 (2026-07-30)
 
 ### Feat
