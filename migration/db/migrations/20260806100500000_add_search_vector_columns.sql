@@ -28,6 +28,17 @@ LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
 $$;
 -- +micrate StatementEnd
 
+-- URIs and file paths are split on all punctuation so their segments are
+-- individually prefix-searchable ("swit" matches ".../video_switcher.cr"),
+-- while the raw value is kept for whole-string matching. Elasticsearch's
+-- analyzer segmented these fields the same way.
+-- +micrate StatementBegin
+CREATE OR REPLACE FUNCTION placeos_fts_uri(addr text) RETURNS text
+LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT regexp_replace(COALESCE(addr, ''), '[^[:alnum:]]+', ' ', 'g') || ' ' || COALESCE(addr, '')
+$$;
+-- +micrate StatementEnd
+
 ALTER TABLE "sys" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(display_name, '') || ' ' || COALESCE(code, '') || ' ' ||
@@ -40,15 +51,15 @@ CREATE INDEX idx_sys_search_vector ON "sys" USING GIN (search_vector);
 ALTER TABLE "mod" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(custom_name, '') || ' ' || COALESCE(name, '') || ' ' || COALESCE(ip, '') || ' ' ||
-    COALESCE(uri, '') || ' ' || COALESCE(notes, '') || ' ' || COALESCE(id::text, '')
+    placeos_fts_uri(uri) || ' ' || COALESCE(notes, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
 CREATE INDEX idx_mod_search_vector ON "mod" USING GIN (search_vector);
 
 ALTER TABLE "driver" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
-    COALESCE(name, '') || ' ' || COALESCE(module_name, '') || ' ' || COALESCE(file_name, '') || ' ' ||
-    COALESCE(description, '') || ' ' || COALESCE(default_uri, '') || ' ' || COALESCE(id::text, '')
+    COALESCE(name, '') || ' ' || COALESCE(module_name, '') || ' ' || placeos_fts_uri(file_name) || ' ' ||
+    COALESCE(description, '') || ' ' || placeos_fts_uri(default_uri) || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
 CREATE INDEX idx_driver_search_vector ON "driver" USING GIN (search_vector);
@@ -75,7 +86,7 @@ CREATE INDEX idx_user_search_vector ON "user" USING GIN (search_vector);
 
 ALTER TABLE "repo" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
-    COALESCE(name, '') || ' ' || COALESCE(folder_name, '') || ' ' || COALESCE(uri, '') || ' ' ||
+    COALESCE(name, '') || ' ' || COALESCE(folder_name, '') || ' ' || placeos_fts_uri(uri) || ' ' ||
     COALESCE(description, '') || ' ' || COALESCE(branch, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
@@ -193,7 +204,7 @@ CREATE INDEX idx_alert_dashboard_search_vector ON "alert_dashboard" USING GIN (s
 
 ALTER TABLE "shortener" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
-    COALESCE(name, '') || ' ' || COALESCE(uri, '') || ' ' || COALESCE(description, '') || ' ' ||
+    COALESCE(name, '') || ' ' || placeos_fts_uri(uri) || ' ' || COALESCE(description, '') || ' ' ||
     COALESCE(id::text, '')
   )
 ) STORED;
@@ -201,7 +212,7 @@ CREATE INDEX idx_shortener_search_vector ON "shortener" USING GIN (search_vector
 
 ALTER TABLE "signage_plugin" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
-    COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(uri, '') || ' ' ||
+    COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || placeos_fts_uri(uri) || ' ' ||
     COALESCE(id::text, '')
   )
 ) STORED;
@@ -271,5 +282,6 @@ ALTER TABLE "shortener" DROP COLUMN IF EXISTS search_vector;
 ALTER TABLE "signage_plugin" DROP COLUMN IF EXISTS search_vector;
 ALTER TABLE "pending_mail" DROP COLUMN IF EXISTS search_vector;
 
+DROP FUNCTION IF EXISTS placeos_fts_uri(text);
 DROP FUNCTION IF EXISTS placeos_fts_email(text);
 DROP FUNCTION IF EXISTS placeos_fts_join(text[]);

@@ -73,6 +73,10 @@ module PlaceOS::Model
       mod.save!
 
       vector_search(Module, "projector:*").map(&.id).should eq [mod.id]
+      # URI/path segments are individually searchable (placeos_fts_uri)
+      driver.file_name.as(String).split(/[^A-Za-z0-9]+/).reject(&.empty?).first?.try do |segment|
+        vector_search(Driver, "#{segment.downcase}:*").map(&.id).should contain(driver.id)
+      end
       # module search by driver name is a query-time join (rest-api concern);
       # the driver side of that join matches here
       vector_search(Driver, "cisco:* & switch:*").map(&.id).should eq [driver.id]
