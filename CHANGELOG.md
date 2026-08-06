@@ -1,3 +1,9 @@
+## v9.106.2 (2026-08-06)
+
+### Fix
+
+- **migrations**: renumber the AI-support migration above the release line ([#323](https://github.com/PlaceOS/models/pull/323))
+
 ## v9.106.1 (2026-07-30)
 
 ### Fix
