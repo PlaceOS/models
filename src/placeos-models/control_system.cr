@@ -20,7 +20,7 @@ module PlaceOS::Model
 
     table :sys
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
 
     # Room search meta-data
@@ -42,7 +42,7 @@ module PlaceOS::Model
     # Array of security group ids for room access
     attribute security_groups : Array(String) = -> { [] of String }
 
-    attribute timezone : Time::Location?, converter: Time::Location::Converter, es_type: "text"
+    attribute timezone : Time::Location?, converter: Time::Location::Converter
 
     # Provide fields for simplifying support
     attribute support_url : String = ""
@@ -60,14 +60,14 @@ module PlaceOS::Model
     attribute installed_ui_devices : Int32 = 0
 
     # IDs of associated models
-    attribute zones : Array(String) = [] of String, es_type: "keyword"
-    attribute modules : Array(String) = [] of String, es_type: "keyword"
+    attribute zones : Array(String) = [] of String
+    attribute modules : Array(String) = [] of String
 
     # Systems as digital signage displays
     # playlists can be assigned directly to displays or to zones
     # playlists in zones will only be loaded if they have matching orientations
     attribute orientation : Playlist::Orientation = Playlist::Orientation::Unspecified, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Orientation)
-    attribute playlists : Array(String) = [] of String, es_type: "keyword"
+    attribute playlists : Array(String) = [] of String
     attribute signage : Bool = false
 
     attribute signage_last_seen : Time = -> { 5.hours.ago }, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false

@@ -6,7 +6,7 @@ module PlaceOS::Model
 
     table :shortener
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute uri : String
     attribute description : String = "", sanitize: :common
 

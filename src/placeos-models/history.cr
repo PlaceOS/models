@@ -6,10 +6,10 @@ module PlaceOS::Model
 
     table :history
 
-    attribute type : String, es_subfield: "keyword"
-    attribute resource_id : String, es_subfield: "keyword"
-    attribute action : String, es_subfield: "keyword"
-    attribute changed_fields : Array(String) = [] of String, es_type: "keyword"
+    attribute type : String
+    attribute resource_id : String
+    attribute action : String
+    attribute changed_fields : Array(String) = [] of String
 
     # Validation
     ###############################################################################################

@@ -16,7 +16,7 @@ module PlaceOS::Model
 
     table :zone
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
     attribute tags : Set(String) = -> { Set(String).new }, sanitize: :text
 
@@ -38,12 +38,12 @@ module PlaceOS::Model
     # Map identifier, could be a URL or id
     attribute map_id : String?
     # Timezone
-    attribute timezone : Time::Location?, converter: Time::Location::Converter, es_type: "text"
+    attribute timezone : Time::Location?, converter: Time::Location::Converter
     # =============================
 
     attribute triggers : Array(String) = [] of String
     attribute images : Array(String) = [] of String
-    attribute playlists : Array(String) = [] of String, es_type: "keyword"
+    attribute playlists : Array(String) = [] of String
 
     attribute place_id : String?
 

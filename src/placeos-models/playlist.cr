@@ -32,7 +32,7 @@ module PlaceOS::Model
 
     table :playlists
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
 
     belongs_to Authority, foreign_key: "authority_id"
@@ -40,7 +40,7 @@ module PlaceOS::Model
     attribute orientation : Orientation = Orientation::Portrait, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Orientation)
     attribute play_count : Int64 = 0
     attribute play_through_count : Int64 = 0
-    attribute default_animation : Animation = Animation::Cut, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Playlist::Animation)
+    attribute default_animation : Animation = Animation::Cut, converter: Enum::ValueConverter(PlaceOS::Model::Playlist::Animation)
 
     attribute random : Bool = false
     attribute enabled : Bool = true
@@ -60,8 +60,7 @@ module PlaceOS::Model
     # when this playlist should play — at least one schedule is required unless a distribution,
     # and each schedule must validate. Stored as a JSONB array.
     attribute schedules : Array(Playlist::Schedule) = -> { [Playlist::Schedule.new] },
-      converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Playlist::Schedule),
-      es_ignore: true
+      converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Playlist::Schedule)
 
     def should_present?(now : Time = Time.utc) : Bool
       return false unless enabled

@@ -9,7 +9,7 @@ module PlaceOS::Model
 
     table :ldap_strat
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute port : Int32 = 636
 
     # One of `"plain"`, `"ssl`", `"tls"`

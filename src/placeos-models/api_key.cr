@@ -10,12 +10,12 @@ module PlaceOS::Model
 
     table :api_key
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
 
-    attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope::PUBLIC], converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::UserJWT::Scope), es_type: "keyword"
+    attribute scopes : Array(UserJWT::Scope) = [UserJWT::Scope::PUBLIC], converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::UserJWT::Scope)
 
-    attribute permissions : UserJWT::Permissions? = UserJWT::Permissions::User, converter: Enum::ValueConverter(PlaceOS::Model::UserJWT::Permissions), es_type: "integer"
+    attribute permissions : UserJWT::Permissions? = UserJWT::Permissions::User, converter: Enum::ValueConverter(PlaceOS::Model::UserJWT::Permissions)
 
     attribute secret : String = -> { Random::Secure.urlsafe_base64(32) }, mass_assignment: false
 

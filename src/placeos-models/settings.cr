@@ -21,10 +21,10 @@ module PlaceOS::Model
 
     # TODO: Statically ensure a single `parent_id` exists on the table
 
-    attribute encryption_level : Encryption::Level = Encryption::Level::None, converter: Enum::ValueConverter(PlaceOS::Encryption::Level), es_type: "integer"
+    attribute encryption_level : Encryption::Level = Encryption::Level::None, converter: Enum::ValueConverter(PlaceOS::Encryption::Level)
 
     attribute settings_string : String = "{}"
-    attribute keys : Array(String) = [] of String, es_type: "text"
+    attribute keys : Array(String) = [] of String
 
     # Possible parent documents
     enum ParentType
@@ -45,12 +45,12 @@ module PlaceOS::Model
       end
     end
 
-    attribute parent_type : ParentType, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Settings::ParentType), es_type: "keyword"
+    attribute parent_type : ParentType, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Settings::ParentType)
 
     # Association
     ###############################################################################################
 
-    attribute parent_id : String?, es_type: "keyword"
+    attribute parent_id : String?
     attribute settings_id : String? = nil
 
     belongs_to ControlSystem, foreign_key: "parent_id"

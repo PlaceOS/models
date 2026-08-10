@@ -17,7 +17,7 @@ module PlaceOS::Model
       ExternalImage
     end
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
     attribute tags : Set(String) = -> { Set(String).new }, sanitize: :text
 
@@ -27,7 +27,7 @@ module PlaceOS::Model
     attribute video_length : Int32? = nil
     attribute start_time : Int32 = 0
     attribute play_time : Int32 = 0
-    attribute animation : Animation = Animation::Default, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Playlist::Animation)
+    attribute animation : Animation = Animation::Default, converter: Enum::ValueConverter(PlaceOS::Model::Playlist::Animation)
 
     # media details
     attribute media_type : MediaType = MediaType::Image, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Item::MediaType)

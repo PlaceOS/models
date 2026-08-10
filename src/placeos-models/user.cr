@@ -33,9 +33,9 @@ module PlaceOS::Model
       property blocks : Array(WorktimeBlock) = [] of WorktimeBlock
     end
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute nickname : String?, sanitize: :text
-    attribute email : Email = Email.new(""), converter: PlaceOS::Model::EmailConverter, es_type: "text"
+    attribute email : Email = Email.new(""), converter: PlaceOS::Model::EmailConverter
     attribute phone : String?, sanitize: :text
     attribute country : String?
     attribute image : String?
@@ -70,7 +70,7 @@ module PlaceOS::Model
 
     attribute login_count : Int64 = 0, mass_assignment: false
     attribute last_login : Time? = nil, mass_assignment: false, converter: Time::EpochConverterOptional, type: "integer", format: "Int64"
-    attribute logged_out_at : Time? = nil, mass_assignment: false, es_ignore: true
+    attribute logged_out_at : Time? = nil, mass_assignment: false
 
     attribute work_preferences : Array(WorktimePreference) = [] of WorktimePreference, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::User::WorktimePreference)
     attribute work_overrides : Hash(String, WorktimePreference) = {} of String => WorktimePreference, converter: PlaceOS::Model::DBHashConverter(String, PlaceOS::Model::User::WorktimePreference)

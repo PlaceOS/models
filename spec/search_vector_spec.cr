@@ -1,6 +1,6 @@
 require "./helper"
 
-# PPT-2644: generated `search_vector` tsvector columns replacing Elasticsearch.
+# PPT-2644: generated `search_vector` tsvector columns for PG full-text search.
 # The query pattern pinned here (parameterized `to_tsquery('simple', ?)` with
 # `:*` prefix tokens joined by `&`) is what rest-api's index routes use.
 def vector_search(model, query : String)

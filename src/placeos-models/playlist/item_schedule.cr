@@ -20,10 +20,9 @@ module PlaceOS::Model
     belongs_to Playlist::Item, foreign_key: "item_id", association_name: "item"
 
     # when this item should play — at least one schedule is required, and each
-    # schedule must validate. Stored as a JSONB array. Not indexed in elastic.
+    # schedule must validate. Stored as a JSONB array.
     attribute schedules : Array(Playlist::Schedule) = -> { [Playlist::Schedule.new] },
-      converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Playlist::Schedule),
-      es_ignore: true
+      converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Playlist::Schedule)
 
     # Validation
     ###############################################################################################

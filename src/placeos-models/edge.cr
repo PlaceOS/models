@@ -8,7 +8,7 @@ module PlaceOS::Model
 
     table :edge
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
 
     attribute description : String = "", sanitize: :common
 

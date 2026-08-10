@@ -5,9 +5,9 @@ module PlaceOS::Model
   class AiAgentRun < ModelWithAutoKey
     table :ai_agent_runs
 
-    attribute incident_id : String, sanitize: :text, es_subfield: "keyword"
-    attribute correlation_key : String, sanitize: :text, es_subfield: "keyword"
-    attribute classification : String, sanitize: :text, es_subfield: "keyword"
+    attribute incident_id : String, sanitize: :text
+    attribute correlation_key : String, sanitize: :text
+    attribute classification : String, sanitize: :text
     attribute confidence : Float64 = 0.0
     attribute plan_json : JSON::Any? = nil, sanitize: :common
     attribute investigation_json : JSON::Any = JSON::Any.new([] of JSON::Any), sanitize: :common

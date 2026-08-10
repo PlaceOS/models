@@ -5,16 +5,16 @@ module PlaceOS::Model
   class AiCorrelationFinding < ModelBase
     table :ai_correlation_findings
 
-    attribute deduplication_key : String, sanitize: :text, es_subfield: "keyword"
-    attribute kind : String, sanitize: :text, es_subfield: "keyword"
-    attribute policy_id : String, sanitize: :text, es_subfield: "keyword"
+    attribute deduplication_key : String, sanitize: :text
+    attribute kind : String, sanitize: :text
+    attribute policy_id : String, sanitize: :text
     attribute policy_version : Int32
-    attribute policy_hash : String, sanitize: :text, es_subfield: "keyword"
-    attribute scope_key : String, sanitize: :text, es_subfield: "keyword"
-    attribute tenant_id : String? = nil, sanitize: :text, es_subfield: "keyword"
-    attribute system_id : String? = nil, sanitize: :text, es_subfield: "keyword"
-    attribute module_id : String? = nil, sanitize: :text, es_subfield: "keyword"
-    attribute classification : String, sanitize: :text, es_subfield: "keyword"
+    attribute policy_hash : String, sanitize: :text
+    attribute scope_key : String, sanitize: :text
+    attribute tenant_id : String? = nil, sanitize: :text
+    attribute system_id : String? = nil, sanitize: :text
+    attribute module_id : String? = nil, sanitize: :text
+    attribute classification : String, sanitize: :text
     attribute incident_ids_json : JSON::Any = JSON::Any.new([] of JSON::Any), sanitize: :common
     attribute observation_count : Int32
     attribute transition_count : Int32

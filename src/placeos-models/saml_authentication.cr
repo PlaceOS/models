@@ -9,7 +9,7 @@ module PlaceOS::Model
 
     table :adfs_strat
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
 
     # The name of your application
     attribute issuer : String = "place.technology"

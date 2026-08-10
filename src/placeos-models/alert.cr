@@ -21,16 +21,16 @@ module PlaceOS::Model
       CUSTOM
     end
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
-    attribute enabled : Bool = true, es_subfield: "keyword"
-    attribute any_match : Bool = false, es_subfield: "keyword"
+    attribute enabled : Bool = true
+    attribute any_match : Bool = false
 
     # Reuse the same conditions structure as Trigger
-    attribute conditions : PlaceOS::Model::Trigger::Conditions = -> { PlaceOS::Model::Trigger::Conditions.new }, es_ignore: true
+    attribute conditions : PlaceOS::Model::Trigger::Conditions = -> { PlaceOS::Model::Trigger::Conditions.new }
 
-    attribute severity : Severity = Severity::MEDIUM, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::Severity), es_subfield: "keyword"
-    attribute alert_type : AlertType = AlertType::THRESHOLD, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::AlertType), es_subfield: "keyword"
+    attribute severity : Severity = Severity::MEDIUM, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::Severity)
+    attribute alert_type : AlertType = AlertType::THRESHOLD, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::AlertType)
 
     # In milliseconds - delay before showing notification to prevent flapping
     attribute debounce_period : Int32 = 15000 # 15 seconds default

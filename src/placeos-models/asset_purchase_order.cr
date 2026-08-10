@@ -7,7 +7,7 @@ module PlaceOS::Model
 
     table :asset_purchase_order
 
-    attribute purchase_order_number : String, sanitize: :text, es_type: "keyword"
+    attribute purchase_order_number : String, sanitize: :text
     attribute invoice_number : String?, sanitize: :text
     attribute supplier_details : JSON::Any?, sanitize: :common
     attribute purchase_date : Int64?

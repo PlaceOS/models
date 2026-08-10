@@ -5,10 +5,10 @@ module PlaceOS::Model
   class AiIncidentEvent < ModelWithAutoKey
     table :ai_incident_events
 
-    attribute incident_id : String, sanitize: :text, es_subfield: "keyword"
-    attribute source : String, sanitize: :text, es_subfield: "keyword"
-    attribute severity : String, sanitize: :text, es_subfield: "keyword"
-    attribute correlation_key : String, sanitize: :text, es_subfield: "keyword"
+    attribute incident_id : String, sanitize: :text
+    attribute source : String, sanitize: :text
+    attribute severity : String, sanitize: :text
+    attribute correlation_key : String, sanitize: :text
     attribute payload : JSON::Any = JSON::Any.new({} of String => JSON::Any), sanitize: :common
     attribute received_at : Time? = nil
 

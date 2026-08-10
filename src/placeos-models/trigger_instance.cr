@@ -14,7 +14,7 @@ module PlaceOS::Model
     attribute triggered : Bool = false
     attribute important : Bool = false
     attribute exec_enabled : Bool = false
-    attribute playlists : Array(String) = [] of String, es_type: "keyword"
+    attribute playlists : Array(String) = [] of String
 
     attribute webhook_secret : String = -> { Random::Secure.urlsafe_base64(32) }
     attribute trigger_count : Int32 = 0

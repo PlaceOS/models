@@ -8,7 +8,7 @@ module PlaceOS::Model
 
     table :asset
 
-    attribute identifier : String?, es_type: "keyword"
+    attribute identifier : String?
     attribute serial_number : String?
     attribute other_data : JSON::Any?, sanitize: :common
     attribute barcode : String?
@@ -18,15 +18,15 @@ module PlaceOS::Model
     attribute map_id : String?
     attribute bookable : Bool = true
     attribute accessible : Bool = false
-    attribute zones : Array(String) = [] of String, es_type: "keyword"
-    attribute place_groups : Array(String) = [] of String, es_type: "keyword"
+    attribute zones : Array(String) = [] of String
+    attribute place_groups : Array(String) = [] of String
     attribute assigned_to : String?                    # email
     attribute assigned_name : String?, sanitize: :text # name of user
     # queryable with AND and OR operators
-    attribute features : Array(String) = [] of String, sanitize: :text, es_type: "keyword"
-    attribute images : Array(String) = [] of String, es_type: "keyword"
+    attribute features : Array(String) = [] of String, sanitize: :text
+    attribute images : Array(String) = [] of String
     attribute notes : String?, sanitize: :common # email
-    attribute security_system_groups : Array(String) = [] of String, es_type: "keyword"
+    attribute security_system_groups : Array(String) = [] of String
 
     # attribute parent_id : String? # nested resource like lockers and locker banks
     belongs_to Asset, foreign_key: "parent_id", association_name: "parent"

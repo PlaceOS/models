@@ -18,7 +18,7 @@ module PlaceOS::Model
       Widget
     end
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
     attribute uri : String
     attribute playback_type : PlaybackType = PlaybackType::STATIC, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::SignagePlugin::PlaybackType)

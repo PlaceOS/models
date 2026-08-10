@@ -10,19 +10,19 @@ module PlaceOS::Model
 
     table :trigger
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
 
     # Full path allows resolution in macros
-    attribute actions : PlaceOS::Model::Trigger::Actions = -> { Actions.new }, es_ignore: true
-    attribute conditions : PlaceOS::Model::Trigger::Conditions = -> { Conditions.new }, es_ignore: true
+    attribute actions : PlaceOS::Model::Trigger::Actions = -> { Actions.new }
+    attribute conditions : PlaceOS::Model::Trigger::Conditions = -> { Conditions.new }
 
     # In milliseconds
     attribute debounce_period : Int32 = 0
     attribute important : Bool = false
 
     attribute enable_webhook : Bool = false
-    attribute any_match : Bool = false, es_subfield: "keyword"
+    attribute any_match : Bool = false
 
     METHODS = %w(GET POST PUT PATCH DELETE)
     attribute supported_methods : Array(String) = ["POST"]

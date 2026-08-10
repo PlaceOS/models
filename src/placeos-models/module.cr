@@ -14,23 +14,23 @@ module PlaceOS::Model
 
     table :mod
 
-    attribute ip : String = "", es_type: "text"
+    attribute ip : String = ""
     attribute port : Int32 = 0
     attribute tls : Bool = false
     attribute udp : Bool = false
     attribute makebreak : Bool = false
 
     # HTTP Service module
-    attribute uri : String = "", es_type: "keyword"
+    attribute uri : String = ""
 
     # Module name
-    attribute name : String, es_subfield: "keyword", mass_assignment: false
+    attribute name : String, mass_assignment: false
 
     # Custom module names (in addition to what is defined in the driver)
     attribute custom_name : String?, sanitize: :text
 
     # Cache the module's driver role locally for load order
-    attribute role : Driver::Role, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
+    attribute role : Driver::Role, converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
 
     attribute alert_level : Alert::Severity?, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::Severity),
       description: "the alert level for stagehand issues"

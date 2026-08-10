@@ -7,7 +7,7 @@ module PlaceOS::Model
 
     table :alert_dashboard
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
     attribute enabled : Bool = true
 

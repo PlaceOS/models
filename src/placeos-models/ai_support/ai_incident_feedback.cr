@@ -5,9 +5,9 @@ module PlaceOS::Model
   class AiIncidentFeedback < ModelBase
     table :ai_incident_feedback
 
-    attribute incident_id : String, sanitize: :text, es_subfield: "keyword"
-    attribute rating : String, sanitize: :text, es_subfield: "keyword"
-    attribute submitted_by : String, sanitize: :text, es_subfield: "keyword"
+    attribute incident_id : String, sanitize: :text
+    attribute rating : String, sanitize: :text
+    attribute submitted_by : String, sanitize: :text
     attribute comment : String? = nil, sanitize: :common
     attribute submitted_at : Time
 

@@ -8,13 +8,13 @@ module PlaceOS::Model
     table :asset_category
 
     # i.e. a tablet
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     # NOTE: intentionally not sanitized — this field is used to hold raw JSON
     # strings (e.g. `{"resource_type":"locker_banks",...}`) and an HTML
     # sanitizer would mangle characters such as `"` and `&`. See the
     # "preserves a JSON string stored in the description field" spec.
     attribute description : String?
-    attribute hidden : Bool = false, es_subfield: "keyword"
+    attribute hidden : Bool = false
 
     # NOTE: nilable at the DB level for backwards compatibility with pre-existing
     # rows, but required at the model level (see the presence validation below).

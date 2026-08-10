@@ -22,7 +22,7 @@ module PlaceOS::Model
 
     # update items to support either media item or an item_schedule
     # based on the playlist distribution flag
-    attribute items : Array(String) = [] of String, es_type: "keyword"
+    attribute items : Array(String) = [] of String
     belongs_to Playlist, foreign_key: "playlist_id"
 
     def fetch_items

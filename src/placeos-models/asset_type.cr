@@ -8,7 +8,7 @@ module PlaceOS::Model
 
     table :asset_type
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute brand : String, sanitize: :text
     attribute description : String?, sanitize: :common
     attribute model_number : String?, sanitize: :text

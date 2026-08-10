@@ -5,10 +5,10 @@ module PlaceOS::Model
   class AiIncidentReport < ModelWithAutoKey
     table :ai_incident_reports
 
-    attribute incident_id : String, sanitize: :text, es_subfield: "keyword"
-    attribute report_schema_version : String = "incident-report.v1", sanitize: :text, es_subfield: "keyword"
-    attribute status : String, sanitize: :text, es_subfield: "keyword"
-    attribute classification : String, sanitize: :text, es_subfield: "keyword"
+    attribute incident_id : String, sanitize: :text
+    attribute report_schema_version : String = "incident-report.v1", sanitize: :text
+    attribute status : String, sanitize: :text
+    attribute classification : String, sanitize: :text
     attribute confidence : Float64 = 0.0
     attribute report_json : JSON::Any = JSON::Any.new({} of String => JSON::Any), sanitize: :common
     attribute evidence_json : JSON::Any = JSON::Any.new([] of JSON::Any), sanitize: :common

@@ -12,9 +12,9 @@ module PlaceOS::Model
 
     table :driver
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
-    attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "text"
+    attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter
 
     attribute default_uri : String?
     attribute default_port : Int32?
@@ -31,7 +31,7 @@ module PlaceOS::Model
       end
     end
 
-    attribute role : Role, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
+    attribute role : Role, converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
 
     attribute alert_level : Alert::Severity = Alert::Severity::MEDIUM, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Alert::Severity),
       description: "the default alert level for stagehand issues"

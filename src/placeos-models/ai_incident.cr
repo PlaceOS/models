@@ -8,18 +8,18 @@ module PlaceOS::Model
 
     table :ai_incidents
 
-    attribute status : String = "open", sanitize: :text, es_subfield: "keyword"
-    attribute severity : String = "info", sanitize: :text, es_subfield: "keyword"
-    attribute source : String = "webhook", sanitize: :text, es_subfield: "keyword"
-    attribute classification : String = "unknown", sanitize: :text, es_subfield: "keyword"
+    attribute status : String = "open", sanitize: :text
+    attribute severity : String = "info", sanitize: :text
+    attribute source : String = "webhook", sanitize: :text
+    attribute classification : String = "unknown", sanitize: :text
     attribute confidence : Float64 = 0.0
     attribute summary : String = "", sanitize: :common
-    attribute correlation_key : String, sanitize: :text, es_subfield: "keyword"
-    attribute report_schema_version : String = "incident-report.v1", sanitize: :text, es_subfield: "keyword"
+    attribute correlation_key : String, sanitize: :text
+    attribute report_schema_version : String = "incident-report.v1", sanitize: :text
 
-    attribute tenant_id : String? = nil, sanitize: :text, es_subfield: "keyword"
-    attribute system_id : String? = nil, sanitize: :text, es_subfield: "keyword"
-    attribute module_id : String? = nil, sanitize: :text, es_subfield: "keyword"
+    attribute tenant_id : String? = nil, sanitize: :text
+    attribute system_id : String? = nil, sanitize: :text
+    attribute module_id : String? = nil, sanitize: :text
     attribute module_name : String? = nil, sanitize: :common
     attribute module_index : Int32? = nil
 

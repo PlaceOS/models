@@ -11,7 +11,7 @@ module PlaceOS::Model
 
     table :repo
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
 
     # `folder_name` may only contain valid path characters
@@ -39,7 +39,7 @@ module PlaceOS::Model
       end
     end
 
-    attribute repo_type : Type = Type::Driver, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Repository::Type), es_type: "text"
+    attribute repo_type : Type = Type::Driver, converter: PlaceOS::Model::EnumConverter(PlaceOS::Model::Repository::Type)
     attribute root_path : String?
 
     # Error Indicators

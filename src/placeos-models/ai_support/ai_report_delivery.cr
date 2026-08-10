@@ -5,9 +5,9 @@ module PlaceOS::Model
   class AiReportDelivery < ModelWithAutoKey
     table :ai_report_deliveries
 
-    attribute incident_id : String, sanitize: :text, es_subfield: "keyword"
-    attribute status : String, sanitize: :text, es_subfield: "keyword"
-    attribute destination : String, sanitize: :text, es_subfield: "keyword"
+    attribute incident_id : String, sanitize: :text
+    attribute status : String, sanitize: :text
+    attribute destination : String, sanitize: :text
     attribute attempted_at : Time
     attribute response_status : Int32? = nil
     attribute error : String? = nil, sanitize: :common

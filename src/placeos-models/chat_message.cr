@@ -22,7 +22,7 @@ module PlaceOS::Model
     table :chat_messages
 
     attribute chat_id : String
-    attribute role : Role = Role::User, converter: Enum::ValueConverter(PlaceOS::Model::ChatMessage::Role), es_type: "integer"
+    attribute role : Role = Role::User, converter: Enum::ValueConverter(PlaceOS::Model::ChatMessage::Role)
     attribute content : String? = nil, sanitize: :common
     attribute tokens : Int32 = 0
 

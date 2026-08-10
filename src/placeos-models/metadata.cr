@@ -20,13 +20,13 @@ module PlaceOS::Model
 
     table :metadata
 
-    attribute name : String, sanitize: :text, es_subfield: "keyword"
+    attribute name : String, sanitize: :text
     attribute description : String = "", sanitize: :common
     attribute details : JSON::Any
     attribute editors : Set(String) = -> { Set(String).new }
 
-    attribute parent_id : String, es_type: "keyword"
-    attribute schema_id : String?, es_type: "keyword"
+    attribute parent_id : String
+    attribute schema_id : String?
 
     # Association
     ###############################################################################################
