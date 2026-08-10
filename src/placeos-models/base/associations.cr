@@ -26,8 +26,7 @@ module PlaceOS::Model
       @[YAML::Field(ignore: true)]
       property {{ assoc_var }} : {{ parent_class }}?
 
-      attribute {{ foreign_key.id }} : {{pktype}} {% unless presence %} | Nil {% end %}, parent: {{ parent_class.id.stringify }}, es_type: "keyword",
-                ignore_serialize: {{!serialize}}
+      attribute {{ foreign_key.id }} : {{pktype}} {% unless presence %} | Nil {% end %}, ignore_serialize: {{!serialize}}
 
       destroy_callback({{ association_method }}, {{dependent}})
 
