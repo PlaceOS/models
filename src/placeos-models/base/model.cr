@@ -1,7 +1,6 @@
 require "active-model"
 require "json"
 require "log"
-require "neuroplastic"
 require "pg-orm"
 
 require "../utilities/encryption"
@@ -14,8 +13,6 @@ require "./scope"
 module PlaceOS::Model
   # Base class for all Engine models
   abstract class ModelBase < ::PgORM::Base
-    include Neuroplastic
-
     macro inherited
       macro finished
         default_primary_key id : String?
@@ -32,8 +29,6 @@ module PlaceOS::Model
   # Base class for all models which have auto-generated bigint as pk
   # and doesn't require string based auto generated pk
   abstract class ModelWithAutoKey < ::PgORM::Base
-    include Neuroplastic
-
     macro inherited
       macro finished
         default_primary_key id : Int64?

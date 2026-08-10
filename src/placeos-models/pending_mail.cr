@@ -16,9 +16,6 @@ module PlaceOS::Model
   # ids and is pruned when a zone is deleted (see `Zone#remove_array_references`).
   class PendingMail < ::PgORM::Base
     include PgORM::Timestamps
-    # ElasticSearch indexing. Fields tagged `es_type: "keyword"` are indexed
-    # for exact matching / filtering.
-    include Neuroplastic
 
     table :pending_mail
 
@@ -31,10 +28,10 @@ module PlaceOS::Model
     attribute expiry : Time? = nil
 
     # recipients (exact match)
-    attribute send_to : Array(String) = [] of String, es_type: "keyword"
+    attribute send_to : Array(String) = [] of String
 
     # names which resolve to the template to be sent
-    attribute template : Array(String) = [] of String, es_type: "keyword"
+    attribute template : Array(String) = [] of String
 
     # values injected into the template. Restricted to JSON scalar values;
     # nested objects/arrays are rejected on deserialization.
@@ -42,35 +39,35 @@ module PlaceOS::Model
 
     # upload id references. If an upload is deleted, its id is removed from
     # these arrays via `Upload`'s before_destroy callback.
-    attribute resource_attachments : Array(String) = [] of String, es_type: "keyword"
-    attribute attachments : Array(String) = [] of String, es_type: "keyword"
+    attribute resource_attachments : Array(String) = [] of String
+    attribute attachments : Array(String) = [] of String
 
-    attribute cc : Array(String) = [] of String, es_type: "keyword"
-    attribute bcc : Array(String) = [] of String, es_type: "keyword"
-    attribute send_from : String? = nil, es_type: "keyword"
-    attribute reply_to : String? = nil, es_type: "keyword"
+    attribute cc : Array(String) = [] of String
+    attribute bcc : Array(String) = [] of String
+    attribute send_from : String? = nil
+    attribute reply_to : String? = nil
 
     # zone id references. If a zone is deleted, its id is removed from this
     # array via `Zone`'s before_destroy callback.
-    attribute zones : Array(String) = [] of String, es_type: "keyword"
+    attribute zones : Array(String) = [] of String
 
     # Monitoring: populated as the mail is processed. `sent_by` and
     # `rejected_reason` are free-form text (e.g. a worker/service name or a
     # human-readable reason).
     attribute sent_at : Time? = nil
-    attribute sent_by : String? = nil, sanitize: :text, es_type: "keyword"
+    attribute sent_by : String? = nil, sanitize: :text
     attribute rejected_at : Time? = nil
     attribute rejected_reason : String? = nil, sanitize: :common
 
-    # Free-form provenance, indexed for filtering (e.g. which service queued
-    # the mail and an external reference/correlation id).
-    attribute source_service : String? = nil, sanitize: :text, es_type: "keyword"
-    attribute source_reference : String? = nil, sanitize: :text, es_type: "keyword"
+    # Free-form provenance (e.g. which service queued the mail and an
+    # external reference/correlation id).
+    attribute source_service : String? = nil, sanitize: :text
+    attribute source_reference : String? = nil, sanitize: :text
 
-    attribute authority_id : String, es_type: "keyword"
+    attribute authority_id : String
     belongs_to :authority, class_name: PlaceOS::Model::Authority
 
-    attribute user_id : String, es_type: "keyword"
+    attribute user_id : String
     belongs_to :user, class_name: PlaceOS::Model::User
 
     # Validation
