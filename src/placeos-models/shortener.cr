@@ -51,12 +51,34 @@ module PlaceOS::Model
 
     TIME_OFFSET = Time.utc(2024, 3, 1).to_unix
 
+    # `#short_id` derives the id from the creation second plus `rand(63)`,
+    # i.e. only 63 possible ids per wall-clock second, so two same-second
+    # creates collide on the primary key with probability ~1/63. The compact
+    # format is deliberate (the id is the public short URL), so instead of
+    # widening it we retry the insert: each attempt re-runs the
+    # `before_create` callback, rolling a fresh random component, and a
+    # failed attempt is just a cheap single-row insert.
+    CREATE_ID_ATTEMPTS = 10
+
     before_create :short_id
 
     protected def short_id
       self.new_record = true
       time = ((Time.utc.to_unix - TIME_OFFSET) << 6) + rand(63)
       @id = "uri-#{time.to_s(62)}"
+    end
+
+    def save!(**options)
+      attempts = 0
+      loop do
+        begin
+          return super(**options)
+        rescue error : ::PgORM::Error::RecordNotSaved
+          attempts += 1
+          id_collision = new_record? && error.message.try(&.includes?("shortener_pkey"))
+          raise error unless id_collision && attempts < CREATE_ID_ATTEMPTS
+        end
+      end
     end
 
     # Validation
