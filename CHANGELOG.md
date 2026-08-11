@@ -1,3 +1,9 @@
+## v9.107.1 (2026-08-11)
+
+### Fix
+
+- **shortener**: retry id generation on same-second create collisions ([#325](https://github.com/PlaceOS/models/pull/325))
+
 ## v9.107.0 (2026-08-11)
 
 ### Feat
