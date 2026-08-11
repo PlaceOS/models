@@ -1,3 +1,9 @@
+## v9.107.0 (2026-08-11)
+
+### Feat
+
+- PG full-text search columns (PPT-2644, 1/2) ([#324](https://github.com/PlaceOS/models/pull/324))
+
 ## v9.106.2 (2026-08-06)
 
 ### Fix
