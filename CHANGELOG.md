@@ -1,3 +1,9 @@
+## v9.107.3 (2026-08-12)
+
+### Fix
+
+- **migrations**: ordering due to outdated merge
+
 ## v9.107.2 (2026-08-12)
 
 ### Fix
