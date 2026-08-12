@@ -1,7 +1,7 @@
 -- +micrate Up
 -- SQL in section 'Up' is executed when this migration is applied
 
-ALTER TABLE api_key ADD COLUMN expires_at TIMESTAMPTZ;
+ALTER TABLE api_key ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS api_key_expires_at_index ON "api_key" USING BTREE (expires_at);
 
 -- +micrate Down
