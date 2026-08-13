@@ -8,6 +8,11 @@
 -- precedent): entity names, identifiers and emails must not be stemmed.
 -- Secrets and encrypted content (password digests, tokens, client secrets,
 -- IdP certificates, settings_string) are deliberately excluded from vectors.
+--
+-- This migration is idempotent: every statement is guarded (CREATE OR REPLACE /
+-- IF NOT EXISTS) so it can safely be re-applied. Note that an existing
+-- search_vector column is left as-is rather than redefined; to change a vector
+-- expression, drop the column in a new migration first.
 
 -- array_to_string is only STABLE, so generated columns can't call it
 -- directly; for text[] input it is in fact immutable, hence this wrapper.
@@ -39,41 +44,41 @@ LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
 $$;
 -- +micrate StatementEnd
 
-ALTER TABLE "sys" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "sys" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(display_name, '') || ' ' || COALESCE(code, '') || ' ' ||
     COALESCE(type, '') || ' ' || COALESCE(description, '') || ' ' ||
     placeos_fts_join(features) || ' ' || placeos_fts_email(email) || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_sys_search_vector ON "sys" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_sys_search_vector ON "sys" USING GIN (search_vector);
 
-ALTER TABLE "mod" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "mod" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(custom_name, '') || ' ' || COALESCE(name, '') || ' ' || COALESCE(ip, '') || ' ' ||
     placeos_fts_uri(uri) || ' ' || COALESCE(notes, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_mod_search_vector ON "mod" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_mod_search_vector ON "mod" USING GIN (search_vector);
 
-ALTER TABLE "driver" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "driver" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(module_name, '') || ' ' || placeos_fts_uri(file_name) || ' ' ||
     COALESCE(description, '') || ' ' || placeos_fts_uri(default_uri) || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_driver_search_vector ON "driver" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_driver_search_vector ON "driver" USING GIN (search_vector);
 
-ALTER TABLE "zone" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "zone" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(display_name, '') || ' ' || COALESCE(code, '') || ' ' ||
     COALESCE(type, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(location, '') || ' ' ||
     placeos_fts_join(tags) || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_zone_search_vector ON "zone" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_zone_search_vector ON "zone" USING GIN (search_vector);
 
-ALTER TABLE "user" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "user" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(nickname, '') || ' ' || placeos_fts_email(email) || ' ' ||
     COALESCE(login_name, '') || ' ' || COALESCE(staff_id, '') || ' ' ||
@@ -82,150 +87,150 @@ ALTER TABLE "user" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
     COALESCE(phone, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_user_search_vector ON "user" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_user_search_vector ON "user" USING GIN (search_vector);
 
-ALTER TABLE "repo" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "repo" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(folder_name, '') || ' ' || placeos_fts_uri(uri) || ' ' ||
     COALESCE(description, '') || ' ' || COALESCE(branch, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_repo_search_vector ON "repo" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_repo_search_vector ON "repo" USING GIN (search_vector);
 
-ALTER TABLE "trigger" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "trigger" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_trigger_search_vector ON "trigger" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_trigger_search_vector ON "trigger" USING GIN (search_vector);
 
-ALTER TABLE "authority" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "authority" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(domain, '') || ' ' || COALESCE(description, '') || ' ' ||
     COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_authority_search_vector ON "authority" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_authority_search_vector ON "authority" USING GIN (search_vector);
 
-ALTER TABLE "ldap_strat" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "ldap_strat" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple', COALESCE(name, '') || ' ' || COALESCE(id::text, ''))
 ) STORED;
-CREATE INDEX idx_ldap_strat_search_vector ON "ldap_strat" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_ldap_strat_search_vector ON "ldap_strat" USING GIN (search_vector);
 
-ALTER TABLE "oauth_strat" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "oauth_strat" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple', COALESCE(name, '') || ' ' || COALESCE(id::text, ''))
 ) STORED;
-CREATE INDEX idx_oauth_strat_search_vector ON "oauth_strat" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_oauth_strat_search_vector ON "oauth_strat" USING GIN (search_vector);
 
-ALTER TABLE "adfs_strat" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "adfs_strat" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple', COALESCE(name, '') || ' ' || COALESCE(id::text, ''))
 ) STORED;
-CREATE INDEX idx_adfs_strat_search_vector ON "adfs_strat" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_adfs_strat_search_vector ON "adfs_strat" USING GIN (search_vector);
 
-ALTER TABLE "edge" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "edge" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_edge_search_vector ON "edge" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_edge_search_vector ON "edge" USING GIN (search_vector);
 
-ALTER TABLE "api_key" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "api_key" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_api_key_search_vector ON "api_key" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_api_key_search_vector ON "api_key" USING GIN (search_vector);
 
-ALTER TABLE "oauth_applications" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "oauth_applications" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(uid, '') || ' ' || COALESCE(redirect_uri, '') || ' ' ||
     COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_oauth_applications_search_vector ON "oauth_applications" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_oauth_applications_search_vector ON "oauth_applications" USING GIN (search_vector);
 
-ALTER TABLE "sets" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "sets" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple', placeos_fts_join(keys) || ' ' || COALESCE(id::text, ''))
 ) STORED;
-CREATE INDEX idx_sets_search_vector ON "sets" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_sets_search_vector ON "sets" USING GIN (search_vector);
 
-ALTER TABLE "json_schema" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "json_schema" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_json_schema_search_vector ON "json_schema" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_json_schema_search_vector ON "json_schema" USING GIN (search_vector);
 
-ALTER TABLE "asset" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "asset" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(identifier, '') || ' ' || COALESCE(serial_number, '') || ' ' ||
     COALESCE(barcode, '') || ' ' || COALESCE(assigned_name, '') || ' ' || COALESCE(assigned_to, '') || ' ' ||
     COALESCE(notes, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_asset_search_vector ON "asset" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_asset_search_vector ON "asset" USING GIN (search_vector);
 
-ALTER TABLE "asset_type" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "asset_type" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(brand, '') || ' ' || COALESCE(model_number, '') || ' ' ||
     COALESCE(description, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_asset_type_search_vector ON "asset_type" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_asset_type_search_vector ON "asset_type" USING GIN (search_vector);
 
-ALTER TABLE "asset_category" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "asset_category" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_asset_category_search_vector ON "asset_category" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_asset_category_search_vector ON "asset_category" USING GIN (search_vector);
 
-ALTER TABLE "asset_purchase_order" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "asset_purchase_order" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(purchase_order_number, '') || ' ' || COALESCE(invoice_number, '') || ' ' ||
     COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_asset_purchase_order_search_vector ON "asset_purchase_order" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_asset_purchase_order_search_vector ON "asset_purchase_order" USING GIN (search_vector);
 
-ALTER TABLE "alert" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "alert" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_alert_search_vector ON "alert" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_alert_search_vector ON "alert" USING GIN (search_vector);
 
-ALTER TABLE "alert_dashboard" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "alert_dashboard" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_alert_dashboard_search_vector ON "alert_dashboard" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_alert_dashboard_search_vector ON "alert_dashboard" USING GIN (search_vector);
 
-ALTER TABLE "shortener" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "shortener" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || placeos_fts_uri(uri) || ' ' || COALESCE(description, '') || ' ' ||
     COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_shortener_search_vector ON "shortener" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_shortener_search_vector ON "shortener" USING GIN (search_vector);
 
-ALTER TABLE "signage_plugin" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "signage_plugin" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     COALESCE(name, '') || ' ' || COALESCE(description, '') || ' ' || placeos_fts_uri(uri) || ' ' ||
     COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_signage_plugin_search_vector ON "signage_plugin" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_signage_plugin_search_vector ON "signage_plugin" USING GIN (search_vector);
 
-ALTER TABLE "pending_mail" ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+ALTER TABLE "pending_mail" ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
   to_tsvector('simple',
     placeos_fts_join(template) || ' ' || COALESCE(rejected_reason, '') || ' ' ||
     placeos_fts_email(placeos_fts_join(send_to)) || ' ' || placeos_fts_email(send_from) || ' ' ||
     COALESCE(id::text, '')
   )
 ) STORED;
-CREATE INDEX idx_pending_mail_search_vector ON "pending_mail" USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_pending_mail_search_vector ON "pending_mail" USING GIN (search_vector);
 
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
