@@ -1,3 +1,9 @@
+## v9.107.4 (2026-08-13)
+
+### Fix
+
+- migration not fail if run a second time
+
 ## v9.107.3 (2026-08-12)
 
 ### Fix
