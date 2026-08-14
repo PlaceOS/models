@@ -1,3 +1,9 @@
+## v9.107.5 (2026-08-14)
+
+### Fix
+
+- **booking**: ensure history is saved on instances
+
 ## v9.107.4 (2026-08-13)
 
 ### Fix
