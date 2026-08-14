@@ -26,6 +26,10 @@ module PlaceOS::Model
     attribute extension_data : JSON::Any? = nil, sanitize: :common
     attribute history : Array(History) = [] of History, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Booking::History)
 
+    # transient, mirrors `Booking#utm_source` -- recorded against the history entry
+    # of the transition it caused, never persisted as a column of its own
+    attribute utm_source : String? = nil, persistence: false
+
     # custom approval state, nil fields inherit from the parent booking.
     # if either approved or rejected is set, all the approval fields are
     # considered overridden as a group (see #hydrate_booking)
@@ -81,6 +85,38 @@ module PlaceOS::Model
     end
 
     before_save :update_assets
+    before_save :update_history
+
+    # An occurrence keeps its own history: `Booking#save!` delegates to
+    # `as_instance.save!`, so the parent's `before_save` (and the `current_history`
+    # it builds) never runs for an instance. Without this the occurrence records no
+    # transitions at all and the `utm_source` behind them is lost.
+    #
+    # Mirrors `Booking#current_history`. State comes from the hydrated booking --
+    # that is exactly what the API presents for this occurrence, so its state is the
+    # one the history should record, and it avoids duplicating the state machine.
+    def current_history(state : Booking::State) : Array(History)
+      history.dup.tap do |instance_history|
+        if instance_history.empty? || instance_history.last.state != state
+          instance_history << History.new(state, Time.local.to_unix, @utm_source) unless state.unknown?
+          @history_changed = true
+        end
+      end
+    end
+
+    protected def update_history
+      hydrated = hydrate_booking
+      state = hydrated.booking_current_state
+
+      previous = history
+      updated = current_history(state)
+      @history = updated
+
+      # only on an actual transition, matching `Booking#survey_trigger`. Compare
+      # lengths rather than reading `@history_changed` so we don't confuse the
+      # ORM's dirty tracking with "did we just append an entry".
+      hydrated.trigger_survey_invitations(state) if updated.size > previous.size
+    end
 
     def unique_ids?
       update_assets

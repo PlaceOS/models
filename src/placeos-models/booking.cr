@@ -241,9 +241,17 @@ module PlaceOS::Model
 
     def survey_trigger
       return unless history_changed?
-      state = history.last.state.to_s.upcase
+      trigger_survey_invitations(history.last.state)
+    end
 
-      query = Survey.select("id").where(trigger: state)
+    # Invites the host to any survey configured to fire on this state.
+    #
+    # Public and state-parameterised so a recurrence occurrence can reuse it:
+    # `BookingInstance` owns its own history, and the surveys that apply are the
+    # ones configured against this booking's zones and host, so it calls this on
+    # the hydrated occurrence (see `BookingInstance#update_history`).
+    def trigger_survey_invitations(state : State) : Nil
+      query = Survey.select("id").where(trigger: state.to_s.upcase)
       if (zone_list = zones) && !zone_list.empty?
         query = query.where(zone_id: zone_list, building_id: zone_list)
       end
@@ -973,6 +981,7 @@ module PlaceOS::Model
         process_state: self.process_state,
       )
       instance.parent_booking = self
+      instance.utm_source = self.utm_source
       instance
     end
 
@@ -1037,6 +1046,9 @@ module PlaceOS::Model
       inst.asset_id = self.asset_id if self.asset_id_changed?
       inst.asset_ids = self.asset_ids if self.asset_ids_changed?
       inst.parent_booking = self
+      # transient, so the instance can record it against the history entry for
+      # whichever transition this save is performing
+      inst.utm_source = self.utm_source
       # a controller that already ran an explicit clash check opts the instance
       # save out of re-running it too
       inst.skip_clash_check = self.skip_clash_check
@@ -1073,7 +1085,13 @@ module PlaceOS::Model
         if self.instance.nil?
           super
         else
-          as_instance.save
+          inst = as_instance
+          saved = inst.save
+          # the instance owns the history, so reflect what was just written back
+          # onto the hydrated booking -- otherwise callers serialise a stale
+          # (usually empty) history and the response disagrees with a later read
+          self.history = inst.history if saved
+          saved
         end
       end
 
@@ -1081,7 +1099,9 @@ module PlaceOS::Model
         if self.instance.nil?
           super
         else
-          as_instance.save!
+          inst = as_instance
+          inst.save!
+          self.history = inst.history
           self
         end
       end

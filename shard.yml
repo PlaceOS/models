@@ -59,9 +59,11 @@ dependencies:
     github: spider-gazelle/upload-signer
 
 development_dependencies:
-  ameba:
-    github: crystal-ameba/ameba
-    branch: master
+  # NOTE:: keep this on a single line. The spec runner image strips ameba with
+  # `sed '/ameba/d' shard.yml.input` (it supplies its own), so a multi-line entry
+  # leaves its trailing keys orphaned under `development_dependencies:` and
+  # `shards install` dies with "Expected MAPPING_START but was SCALAR".
+  ameba: { github: crystal-ameba/ameba, branch: master }
 
   faker:
     github: askn/faker
