@@ -565,6 +565,22 @@ module PlaceOS::Model
       )
     end
 
+    def self.partner(management : Bool = false, parent : Partner? = nil)
+      Partner.new(
+        name: Faker::Hacker.noun + "-" + RANDOM.hex(3),
+        management: management,
+        parent_id: parent.try(&.id),
+      )
+    end
+
+    def self.client(partner : Partner? = nil, payer : String = Client::PAYER_PARTNER)
+      Client.new(
+        name: Faker::Hacker.noun + "-" + RANDOM.hex(3),
+        partner_id: partner.try(&.id),
+        payer: payer,
+      )
+    end
+
     def self.user(authority : Authority? = nil, support : Bool = false, admin : Bool = false)
       unless authority
         # look up an existing authority

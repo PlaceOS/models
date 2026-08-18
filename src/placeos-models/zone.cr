@@ -49,6 +49,15 @@ module PlaceOS::Model
     attribute images : Array(String) = [] of String
     attribute playlists : Array(String) = [] of String, es_type: "keyword"
 
+    # PPT-526: the Client (customer organisation) that owns this zone.
+    # Nullable while ownership backfill and query enforcement are phased in.
+    attribute client_id : UUID?, es_type: "keyword", mass_assignment: false
+
+    # The owning Client, when ownership has been assigned.
+    def client : PlaceOS::Model::Client?
+      self.client_id.try { |id| PlaceOS::Model::Client.find?(id) }
+    end
+
     attribute place_id : String?
 
     # Association
