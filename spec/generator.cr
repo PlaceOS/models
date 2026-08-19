@@ -573,8 +573,8 @@ module PlaceOS::Model
       )
     end
 
-    def self.client(partner : Partner? = nil, payer : String = Client::PAYER_PARTNER)
-      Client.new(
+    def self.organization(partner : Partner? = nil, payer : String = Organization::PAYER_PARTNER)
+      Organization.new(
         name: Faker::Hacker.noun + "-" + RANDOM.hex(3),
         partner_id: partner.try(&.id),
         payer: payer,

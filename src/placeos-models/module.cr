@@ -48,15 +48,15 @@ module PlaceOS::Model
     attribute ignore_connected : Bool = false
     attribute ignore_startstop : Bool = false
 
-    # PPT-526: the Client (customer organisation) that owns this module.
+    # PPT-526: the Organization (customer organisation) that owns this module.
     # Nullable while ownership backfill and query enforcement are phased in;
-    # shared device/service modules referenced by several clients' systems
+    # shared device/service modules referenced by several organizations' systems
     # stay NULL until a sharing policy is decided.
-    attribute client_id : UUID?, es_type: "keyword", mass_assignment: false
+    attribute organization_id : UUID?, es_type: "keyword", mass_assignment: false
 
-    # The owning Client, when ownership has been assigned.
-    def client : PlaceOS::Model::Client?
-      self.client_id.try { |id| PlaceOS::Model::Client.find?(id) }
+    # The owning Organization, when ownership has been assigned.
+    def organization : PlaceOS::Model::Organization?
+      self.organization_id.try { |id| PlaceOS::Model::Organization.find?(id) }
     end
 
     # Runtime Error Indicators

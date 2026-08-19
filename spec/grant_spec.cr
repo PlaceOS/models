@@ -1,14 +1,14 @@
 require "./helper"
 
-# Build partner -> client -> authority -> user, returning all four.
-private def build_estate(payer = PlaceOS::Model::Client::PAYER_PARTNER)
+# Build partner -> org -> authority -> user, returning all four.
+private def build_estate(payer = PlaceOS::Model::Organization::PAYER_PARTNER)
   partner = PlaceOS::Model::Generator.partner.save!
-  client = PlaceOS::Model::Generator.client(partner: partner, payer: payer).save!
+  org = PlaceOS::Model::Generator.organization(partner: partner, payer: payer).save!
   authority = PlaceOS::Model::Generator.authority(domain: "grant-#{RANDOM.hex(4)}.example.com")
-  authority.client_id = client.id
+  authority.organization_id = org.id
   authority.save!
   user = PlaceOS::Model::Generator.user(authority: authority).save!
-  {partner, client, authority, user}
+  {partner, org, authority, user}
 end
 
 module PlaceOS::Model
@@ -17,13 +17,13 @@ module PlaceOS::Model
       Grant.clear
       Authority.clear
       User.clear
-      Client.clear
+      Organization.clear
       Partner.clear
     end
 
     it "saves a grant with a permission bitmask" do
-      _, client, _, user = build_estate
-      grant = Generator.grant(user, Grant::SCOPE_CLIENT, client.id.not_nil!.to_s, Permissions::Manage).save!
+      _, org, _, user = build_estate
+      grant = Generator.grant(user, Grant::SCOPE_ORGANIZATION, org.id.not_nil!.to_s, Permissions::Manage).save!
       grant.persisted?.should be_true
       grant.permission_flags.should eq Permissions::Manage
     end
@@ -41,21 +41,21 @@ module PlaceOS::Model
       Grant.resolve(user.id.not_nil!, authority).should eq Permissions::Update
     end
 
-    it "resolves a client-scope grant onto the client's authority" do
-      _, client, authority, user = build_estate
-      Generator.grant(user, Grant::SCOPE_CLIENT, client.id.not_nil!.to_s, Permissions::Operate).save!
+    it "resolves a org-scope grant onto the org's authority" do
+      _, org, authority, user = build_estate
+      Generator.grant(user, Grant::SCOPE_ORGANIZATION, org.id.not_nil!.to_s, Permissions::Operate).save!
       Grant.resolve(user.id.not_nil!, authority).should eq Permissions::Operate
     end
 
     it "resolves a partner-scope grant onto every authority under that partner (decision b)" do
       partner = Generator.partner.save!
-      client_a = Generator.client(partner: partner).save!
-      client_b = Generator.client(partner: partner).save!
+      client_a = Generator.organization(partner: partner).save!
+      client_b = Generator.organization(partner: partner).save!
       auth_a = Generator.authority(domain: "a-#{RANDOM.hex(4)}.example.com")
-      auth_a.client_id = client_a.id
+      auth_a.organization_id = client_a.id
       auth_a.save!
       auth_b = Generator.authority(domain: "b-#{RANDOM.hex(4)}.example.com")
-      auth_b.client_id = client_b.id
+      auth_b.organization_id = client_b.id
       auth_b.save!
       staff = Generator.user(authority: auth_a).save!
 
@@ -66,9 +66,9 @@ module PlaceOS::Model
     end
 
     it "ORs permissions across scopes on the chain" do
-      partner, client, authority, user = build_estate
+      partner, org, authority, user = build_estate
       Generator.grant(user, Grant::SCOPE_PARTNER, partner.id.not_nil!.to_s, Permissions::Read).save!
-      Generator.grant(user, Grant::SCOPE_CLIENT, client.id.not_nil!.to_s, Permissions::Update).save!
+      Generator.grant(user, Grant::SCOPE_ORGANIZATION, org.id.not_nil!.to_s, Permissions::Update).save!
       Grant.resolve(user.id.not_nil!, authority).should eq(Permissions::Read | Permissions::Update)
     end
 
@@ -81,15 +81,15 @@ module PlaceOS::Model
     end
 
     it "ignores expired grants" do
-      _, client, authority, user = build_estate
-      Generator.grant(user, Grant::SCOPE_CLIENT, client.id.not_nil!.to_s, Permissions::Manage,
+      _, org, authority, user = build_estate
+      Generator.grant(user, Grant::SCOPE_ORGANIZATION, org.id.not_nil!.to_s, Permissions::Manage,
         expires_at: Time.utc - 1.hour).save!
       Grant.resolve(user.id.not_nil!, authority).should eq Permissions::None
     end
 
     it "honours a future expiry" do
-      _, client, authority, user = build_estate
-      Generator.grant(user, Grant::SCOPE_CLIENT, client.id.not_nil!.to_s, Permissions::Read,
+      _, org, authority, user = build_estate
+      Generator.grant(user, Grant::SCOPE_ORGANIZATION, org.id.not_nil!.to_s, Permissions::Read,
         expires_at: Time.utc + 1.hour).save!
       Grant.resolve(user.id.not_nil!, authority).should eq Permissions::Read
     end
@@ -100,8 +100,8 @@ module PlaceOS::Model
     end
 
     it "cascades on user delete" do
-      _, client, _, user = build_estate
-      grant = Generator.grant(user, Grant::SCOPE_CLIENT, client.id.not_nil!.to_s).save!
+      _, org, _, user = build_estate
+      grant = Generator.grant(user, Grant::SCOPE_ORGANIZATION, org.id.not_nil!.to_s).save!
       user.destroy
       Grant.find?(grant.id.not_nil!).should be_nil
     end

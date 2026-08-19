@@ -27,14 +27,14 @@ module PlaceOS::Model
     METHODS = %w(GET POST PUT PATCH DELETE)
     attribute supported_methods : Array(String) = ["POST"]
 
-    # PPT-526: the Client (customer organisation) that owns this trigger
+    # PPT-526: the Organization (customer organisation) that owns this trigger
     # definition. NULL = shared/cluster-wide definition. Nullable while
     # ownership backfill and query enforcement are phased in.
-    attribute client_id : UUID?, es_type: "keyword", mass_assignment: false
+    attribute organization_id : UUID?, es_type: "keyword", mass_assignment: false
 
-    # The owning Client, when ownership has been assigned.
-    def client : PlaceOS::Model::Client?
-      self.client_id.try { |id| PlaceOS::Model::Client.find?(id) }
+    # The owning Organization, when ownership has been assigned.
+    def organization : PlaceOS::Model::Organization?
+      self.organization_id.try { |id| PlaceOS::Model::Organization.find?(id) }
     end
 
     # Association
