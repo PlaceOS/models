@@ -8,12 +8,12 @@
 -- PPT-526 Stage 3: the authorization `grants` table (Zanzibar-lite tuple).
 --
 -- A grant gives a user a permission bitmask over a scope, which is one of a
--- Partner, a Client, or an Authority. Authorization walks UP from the touched
--- resource (authority -> its client -> that client's partner) and ORs every
+-- Partner, a Organization, or an Authority. Authorization walks UP from the touched
+-- resource (authority -> its organization -> that organization's partner) and ORs every
 -- live grant found on the chain, so a single grant at partner scope applies to
--- all of that partner's clients, current and future (decision b, 2026-08-19).
+-- all of that partner's organizations, current and future (decision b, 2026-08-19).
 --
--- `scope_id` is polymorphic (a partner/client UUID as text, or an authority
+-- `scope_id` is polymorphic (a partner/organization UUID as text, or an authority
 -- TEXT id), so it carries no DB foreign key. A grant naming a deleted scope is
 -- inert: resolution walks up from live resources and never matches it, so
 -- orphan grants are harmless and can be swept lazily. The one real FK is
@@ -25,7 +25,7 @@
 CREATE TABLE IF NOT EXISTS "grants"(
     id UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    scope_type TEXT NOT NULL CHECK (scope_type IN ('partner', 'client', 'authority')),
+    scope_type TEXT NOT NULL CHECK (scope_type IN ('partner', 'organization', 'authority')),
     scope_id TEXT NOT NULL,
     permissions INTEGER NOT NULL DEFAULT 0,
     expires_at TIMESTAMPTZ,
@@ -43,7 +43,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS grants_user_scope_unique
 CREATE INDEX IF NOT EXISTS grants_user_id_index
     ON "grants" USING BTREE (user_id);
 
--- "who can reach this scope" (partner/client admin console, audit).
+-- "who can reach this scope" (partner/organization admin console, audit).
 CREATE INDEX IF NOT EXISTS grants_scope_index
     ON "grants" USING BTREE (scope_type, scope_id);
 
