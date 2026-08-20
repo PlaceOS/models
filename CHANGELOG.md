@@ -1,3 +1,9 @@
+## v9.108.0 (2026-08-20)
+
+### Feat
+
+- **playlist/schedule**: add valid until support
+
 ## v9.107.6 (2026-08-20)
 
 ### Fix
