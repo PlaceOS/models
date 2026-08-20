@@ -1,3 +1,9 @@
+## v9.107.6 (2026-08-20)
+
+### Fix
+
+- **signage_template**: plugin.authority_id can be nil
+
 ## v9.107.5 (2026-08-14)
 
 ### Fix
