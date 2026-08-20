@@ -139,8 +139,10 @@ module PlaceOS::Model
           this.validation_error(:layouts, "layout #{index + 1}: plugin '#{plugin_id}' is not a widget")
         end
 
-        unless plugin.authority_id == this.authority_id
-          this.validation_error(:layouts, "layout #{index + 1}: plugin '#{plugin_id}' must belong to the same authority")
+        if plugin.authority_id.presence
+          unless plugin.authority_id == this.authority_id
+            this.validation_error(:layouts, "layout #{index + 1}: plugin '#{plugin_id}' must belong to the same authority")
+          end
         end
 
         this.validate_layout_params(index, layout, plugin)
