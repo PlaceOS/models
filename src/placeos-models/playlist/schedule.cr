@@ -13,6 +13,7 @@ module PlaceOS::Model
     include JSON::Serializable
 
     getter play_at : Int64? = nil
+    getter valid_until : Int64? = nil
     getter play_takeover : Bool = false
     getter play_period : Int32 = 1440
     getter play_cron : String = "0 0 * * *"
@@ -22,6 +23,7 @@ module PlaceOS::Model
       @play_period : Int32 = 1440,
       @play_takeover : Bool = false,
       @play_at : Int64? = nil,
+      @valid_until : Int64? = nil,
     )
     end
 

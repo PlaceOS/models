@@ -34,7 +34,7 @@ module PlaceOS::Model
     end
 
     it "round-trips a schedule" do
-      schedule = Playlist::Schedule.new(play_cron: "*/5 * * * *", play_period: 60)
+      schedule = Playlist::Schedule.new(play_cron: "*/5 * * * *", play_period: 60, valid_until: 1_800_000_000_i64)
       sys_template = Generator.system_template(schedule: schedule).save!
       sys_template.default?.should eq false
 
@@ -42,6 +42,7 @@ module PlaceOS::Model
       reloaded = found.schedule.as(Playlist::Schedule)
       reloaded.play_cron.should eq "*/5 * * * *"
       reloaded.play_period.should eq 60
+      reloaded.valid_until.should eq 1_800_000_000_i64
     end
 
     it "validates the schedule when present" do

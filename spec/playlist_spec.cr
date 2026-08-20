@@ -128,6 +128,17 @@ module PlaceOS::Model
       schedule.play_period.should eq 1440
       schedule.play_takeover.should eq false
       schedule.play_at.should be_nil
+      schedule.valid_until.should be_nil
+    end
+
+    it "round-trips play_at and valid_until" do
+      playlist = Generator.playlist
+      playlist.schedules = [Playlist::Schedule.new(play_at: 1_700_000_000_i64, valid_until: 1_800_000_000_i64)]
+      playlist.save.should eq true
+
+      schedule = Playlist.find!(playlist.id.as(String)).schedules.first
+      schedule.play_at.should eq 1_700_000_000_i64
+      schedule.valid_until.should eq 1_800_000_000_i64
     end
 
     it "validates each schedule's cron" do
