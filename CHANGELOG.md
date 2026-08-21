@@ -1,3 +1,9 @@
+## v9.108.1 (2026-08-21)
+
+### Fix
+
+- **template/layout**: can be 0 for floating plugins
+
 ## v9.108.0 (2026-08-20)
 
 ### Feat
