@@ -46,12 +46,14 @@ module PlaceOS::Model
 
     # `nil` when the layout is valid, otherwise a human-readable reason.
     def validation_message : String?
-      if x = x_pos
-        return "x_pos must be greater than 0 and less than 1" unless 0.0_f32 < x < 1.0_f32
-      end
+      if !position.floating?
+        if x = x_pos
+          return "x_pos must be greater than 0 and less than 1" unless 0.0_f32 < x < 1.0_f32
+        end
 
-      if y = y_pos
-        return "y_pos must be greater than 0 and less than 1" unless 0.0_f32 < y < 1.0_f32
+        if y = y_pos
+          return "y_pos must be greater than 0 and less than 1" unless 0.0_f32 < y < 1.0_f32
+        end
       end
 
       case position
