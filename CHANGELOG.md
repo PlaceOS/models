@@ -1,3 +1,9 @@
+## v9.108.2 (2026-08-27)
+
+### Fix
+
+- **bookings**: pagination performance
+
 ## v9.108.1 (2026-08-21)
 
 ### Fix
