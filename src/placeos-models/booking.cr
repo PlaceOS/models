@@ -1133,11 +1133,12 @@ module PlaceOS::Model
       count = 0
       while current_start < end_date
         break if occurrence_end && current_start >= occurrence_end
-        return RecurrenceDetails.new(occurrences, true) if count >= limit
         current_end = current_start + booking_period
 
         if current_end >= start_date &&
            self.recurrence_on.includes?(current_start.day_of_week)
+          # only a further *matching* occurrence means the limit was reached
+          return RecurrenceDetails.new(occurrences, true) if count >= limit
           occurrences << current_start
           count += 1
         end
@@ -1180,11 +1181,12 @@ module PlaceOS::Model
       count = 0
       while current_start < end_date
         break if occurrence_end && current_start >= occurrence_end
-        return RecurrenceDetails.new(occurrences, true) if count >= limit
 
         # add booking
         current_end = current_start + booking_period
         if current_end >= start_date
+          # only a further *matching* occurrence means the limit was reached
+          return RecurrenceDetails.new(occurrences, true) if count >= limit
           occurrences << current_start
           count += 1
         end

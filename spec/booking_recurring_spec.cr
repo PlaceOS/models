@@ -1114,5 +1114,73 @@ module PlaceOS::Model
       booking.starting_tz.should be_a(Time)
       booking.ending_tz.should be_a(Time)
     end
+
+    describe "limit_reached only when a further occurrence exists" do
+      # booking starts Fri 2020-01-10 10:00 Berlin; weekdays only
+      weekdays = 0b0111110
+      monday = Time.local(2020, 1, 13, 0, 0, 0, location: timezone)
+      next_monday = monday + 7.days
+
+      it "should not report limit_reached for a daily booking when only non-matching days remain" do
+        booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+        booking.recurrence_type = :daily
+        booking.recurrence_days = weekdays
+        booking.save!
+
+        # baseline: Mon..Fri, the weekend days do not match
+        booking.calculate_daily(monday, next_monday).instances.map(&.day).should eq [13, 14, 15, 16, 17]
+
+        # exactly the number of occurrences: nothing further exists, so the limit was not reached
+        details = booking.calculate_daily(monday, next_monday, limit: 5)
+        details.instances.map(&.day).should eq [13, 14, 15, 16, 17]
+        details.limit_reached.should be_false
+
+        # one less: a further matching occurrence (Friday) exists
+        details = booking.calculate_daily(monday, next_monday, limit: 4)
+        details.instances.map(&.day).should eq [13, 14, 15, 16]
+        details.limit_reached.should be_true
+      end
+
+      it "should complete the recurring booking in expand_bookings! when the limit equals the occurrence count" do
+        booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+        booking.recurrence_type = :daily
+        booking.recurrence_days = weekdays
+        booking.save!
+
+        bookings = [booking]
+        details = Booking.expand_bookings!(monday, next_monday, bookings, limit: 5)
+        bookings.map(&.starting_tz.day).should eq [13, 14, 15, 16, 17]
+        details.complete.should eq 1
+        details.next_idx.should eq 0
+
+        # one less: the booking is partially expanded and the next page continues from index 4
+        bookings = [booking]
+        details = Booking.expand_bookings!(monday, next_monday, bookings, limit: 4)
+        bookings.map(&.starting_tz.day).should eq [13, 14, 15, 16]
+        details.complete.should eq 0
+        details.next_idx.should eq 4
+      end
+
+      it "should not report limit_reached for a monthly booking when the limit equals the occurrence count" do
+        booking.tenant_id = Generator.tenant(domain: "recurrence.dev").id
+        booking.recurrence_type = :monthly
+        booking.recurrence_days = 0b0100000 # 2nd friday of each month
+        booking.recurrence_nth_of_month = 2
+        booking.save!
+
+        start_query = Time.local(2020, 1, 15, 0, 0, 0, location: timezone)
+        end_query = Time.local(2020, 5, 20, 0, 0, 0, location: timezone)
+        occurrences = booking.calculate_monthly(start_query, end_query).instances.size
+        occurrences.should be > 1
+
+        details = booking.calculate_monthly(start_query, end_query, limit: occurrences)
+        details.instances.size.should eq occurrences
+        details.limit_reached.should be_false
+
+        details = booking.calculate_monthly(start_query, end_query, limit: occurrences - 1)
+        details.instances.size.should eq occurrences - 1
+        details.limit_reached.should be_true
+      end
+    end
   end
 end
