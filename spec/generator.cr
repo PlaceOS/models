@@ -742,6 +742,61 @@ module PlaceOS::Model
       )
     end
 
+    def self.signage_ai_provider(
+      authority : Authority? = nil,
+      provider : SignageAIProvider::Provider = SignageAIProvider::Provider::OPENAI,
+      name : String? = nil,
+      credentials : String = %({"api_key":"test-key"}),
+      is_default : Bool = false,
+      enabled : Bool = true,
+      quotas : Hash(String, JSON::Any) = {} of String => JSON::Any,
+    )
+      row = SignageAIProvider.new
+      row.name = name || Faker::Hacker.noun
+      row.provider = provider
+      row.authority_id = authority.try(&.id.as(String))
+      row.credentials = credentials
+      row.default_model = provider.google? ? "gemini-3.1-flash-image" : "gpt-image-2"
+      row.is_default = is_default
+      row.enabled = enabled
+      row.quotas = JSON::Any.new(quotas)
+      row
+    end
+
+    def self.signage_ai_job(
+      authority : Authority? = nil,
+      user : User? = nil,
+      provider : SignageAIProvider? = nil,
+      kind : SignageAIJob::Kind = SignageAIJob::Kind::Generate,
+      state : SignageAIJob::State = SignageAIJob::State::Queued,
+      candidates : Int32 = 2,
+      parent_job_id : UUID? = nil,
+    )
+      unless authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+      user ||= self.user(authority: authority).save!
+
+      job = SignageAIJob.new
+      job.authority_id = authority.id.as(String)
+      job.user_id = user.id
+      job.user_email = user.email.to_s
+      job.user_name = user.name
+      job.kind = kind
+      job.state = state
+      job.candidates = candidates
+      job.parent_job_id = parent_job_id
+      job.prompt = "a poster for the office party"
+      job.result = JSON::Any.new({"images" => JSON::Any.new(Array(JSON::Any).new(candidates) { JSON::Any.new(nil) })})
+      if provider
+        job.provider_id = provider.id.as(UUID)
+        job.provider_type = provider.provider.to_s
+        job.model = provider.default_model
+      end
+      job
+    end
+
     def self.storage(type = Storage::Type::S3, bucket : String? = nil, authority_id : String? = nil)
       Storage.new(storage_type: type, bucket_name: bucket || Faker::Hacker.noun,
         access_key: Faker::Hacker.noun, access_secret: Faker::Hacker.noun,
