@@ -1,3 +1,9 @@
+## v9.109.0 (2026-08-31)
+
+### Feat
+
+- **signage-ai**: provider and job models (PPT-2741) ([#326](https://github.com/PlaceOS/models/pull/326))
+
 ## v9.108.2 (2026-08-27)
 
 ### Fix
