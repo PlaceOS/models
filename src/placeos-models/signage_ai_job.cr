@@ -157,7 +157,15 @@ module PlaceOS::Model
         db.query_one?(<<-SQL, id, index.to_s, payload, as: Int32)
           UPDATE signage_ai_jobs
           SET
-            result = jsonb_set(result, ARRAY['images', $2], $3::jsonb, true),
+            result = jsonb_set(
+              CASE
+                WHEN jsonb_typeof(result -> 'images') = 'array' THEN result
+                ELSE jsonb_set(result, '{images}', '[]'::jsonb, true)
+              END,
+              ARRAY['images', $2],
+              $3::jsonb,
+              true
+            ),
             version = version + 1,
             updated_at = now()
           WHERE id = $1
