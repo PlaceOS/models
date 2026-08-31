@@ -145,6 +145,27 @@ module PlaceOS::Model
       end
     end
 
+    # Write one candidate's entry without counting it as newly produced.
+    #
+    # `bump_image` has the increment welded into its statement because it is the
+    # runner recording a candidate that has just landed. Claiming records that
+    # an image the runner already counted became a media item, so it must not
+    # count again: it did, and the usage report was inflated by every save.
+    def self.attach_item(id : UUID, index : Int32, image : JSON::Any | Hash(String, JSON::Any)) : Int32?
+      payload = image.to_json
+      ::PgORM::Database.connection do |db|
+        db.query_one?(<<-SQL, id, index.to_s, payload, as: Int32)
+          UPDATE signage_ai_jobs
+          SET
+            result = jsonb_set(result, ARRAY['images', $2], $3::jsonb, true),
+            version = version + 1,
+            updated_at = now()
+          WHERE id = $1
+          RETURNING version;
+        SQL
+      end
+    end
+
     # Bump the version without touching the images, so a state change wakes a
     # long polling client too.
     def self.bump_version(id : UUID) : Int32?
@@ -159,6 +180,10 @@ module PlaceOS::Model
     end
 
     # Candidates requested by a user since a point in time, for the per user quota.
+    #
+    # Failed jobs count. Most of them reached the vendor and were billed, and
+    # exempting them meant a caller whose requests kept failing had no limit at
+    # all, which is the one case where a limit matters most.
     def self.sum_candidates(user_id : String, since : Time) : Int32
       ::PgORM::Database.connection do |db|
         db.query_one(<<-SQL, user_id, since, as: Int64)
@@ -166,7 +191,6 @@ module PlaceOS::Model
           FROM signage_ai_jobs
           WHERE user_id = $1
             AND created_at >= $2
-            AND state <> 'FAILED'
         SQL
       end.to_i32
     end
@@ -179,7 +203,6 @@ module PlaceOS::Model
           FROM signage_ai_jobs
           WHERE authority_id = $1
             AND created_at >= $2
-            AND state <> 'FAILED'
         SQL
       end.to_i32
     end

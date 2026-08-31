@@ -47,16 +47,17 @@ module PlaceOS::Model
       SignageAIJob.find!(job.id.as(UUID)).version.should eq 1
     end
 
-    it "sums candidates for quotas and skips failed jobs" do
+    it "sums candidates for quotas, counting failed jobs too" do
       authority = Generator.localhost_authority
       user = Generator.user(authority: authority).save!
       Generator.signage_ai_job(authority: authority, user: user, candidates: 3).save!
       Generator.signage_ai_job(authority: authority, user: user, candidates: 2, state: SignageAIJob::State::Done).save!
       Generator.signage_ai_job(authority: authority, user: user, candidates: 9, state: SignageAIJob::State::Failed).save!
 
+      # a failed job usually still reached the vendor and was billed
       since = 1.day.ago
-      SignageAIJob.sum_candidates(user.id.as(String), since).should eq 5
-      SignageAIJob.sum_candidates_for_authority(authority.id.as(String), since).should eq 5
+      SignageAIJob.sum_candidates(user.id.as(String), since).should eq 14
+      SignageAIJob.sum_candidates_for_authority(authority.id.as(String), since).should eq 14
       SignageAIJob.sum_candidates(user.id.as(String), 1.minute.from_now).should eq 0
     end
 
