@@ -147,7 +147,7 @@ module PlaceOS::Model
     #
     def self.for_parent(parent_ids : String | Array(String), &) : Array(self)
       master_settings_query do |q|
-        q.where({parent_id: parent_ids})
+        yield q.where({parent_id: parent_ids})
       end.sort_by! do |setting|
         # Reversed (negative value)
         -setting.encryption_level.value

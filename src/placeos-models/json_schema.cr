@@ -18,7 +18,7 @@ module PlaceOS::Model
     )
 
     def metadata
-      Metadata.master_metadata_query(&.filter({schema_id: self.id.as(String)}))
+      Metadata.master_metadata_query(&.where(schema_id: self.id.as(String)))
     end
   end
 end

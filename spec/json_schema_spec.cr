@@ -28,5 +28,35 @@ module PlaceOS::Model
       zone.destroy
       schema.destroy
     end
+
+    it "lists only the master metadata referencing the schema" do
+      zone = Generator.zone.save!
+      schema = Generator.json_schema.save!
+      other_schema = Generator.json_schema.save!
+
+      meta = Generator.metadata(parent: zone.id.as(String))
+      meta.schema = schema
+      meta.save!
+
+      other_meta = Generator.metadata(parent: zone.id.as(String))
+      other_meta.schema = other_schema
+      other_meta.save!
+
+      unscoped_meta = Generator.metadata(parent: zone.id.as(String)).save!
+
+      # Bump a version so versioned rows exist and must be excluded
+      meta.details = JSON.parse(%({"changed": true}))
+      meta.save!
+
+      schema.metadata.map(&.id).should eq [meta.id]
+      other_schema.metadata.map(&.id).should eq [other_meta.id]
+
+      unscoped_meta.destroy
+      other_meta.destroy
+      meta.destroy
+      zone.destroy
+      other_schema.destroy
+      schema.destroy
+    end
   end
 end

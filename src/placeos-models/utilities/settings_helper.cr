@@ -19,9 +19,9 @@ module PlaceOS::Model::Utilities
 
     # Get the settings at a particular encryption level
     #
-    def settings_at?(encryption_level : Encryption::Level)
+    def settings_at?(encryption_level : Encryption::Level) : PlaceOS::Model::Settings?
       Settings.for_parent(self.id.as(String)) do |q|
-        q.filter({encryption_level: encryption_level.to_i})
+        q.where(encryption_level: encryption_level.to_i)
       end.first?
     end
 
