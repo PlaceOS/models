@@ -1,3 +1,9 @@
+## v9.109.1 (2026-09-11)
+
+### Fix
+
+- **settings**: helper to select setting at encryption level
+
 ## v9.109.0 (2026-08-31)
 
 ### Feat
