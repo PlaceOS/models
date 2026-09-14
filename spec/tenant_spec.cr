@@ -133,6 +133,21 @@ module PlaceOS::Model
       end
     end
 
+    it "should save booking range" do
+      a = Generator.tenant({
+        name:          "Jon2",
+        platform:      "google",
+        domain:        "range.google.staff-api.dev",
+        credentials:   %({"issuer":"1122121212","scopes":["http://example.com"],"signing_key":"-----BEGIN PRIVATE KEY-----SOMEKEY DATA-----END PRIVATE KEY-----","domain":"example.com.au","sub":"jon@example.com.au"}),
+        booking_range: {"desk" => 14_u32},
+      })
+      Tenant.find!(a.id.not_nil!).booking_range.should eq({"desk" => 14_u32})
+      a.as_json.booking_range.should eq({"desk" => 14_u32})
+
+      responder = Tenant::Responder.from_json(%({"domain": "range.staff-api.dev", "booking_range": {"parking": 5}}))
+      responder.to_tenant.booking_range.should eq({"parking" => 5_u32})
+    end
+
     it "check encryption" do
       t = Generator.tenant({
         name:        "Jon2",

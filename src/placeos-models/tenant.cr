@@ -24,7 +24,13 @@ module PlaceOS::Model
     attribute email_domain : String? = nil
     attribute platform : String
     attribute credentials : String
+
+    # booking type => no. bookings
     attribute booking_limits : JSON::Any = JSON::Any.new({} of String => JSON::Any)
+
+    # booking type => days from now a booking can be made
+    attribute booking_range : Hash(String, UInt32) = {} of String => UInt32
+
     attribute outlook_config : OutlookConfig?
 
     attribute delegated : Bool = false
@@ -126,10 +132,11 @@ module PlaceOS::Model
       getter service_account : String?
       getter credentials : JSON::Any? = nil
       getter booking_limits : JSON::Any? = nil
+      getter booking_range : Hash(String, UInt32)? = nil
       getter outlook_config : OutlookConfig? = nil
       getter early_checkin : Int64? = nil
 
-      def initialize(@id, @name, @domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil, @email_domain = nil, @early_checkin = nil)
+      def initialize(@id, @name, @domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil, @email_domain = nil, @early_checkin = nil, @booking_range = nil)
       end
 
       def to_tenant(update : Bool = false)
@@ -146,6 +153,10 @@ module PlaceOS::Model
 
         if limits = booking_limits
           tenant.booking_limits = limits unless update && limits.as_h.empty?
+        end
+
+        if range = booking_range
+          tenant.booking_range = range
         end
 
         tenant
@@ -167,6 +178,7 @@ module PlaceOS::Model
         service_account: service,
         delegated: is_delegated,
         booking_limits: limits,
+        booking_range: self.booking_range,
         outlook_config: outlook_config,
         early_checkin: self.early_checkin
       )

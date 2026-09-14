@@ -205,6 +205,19 @@ module PlaceOS::Model
     validate :booking_end, "must be after booking_start", ->(this : self) { this.booking_end > this.booking_start }
     validate :instance, "must not be set", ->(this : self) { this.instance.nil? }
 
+    # Ensure the booking doesn't extend further into the future than the tenant allows
+    validate ->(this : Booking) {
+      return unless this.new_record? || this.booking_type_changed? || this.booking_end_changed? || this.recurrence_end_changed?
+      return unless tenant = this.tenant
+      return unless days = tenant.booking_range[this.booking_type]?
+
+      max_end = days.days.from_now.to_unix
+      this.validation_error(:booking_end, "must be within #{days} days from now") if this.booking_end > max_end
+      if (rec_end = this.recurrence_end) && rec_end > max_end
+        this.validation_error(:recurrence_end, "must be within #{days} days from now")
+      end
+    }
+
     before_save do
       @user_id ||= booked_by_id
       @user_email ||= booked_by_email

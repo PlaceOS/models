@@ -766,4 +766,58 @@ module PlaceOS::Model
     saved = Booking.find!(booking.id.not_nil!)
     saved.extension_data["note"].as_s.should eq "hello"
   end
+
+  describe "tenant booking_range" do
+    it "rejects a booking that ends beyond the booking range" do
+      tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_range: {"desk" => 7_u32}))
+
+      booking = Generator.booking(tenant.id, "desk1", 1.day.from_now, 8.days.from_now, booking_type: "desk")
+      booking.save.should be_false
+      booking.errors.map(&.field).should contain(:booking_end)
+
+      booking.booking_end = 6.days.from_now.to_unix
+      booking.save.should be_true
+    end
+
+    it "rejects a recurring booking that ends beyond the booking range" do
+      tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_range: {"desk" => 7_u32}))
+
+      booking = Generator.booking(tenant.id, "desk2", 1.hour.from_now, 2.hours.from_now, booking_type: "desk")
+      booking.timezone = "UTC"
+      booking.recurrence_type = Booking::Recurrence::WEEKLY
+      booking.recurrence_days = 0b1111111
+      booking.recurrence_interval = 1
+      booking.recurrence_end = 30.days.from_now.to_unix
+      booking.save.should be_false
+      errors = booking.errors.map(&.field)
+      errors.should contain(:recurrence_end)
+      errors.should_not contain(:booking_end)
+
+      booking.recurrence_end = 5.days.from_now.to_unix
+      booking.save.should be_true
+    end
+
+    it "ignores booking types not in the booking range" do
+      tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_range: {"desk" => 7_u32}))
+
+      booking = Generator.booking(tenant.id, "car1", 30.days.from_now, 31.days.from_now, booking_type: "parking")
+      booking.save.should be_true
+    end
+
+    it "only checks the range when the booking end or type changes" do
+      tenant = Generator.tenant
+      booking = Generator.booking(tenant.id, "desk3", 1.day.from_now, 6.days.from_now, booking_type: "desk")
+      booking.save!
+
+      # range tightened after the booking was made
+      booking.tenant!.booking_range = {"desk" => 3_u32}
+
+      booking.description = "unrelated change"
+      booking.save.should be_true
+
+      booking.booking_end = 5.days.from_now.to_unix
+      booking.save.should be_false
+      booking.errors.map(&.field).should contain(:booking_end)
+    end
+  end
 end
