@@ -4,8 +4,6 @@ dependencies:
     commit: 2c156ab8ce688d676ca912b25ccdc631b265952c
   retriable:
     github: Sija/retriable.cr
-  pg-orm:
-    github: spider-gazelle/pg-orm
   sanitize:
     github: straight-shoota/sanitize
     branch: master

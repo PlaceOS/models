@@ -41,6 +41,7 @@ dependencies:
   # ORM for Postgres built on active-model
   pg-orm:
     github: spider-gazelle/pg-orm
+    version: ">= 2.4.0"
 
   # PlaceOS calendar for Tenant model
   place_calendar:

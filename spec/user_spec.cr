@@ -142,12 +142,10 @@ module PlaceOS::Model
             Array.new(4) { Generator.user(admin: true).save! }
               .map { |u|
                 future do
-                  begin
-                    u.destroy
-                  rescue e : Model::Error
-                    e.message.should eq "At least one admin must remain"
-                    errors << e
-                  end
+                  u.destroy
+                rescue e : Model::Error
+                  e.message.should eq "At least one admin must remain"
+                  errors << e
                 end
               }.each &.get
           end

@@ -6,7 +6,14 @@ on:
 
 jobs:
   style:
-    uses: PlaceOS/.github/.github/workflows/crystal-style.yml@main
+    runs-on: ubuntu-latest
+    container: crystallang/crystal:latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Format
+        run: crystal tool format --check
+      - name: Lint
+        uses: crystal-ameba/github-action@v1.0.0
 
   test:
     uses: PlaceOS/.github/.github/workflows/containerised-test.yml@main

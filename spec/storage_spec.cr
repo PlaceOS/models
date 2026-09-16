@@ -48,9 +48,9 @@ module PlaceOS::Model
     it "should return default storage when flagged" do
       authority = Generator.authority.save!
 
-      def1 = Generator.storage.save!
+      def1 = Generator.storage(bucket: "default-bucket-1").save!
       def1.authority_id.should be_nil
-      def2 = Generator.storage.save!
+      def2 = Generator.storage(bucket: "default-bucket-2").save!
       def2.authority_id.should be_nil
       def1.reload!
       def2.reload!
@@ -58,13 +58,13 @@ module PlaceOS::Model
       def1.is_default.should be_false
       def2.is_default.should be_true
 
-      s2 = Generator.storage
+      s2 = Generator.storage(bucket: "authority-bucket-1")
       s2.authority_id = authority.id
       s2.is_default = false
       s2.save!
       ret_store = Storage.storage_or_default(authority.id).id.should eq s2.id
 
-      s3 = Generator.storage
+      s3 = Generator.storage(bucket: "authority-bucket-2")
       s3.authority_id = authority.id
       s3.is_default = true
       s3.save!

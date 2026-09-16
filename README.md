@@ -25,6 +25,14 @@ We use [RethinkDB](https://rethinkdb.com) to unify our database and event bus, g
 | `PG_LOCK_TIMEOUT`         | Timeout on retrying Advisory lock in seconds   | 5           |
 | `PG_DATABASE_URL`         | Or provide a Database DSN                      |             |
 
+## Control-system telemetry notifications
+
+`ControlSystem` uses pg-orm's model-level changefeed policy to ignore updates confined to `signage_last_seen` and `playlist_item_id`. The SQL trigger skips creating a CDC event for those updates, while the timestamp and current item are still persisted. Configuration updates, including updates that also change telemetry, continue to notify; inserts and deletes are unchanged.
+
+The policy is installed when the control-system changefeed is registered. It applies to all writers of these two fields, and no-op updates on `sys` are also silent. Consumers that need current telemetry should query PostgreSQL rather than rely on configuration changefeeds.
+
+Deploy EventBus 1.1.0 or newer to every service that installs CDC triggers before enabling this models version. Older installers can restore the combined trigger and produce unwanted or duplicate update events. pg-orm 2.4.0 passes the model declaration to EventBus; no database migration or core-side filter is required. For rollback, use EventBus's `replace_cdc_update_policy` with the expected current columns; merely removing the model declaration preserves the installed policy.
+
 ## Testing
 
 ```shell
