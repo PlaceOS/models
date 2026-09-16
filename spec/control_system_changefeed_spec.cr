@@ -70,19 +70,22 @@ module PlaceOS::Model
 
     it "keeps other models' update notifications" do
       zone = Generator.zone.save!
+      notifications = Channel(String).new(4)
+      listener = PG::ListenConnection.new(ENV["PG_DATABASE_URL"], ["cdc_events"]) do |notification|
+        payload = JSON.parse(notification.payload)
+        if payload["table"].as_s == "zone" && payload["id"].as_s == zone.id
+          notifications.send(notification.payload)
+        end
+      end
       feed = Zone.changes(zone.id)
-      events = Channel(PgORM::ChangeReceiver::Event).new(4)
-      spawn { feed.on { |change| events.send(change.event) } }
-      Fiber.yield
       zone.name = "updated-#{RANDOM.hex(8)}"
       zone.save!
-      select
-      when event = events.receive
-        event.updated?.should be_true
-      when timeout(5.seconds)
-        fail "Zone update did not notify"
+      JSON.parse(receive_signage_notification(notifications))["action"].as_s.should eq("update")
+      PgORM::Database.connection do |db|
+        db.query_all("SELECT event_action FROM public.eventbus_cdc_events WHERE event_table = 'zone' AND row_id = $1 AND event_action = 'update'", args: [zone.id], as: String).should eq(["update"])
       end
     ensure
+      listener.try &.close
       feed.try &.stop
       zone.try &.delete
     end
