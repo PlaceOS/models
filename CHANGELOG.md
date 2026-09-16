@@ -1,3 +1,9 @@
+## v9.110.4 (2026-09-16)
+
+### Fix
+
+- restore control system display name events ([#330](https://github.com/PlaceOS/models/pull/330))
+
 ## v9.110.3 (2026-09-16)
 
 ### Fix
