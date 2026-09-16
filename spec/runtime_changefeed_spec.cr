@@ -225,6 +225,73 @@ module PlaceOS::Model
       zone.try &.delete
     end
 
+    {"updated_at", "has_runtime_error", "error_timestamp"}.each do |field|
+      it "persists Module #{field} without notifying services" do
+        driver = Generator.driver(role: Driver::Role::Device).save!
+        mod = Generator.module(driver: driver)
+        mod.running = true
+        mod.save!
+        feed = Module.changes
+        probe = RuntimeCDCProbe.new("mod", mod.id.as(String))
+        previous_updated_at = mod.updated_at
+        error_time = Time.utc
+        case field
+        when "updated_at"        then mod.updated_at = Time.utc
+        when "has_runtime_error" then mod.has_runtime_error = true
+        when "error_timestamp"   then mod.error_timestamp = error_time
+        end
+        mod.save!
+        mod.reload!
+        mod.updated_at.should be > previous_updated_at
+        case field
+        when "has_runtime_error"
+          mod.has_runtime_error.should be_true
+        when "error_timestamp"
+          mod.error_timestamp.not_nil!.to_unix.should eq(error_time.to_unix)
+          mod.error_timestamp = nil
+          mod.save!
+          mod.reload!
+          mod.error_timestamp.should be_nil
+        end
+        probe.expect_quiet
+      ensure
+        probe.try &.close
+        feed.try &.stop
+        mod.try &.delete
+        driver.try &.delete
+      end
+    end
+
+    it "preserves Module name changes, mixed updates, inserts and deletes" do
+      driver = Generator.driver(role: Driver::Role::Device).save!
+      feed = Module.changes
+      mod = Generator.module(driver: driver).save!
+      probe = RuntimeCDCProbe.new("mod", mod.id.as(String))
+      probe.event_count.should eq(1)
+      # Raw writes avoid the ORM callback that restores the driver's module_name.
+      PgORM::Database.connection do |db|
+        db.exec("UPDATE mod SET name = 'renamed-module' WHERE id = $1", args: [mod.id])
+      end
+      probe.expect_action("update")
+      mod.reload!
+      mod.name.should eq("renamed-module")
+      PgORM::Database.connection do |db|
+        db.exec("UPDATE mod SET name = 'mixed-module', has_runtime_error = true, error_timestamp = now(), updated_at = now() WHERE id = $1", args: [mod.id])
+      end
+      probe.expect_action("update")
+      mod.reload!
+      mod.name.should eq("mixed-module")
+      mod.has_runtime_error.should be_true
+      mod.error_timestamp.should_not be_nil
+      mod.destroy
+      probe.expect_action("delete")
+    ensure
+      probe.try &.close
+      feed.try &.stop
+      mod.try &.delete
+      driver.try &.delete
+    end
+
     it "keeps unconfigured Repository metadata updates" do
       repo = Generator.repository.save!
       feed = Repository.changes

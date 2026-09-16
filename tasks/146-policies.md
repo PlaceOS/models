@@ -15,3 +15,7 @@ Audit: updated_at is the sole update timestamp. Driver.after_save redundantly sa
 Regression red: 23 focused examples, 15 failures and no errors, including requested field updates and indirect Module CDC. Positive runtime changes still pass. Green verification follows declarations and callback guard.
 
 Focused green: 23 specs, zero failures/errors. Formatting/Ameba pass (181 files). Independent source/spec review approved. Driver.module_name and Module.name remain notification-producing, including verified propagation. Full stable/unstable CI pending before squash merge.
+
+User extended active scope: Module ignores updated_at, has_runtime_error and error_timestamp. Add ordinary-save red/green regressions with running modules so error-state callbacks retain values, and positive Module.name/mixed changes. Module.name and Driver.module_name must remain notification-producing. Rerun final CI after this addition; prior CI is superseded.
+
+Module regression red: 27 focused specs, exactly 3 failures for newly ignored fields. Expanded green: all 27 pass, including Module.name and Driver.module_name notification controls. Formatting/lint and independent Module declaration review pass. Final full CI required on expanded scope.

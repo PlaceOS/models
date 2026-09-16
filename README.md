@@ -31,6 +31,7 @@ These models declare the fields that can change without notifying running servic
 
 | Model | Ignored update columns |
 | --- | --- |
+| `Module` | `updated_at`, `has_runtime_error`, `error_timestamp` |
 | `Driver` | `name`, `description`, `update_available`, `update_info`, `compilation_output`, `updated_at`, `search_vector` |
 | `Zone` | `name`, `description`, `display_name`, `playlists`, `images`, `updated_at`, `search_vector` |
 | `ControlSystem` | `signage_last_seen`, `playlist_item_id`, `name`, `description`, `display_name`, `version`, `updated_at`, `playlists`, `orientation`, `search_vector` |
@@ -41,7 +42,7 @@ Policies apply to every writer once the model's changefeed is registered. No-op 
 
 Deploy EventBus 1.1.0 or newer to every service that installs CDC triggers before enabling filtering. Older installers can restore the combined trigger and produce unwanted or duplicate events. pg-orm 2.4.1 or newer passes the model declaration, including explicit database-only columns, to EventBus; no core-side filter is required.
 
-Driver and Zone acquire their policies on first registration without a schema migration. For an existing ControlSystem policy, coordinate upgrading its subscribers and explicitly replace the installed policy before they register the new declaration. Old declarations conflict with the new policy, so avoid overlapping registration by the two versions. With the current models loaded, upgrade from the previous eight-column policy using:
+Module, Driver and Zone acquire their policies on first registration without a schema migration. For an existing ControlSystem policy, coordinate upgrading its subscribers and explicitly replace the installed policy before they register the new declaration. Old declarations conflict with the new policy, so avoid overlapping registration by the two versions. With the current models loaded, upgrade from the previous eight-column policy using:
 
 ```crystal
 EventBus.new(ENV["PG_DATABASE_URL"]).replace_cdc_update_policy(

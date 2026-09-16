@@ -14,6 +14,9 @@ module PlaceOS::Model
 
     table :mod
 
+    # Runtime error reporting and save timestamps do not require a driver reload.
+    changefeed_ignore_updates :updated_at, :has_runtime_error, :error_timestamp
+
     attribute ip : String = "", es_type: "text"
     attribute port : Int32 = 0
     attribute tls : Bool = false
