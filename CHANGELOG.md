@@ -1,3 +1,9 @@
+## v9.110.1 (2026-09-16)
+
+### Fix
+
+- suppress signage heartbeat changefeed events ([#327](https://github.com/PlaceOS/models/pull/327))
+
 ## v9.110.0 (2026-09-14)
 
 ### Feat
