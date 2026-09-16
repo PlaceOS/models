@@ -1,3 +1,9 @@
+## v9.110.2 (2026-09-16)
+
+### Fix
+
+- ignore control system metadata changefeed updates ([#328](https://github.com/PlaceOS/models/pull/328))
+
 ## v9.110.1 (2026-09-16)
 
 ### Fix
