@@ -76,7 +76,7 @@ module PlaceOS::Model
     # Telemetry and descriptive metadata do not require running drivers to reload.
     # ORM saves advance updated_at; PostgreSQL also regenerates search_vector.
     changefeed_ignore_updates :signage_last_seen, :playlist_item_id,
-      :name, :description, :display_name, :version, :updated_at,
+      :name, :description, :display_name, :version, :playlists, :orientation, :updated_at,
       database_columns: [:search_vector]
 
     attribute space_config : Hash(String, JSON::Any) = {} of String => JSON::Any

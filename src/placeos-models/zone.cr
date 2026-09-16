@@ -16,6 +16,10 @@ module PlaceOS::Model
 
     table :zone
 
+    # Descriptive and signage fields do not change running driver configuration.
+    changefeed_ignore_updates :name, :description, :display_name, :playlists,
+      :images, :updated_at, database_columns: [:search_vector]
+
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common
     attribute tags : Set(String) = -> { Set(String).new }, sanitize: :text

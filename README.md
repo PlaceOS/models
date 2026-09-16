@@ -25,25 +25,34 @@ We use [RethinkDB](https://rethinkdb.com) to unify our database and event bus, g
 | `PG_LOCK_TIMEOUT`         | Timeout on retrying Advisory lock in seconds   | 5           |
 | `PG_DATABASE_URL`         | Or provide a Database DSN                      |             |
 
-## Control-system changefeed notifications
+## Runtime changefeed notifications
 
-`ControlSystem` uses pg-orm's model-level changefeed policy to ignore updates confined to `signage_last_seen`, `playlist_item_id`, `name`, `description`, `display_name`, `version`, `updated_at` and the derived `search_vector` column. The automatic `updated_at` and generated search-vector changes are ignored so ordinary metadata saves are also silent. Other search-vector source fields, such as `code`, remain notification-producing. The SQL trigger skips creating a CDC event for these updates while still persisting the values. Changes to other fields, such as `modules`, continue to notify even when the same update changes ignored fields. Inserts and deletes are unchanged.
+These models declare the fields that can change without notifying running services:
 
-The policy is installed when the control-system changefeed is registered. It applies to all writers of these fields, and no-op updates on `sys` are also silent. Consumers that need current telemetry or descriptive metadata should query PostgreSQL rather than rely on changefeeds.
+| Model | Ignored update columns |
+| --- | --- |
+| `Module` | `updated_at`, `has_runtime_error`, `error_timestamp` |
+| `Driver` | `name`, `description`, `update_available`, `update_info`, `compilation_output`, `updated_at`, `search_vector` |
+| `Zone` | `name`, `description`, `display_name`, `playlists`, `images`, `updated_at`, `search_vector` |
+| `ControlSystem` | `signage_last_seen`, `playlist_item_id`, `name`, `description`, `display_name`, `version`, `updated_at`, `playlists`, `orientation`, `search_vector` |
 
-Deploy EventBus 1.1.0 or newer to every service that installs CDC triggers before enabling this models version. Older installers can restore the combined trigger and produce unwanted or duplicate update events. pg-orm 2.4.1 or newer passes the model declaration, including explicit database-only columns, to EventBus; no core-side filter is required.
+The SQL trigger skips CDC rows and notifications when an update changes only ignored fields; the values still persist. Automatic `updated_at` and generated `search_vector` changes are included so ordinary metadata saves stay silent. Changes to other columns still notify, even when the same write changes ignored fields. Inserts and deletes are unchanged. Driver saves also skip saving associated modules whose copied name and role already match, preventing redundant module events; `Driver.module_name` and role changes still synchronize associated modules and emit their events. `Driver.module_name` and `Module.name` are not ignored.
 
-If the earlier two-column policy is already installed, coordinate upgrading all ControlSystem subscribers and explicitly replace that policy before they register the new declaration. Old two-column declarations conflict with the new policy, so avoid overlapping registration by the two versions. From a Crystal process with EventBus loaded and access to the database:
+Policies apply to every writer once the model's changefeed is registered. No-op updates on these tables are also silent. Consumers that need current metadata or signage configuration should read PostgreSQL rather than rely on these changefeeds. `created_at` and other unlisted fields remain notification-producing.
+
+Deploy EventBus 1.1.0 or newer to every service that installs CDC triggers before enabling filtering. Older installers can restore the combined trigger and produce unwanted or duplicate events. pg-orm 2.4.1 or newer passes the model declaration, including explicit database-only columns, to EventBus; no core-side filter is required.
+
+Module, Driver and Zone acquire their policies on first registration without a schema migration. For an existing ControlSystem policy, coordinate upgrading its subscribers and explicitly replace the installed policy before they register the new declaration. Old declarations conflict with the new policy, so avoid overlapping registration by the two versions. With the current models loaded, upgrade from the previous eight-column policy using:
 
 ```crystal
 EventBus.new(ENV["PG_DATABASE_URL"]).replace_cdc_update_policy(
   "sys",
-  ignore_update_columns: ["signage_last_seen", "playlist_item_id", "name", "description", "display_name", "version", "updated_at", "search_vector"],
-  expected_ignore_update_columns: ["signage_last_seen", "playlist_item_id"]
+  ignore_update_columns: PlaceOS::Model::ControlSystem.changefeed_ignored_update_columns.not_nil!,
+  expected_ignore_update_columns: ["signage_last_seen", "playlist_item_id", "name", "description", "display_name", "version", "updated_at", "search_vector"]
 )
 ```
 
-Fresh installations need no replacement. For rollback, use `replace_cdc_update_policy` with the expected current columns; merely removing the model declaration preserves the installed policy.
+If only the original two-column policy was installed, use `["signage_last_seen", "playlist_item_id"]` as the expected list instead. Fresh installations need no replacement. Do not guess the installed policy or suppress a mismatch error. For rollback, use `replace_cdc_update_policy` with the expected current columns; merely removing a declaration preserves the installed policy.
 
 ## Testing
 

@@ -12,6 +12,10 @@ module PlaceOS::Model
 
     table :driver
 
+    # Driver metadata and build progress do not change running module configuration.
+    changefeed_ignore_updates :name, :description, :update_available, :update_info,
+      :compilation_output, :updated_at, database_columns: [:search_vector]
+
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common
     attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "text"
@@ -97,6 +101,7 @@ module PlaceOS::Model
     protected def update_modules
       # TODO: Perform asynchronously
       self.modules.each do |mod|
+        next if mod.role == self.role && mod.name == self.module_name
         mod.driver = self
         mod.save
       end
