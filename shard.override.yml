@@ -1,8 +1,4 @@
 dependencies:
-  # Temporary until pg-orm's database_columns support is released.
-  pg-orm:
-    github: spider-gazelle/pg-orm
-    commit: 50d1f5bffb26b8d33c67e15e914253e26e38dc12
   neuroplastic:
     github: place-labs/neuroplastic
     commit: 2c156ab8ce688d676ca912b25ccdc631b265952c

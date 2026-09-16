@@ -31,7 +31,7 @@ We use [RethinkDB](https://rethinkdb.com) to unify our database and event bus, g
 
 The policy is installed when the control-system changefeed is registered. It applies to all writers of these fields, and no-op updates on `sys` are also silent. Consumers that need current telemetry or descriptive metadata should query PostgreSQL rather than rely on changefeeds.
 
-Deploy EventBus 1.1.0 or newer to every service that installs CDC triggers before enabling this models version. Older installers can restore the combined trigger and produce unwanted or duplicate update events. pg-orm passes the model declaration, including explicit database-only columns, to EventBus; no core-side filter is required.
+Deploy EventBus 1.1.0 or newer to every service that installs CDC triggers before enabling this models version. Older installers can restore the combined trigger and produce unwanted or duplicate update events. pg-orm 2.4.1 or newer passes the model declaration, including explicit database-only columns, to EventBus; no core-side filter is required.
 
 If the earlier two-column policy is already installed, coordinate upgrading all ControlSystem subscribers and explicitly replace that policy before they register the new declaration. Old two-column declarations conflict with the new policy, so avoid overlapping registration by the two versions. From a Crystal process with EventBus loaded and access to the database:
 
