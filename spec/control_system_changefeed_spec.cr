@@ -78,7 +78,7 @@ module PlaceOS::Model
       driver.try &.delete
     end
 
-    {"name", "description", "display_name", "version"}.each do |column|
+    {"name", "description", "version"}.each do |column|
       it "persists #{column}-only changes without CDC rows or notifications" do
         system = Generator.control_system.save!
         id = system.id.as(String)
@@ -95,22 +95,15 @@ module PlaceOS::Model
         value = column == "version" ? "7" : "metadata-#{RANDOM.hex(8)}"
         previous_updated_at = system.updated_at
         case column
-        when "name"         then system.name = value
-        when "description"  then system.description = value
-        when "display_name" then system.display_name = value
-        when "version"      then system.version = value.to_i
+        when "name"        then system.name = value
+        when "description" then system.description = value
+        when "version"     then system.version = value.to_i
         end
         system.save!
         system.reload!
         system.updated_at.should be > previous_updated_at
         PgORM::Database.connection do |db|
           db.query_one("SELECT #{column}::text FROM sys WHERE id = $1", args: [id], as: String).should eq(value)
-        end
-        if column == "display_name"
-          system.display_name = nil
-          system.save!
-          system.reload!
-          system.display_name.should be_nil
         end
         signage_cdc_actions(id).should eq(before)
         PgORM::Database.connection { |db| db.exec("SELECT pg_notify('metadata_spec_barrier', $1)", args: [barrier]) }
@@ -120,6 +113,34 @@ module PlaceOS::Model
         feed.try &.stop
         system.try &.delete
       end
+    end
+
+    it "notifies when display_name is set or cleared alongside ignored metadata" do
+      system = Generator.control_system.save!
+      id = system.id.as(String)
+      feed = ControlSystem.changes
+      notifications = Channel(String).new(4)
+      listener = PG::ListenConnection.new(ENV["PG_DATABASE_URL"], ["cdc_events"]) do |notification|
+        payload = JSON.parse(notification.payload)
+        if payload["table"].as_s == "sys" && payload["id"].as_s == id
+          notifications.send(notification.payload)
+        end
+      end
+      expected_actions = signage_cdc_actions(id)
+      {"Updated display", nil}.each do |display_name|
+        system.display_name = display_name
+        system.description = "metadata with #{display_name || "cleared display"}"
+        system.save!
+        system.reload!
+        system.display_name.should eq(display_name)
+        expected_actions << "update"
+        signage_cdc_actions(id).should eq(expected_actions)
+        JSON.parse(receive_signage_notification(notifications))["action"].as_s.should eq("update")
+      end
+    ensure
+      listener.try &.close
+      feed.try &.stop
+      system.try &.delete
     end
 
     it "keeps runtime Zone update notifications" do
