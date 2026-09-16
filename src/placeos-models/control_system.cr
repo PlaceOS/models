@@ -73,8 +73,11 @@ module PlaceOS::Model
     attribute signage_last_seen : Time = -> { 5.hours.ago }, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
     belongs_to Playlist::Item, foreign_key: "playlist_item_id"
 
-    # Signage telemetry persists without notifying services to reload running drivers.
-    changefeed_ignore_updates :signage_last_seen, :playlist_item_id
+    # Telemetry and descriptive metadata do not require running drivers to reload.
+    # ORM saves advance updated_at; PostgreSQL also regenerates search_vector.
+    changefeed_ignore_updates :signage_last_seen, :playlist_item_id,
+      :name, :description, :display_name, :version, :updated_at,
+      database_columns: [:search_vector]
 
     attribute space_config : Hash(String, JSON::Any) = {} of String => JSON::Any
 
