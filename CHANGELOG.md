@@ -1,3 +1,9 @@
+## v9.110.3 (2026-09-16)
+
+### Fix
+
+- suppress runtime metadata changefeed updates ([#329](https://github.com/PlaceOS/models/pull/329))
+
 ## v9.110.2 (2026-09-16)
 
 ### Fix
