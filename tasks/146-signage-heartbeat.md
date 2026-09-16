@@ -12,13 +12,19 @@ ControlSystem declares `changefeed_ignore_updates :signage_last_seen, :playlist_
 ## Checklist
 
 - [x] Verify pg-orm v2.4.0 release, local instructions and uncontested claim.
-- [ ] Write failing regression specs against real PostgreSQL CDC before adding the declaration.
-- [ ] Update pg-orm minimum version and lockfile, removing its unversioned override.
-- [ ] Add model-level declaration and explain telemetry intent; do not add a migration or core filter.
-- [ ] Verify timestamp/item persistence, repeated/nil/empty heartbeat, no CDC rows/notifications, ordinary and mixed updates, create/delete and other models.
+- [x] Reproduce original bug with real PostgreSQL CDC: first heartbeat produces [insert, update] instead of [insert].
+- [x] Require pg-orm >=2.4.0 and remove unversioned override; local ignored lockfile resolves pg-orm2.4.0/EventBus1.1.0.
+- [x] Add model-level declaration and explain telemetry intent; single UPDATE unchanged, no migration/core filter.
+- [x] Focused regression passes: 2 examples, 0 failures/errors; covers persistence, repeated/nil/empty heartbeat, no CDC rows/notifications, configuration/mixed updates, create/delete and Zone.
 - [ ] One agent runs specs at a time; full suite, formatting, lint and GitHub CI must pass.
 - [ ] Independent review, squash merge, close parent issue and release claim.
 
 ## Review
 
-Pending. EventBus/pg-orm stages are already merged/released. No migration is required. Rollout must update all CDC installers before enabling the model policy; SQL-backed telemetry reads remain available. Suppression includes telemetry-only writes outside this method. Record test and CI results in PR and parent issue before completion.
+Independent review approved declaration, dependency requirement, test coverage, rollout docs and behavior-preserving lint cleanup. EventBus/pg-orm stages are already merged/released. No migration is required. Rollout must update all CDC installers before enabling the model policy; SQL-backed telemetry reads remain available. Suppression includes telemetry-only writes outside this method. Record test and CI results in PR and parent issue before completion.
+
+### Verification adjustment
+
+The three-file targeted compile exited 137 before specs ran on the shared 8GB Docker VM. Retry with `--threads 1 --no-debug`; do not stop unrelated user containers or prune Docker. If full local compilation still exceeds available memory, run the full suite on GitHub CI's isolated runner after the focused regression passes.
+
+Focused green: `./test --threads 1 --no-debug spec/control_system_changefeed_spec.cr` passes 2 examples (161ms runtime). Full local suite intentionally deferred to CI after broader three-file compiles hit OOM137 twice. `./bin/ameba`: 180 files, zero failures; formatting/diff checks clean. No local suite remains running.

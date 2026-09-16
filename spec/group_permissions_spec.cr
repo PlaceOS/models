@@ -94,7 +94,7 @@ module PlaceOS::Model
       sql = Group.accessible_zones_sql(
         authority.id.not_nil!, subsystems || [subsystem], user.id.not_nil!, required,
       )
-      return nil if sql.nil?
+      return if sql.nil?
       ::PgORM::Database.connection do |db|
         db.query_all("SELECT * FROM #{sql} AS q(zone_id)", &.read(String))
       end.sort!

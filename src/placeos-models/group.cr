@@ -163,10 +163,10 @@ module PlaceOS::Model
       required : Permissions,
     ) : String?
       direct_memberships = user_direct_memberships(authority_id, user_id)
-      return nil if direct_memberships.empty?
+      return if direct_memberships.empty?
 
       authority_groups = Group.where(authority_id: authority_id).to_a
-      return nil if authority_groups.empty?
+      return if authority_groups.empty?
 
       parent_of = {} of UUID => UUID
       all_group_ids = [] of UUID
@@ -179,7 +179,7 @@ module PlaceOS::Model
         end
         member_group_ids << gid if g.subsystems.any? { |sub| subsystems.includes?(sub) }
       end
-      return nil if member_group_ids.empty?
+      return if member_group_ids.empty?
 
       effective_memberships = walk_up_memberships(direct_memberships, all_group_ids, parent_of)
       group_depths = compute_group_depths(all_group_ids, parent_of)
@@ -189,7 +189,7 @@ module PlaceOS::Model
       GroupZone.where(group_id: member_group_ids).each do |gz|
         (rows_by_group[gz.group_id] ||= [] of GroupZone) << gz
       end
-      return nil if rows_by_group.empty?
+      return if rows_by_group.empty?
 
       satisfies = ->(perms : Permissions) do
         perms.manage? || (perms & required) != Permissions::None
@@ -224,7 +224,7 @@ module PlaceOS::Model
           end
         end
       end
-      return nil if anchor_hits.empty? && walk_seeds.empty?
+      return if anchor_hits.empty? && walk_seeds.empty?
 
       escape = ->(value : String) { "'#{value.gsub("'", "''")}'" }
       anchors_sql = anchor_hits.join(", ") { |zid| "(#{escape.call(zid)})" }

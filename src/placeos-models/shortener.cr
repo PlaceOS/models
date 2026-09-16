@@ -71,13 +71,11 @@ module PlaceOS::Model
     def save!(**options)
       attempts = 0
       loop do
-        begin
-          return super(**options)
-        rescue error : ::PgORM::Error::RecordNotSaved
-          attempts += 1
-          id_collision = new_record? && error.message.try(&.includes?("shortener_pkey"))
-          raise error unless id_collision && attempts < CREATE_ID_ATTEMPTS
-        end
+        return super(**options)
+      rescue error : ::PgORM::Error::RecordNotSaved
+        attempts += 1
+        id_collision = new_record? && error.message.try(&.includes?("shortener_pkey"))
+        raise error unless id_collision && attempts < CREATE_ID_ATTEMPTS
       end
     end
 

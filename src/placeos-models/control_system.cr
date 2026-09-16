@@ -73,6 +73,9 @@ module PlaceOS::Model
     attribute signage_last_seen : Time = -> { 5.hours.ago }, converter: PlaceOS::Model::Timestamps::EpochConverter, type: "integer", format: "Int64", mass_assignment: false
     belongs_to Playlist::Item, foreign_key: "playlist_item_id"
 
+    # Signage telemetry persists without notifying services to reload running drivers.
+    changefeed_ignore_updates :signage_last_seen, :playlist_item_id
+
     attribute space_config : Hash(String, JSON::Any) = {} of String => JSON::Any
 
     def update_last_seen_time(item_id : String? = nil)

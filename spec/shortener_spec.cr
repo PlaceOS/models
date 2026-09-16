@@ -51,7 +51,7 @@ module PlaceOS::Model
         Array.new(16) { Generator.shortener(user: user, authority: authority).save! }
       end
 
-      shorteners.each { |short| short.persisted?.should be_true }
+      shorteners.each(&.persisted?.should(be_true))
       Shortener.count.should eq 16
 
       ids = shorteners.map(&.id.as(String))
