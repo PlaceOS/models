@@ -55,6 +55,20 @@ module PlaceOS::Model
       schedule.save.should eq true
     end
 
+    it "validates each schedule's mask" do
+      schedule = Generator.item_schedule
+      schedule.schedules = [Playlist::Schedule.new(mask: "0110")]
+      schedule.save.should eq false
+      schedule.errors.first.field.should eq :schedules
+
+      schedule.schedules = [Playlist::Schedule.new(valid_from: 1_700_000_000_i64, mask: "0112")]
+      schedule.save.should eq false
+      schedule.errors.first.field.should eq :schedules
+
+      schedule.schedules = [Playlist::Schedule.new(valid_from: 1_700_000_000_i64, mask: "0110")]
+      schedule.save.should eq true
+    end
+
     it "requires the item and playlist to share an authority" do
       playlist = Generator.playlist(distribution: true).save!
 

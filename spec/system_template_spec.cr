@@ -59,6 +59,16 @@ module PlaceOS::Model
       sys_template.errors.first.message.to_s.should contain "valid_until must be greater than valid_from"
     end
 
+    it "round-trips and validates a schedule mask" do
+      sys_template = Generator.system_template(schedule: Playlist::Schedule.new(mask: "1" * 129, valid_from: 1_700_000_000_i64))
+      sys_template.save.should eq false
+      sys_template.errors.first.field.should eq :schedule
+
+      sys_template = Generator.system_template(schedule: Playlist::Schedule.new(mask: "1100", valid_from: 1_700_000_000_i64)).save!
+      found = SignageTemplate::SystemTemplate.find!(sys_template.id.as(UUID))
+      found.schedule.as(Playlist::Schedule).mask.should eq "1100"
+    end
+
     it "allows a default and multiple scheduled rows for the same pairing" do
       template = Generator.signage_template.save!
       sys = Generator.control_system.save!

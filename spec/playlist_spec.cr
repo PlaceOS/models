@@ -130,6 +130,7 @@ module PlaceOS::Model
       schedule.play_at.should be_nil
       schedule.valid_until.should be_nil
       schedule.valid_from.should be_nil
+      schedule.mask.should be_nil
     end
 
     it "round-trips play_at, valid_from and valid_until" do
@@ -156,6 +157,54 @@ module PlaceOS::Model
       playlist.errors.first.field.should eq :schedules
 
       playlist.schedules = [Playlist::Schedule.new(valid_from: 1_800_000_000_i64, valid_until: 1_800_000_001_i64)]
+      playlist.save.should eq true
+    end
+
+    it "round-trips a mask" do
+      playlist = Generator.playlist
+      playlist.schedules = [Playlist::Schedule.new(valid_from: 1_700_000_000_i64, mask: "1010011")]
+      playlist.save.should eq true
+
+      schedule = Playlist.find!(playlist.id.as(String)).schedules.first
+      schedule.mask.should eq "1010011"
+      schedule.valid_from.should eq 1_700_000_000_i64
+    end
+
+    it "requires valid_from when a mask is set" do
+      playlist = Generator.playlist
+      playlist.schedules = [Playlist::Schedule.new(mask: "101")]
+      playlist.save.should eq false
+      playlist.errors.first.field.should eq :schedules
+      playlist.errors.first.message.to_s.should contain "valid_from is required when mask is set"
+
+      playlist.schedules = [Playlist::Schedule.new(valid_from: 1_700_000_000_i64, mask: "101")]
+      playlist.save.should eq true
+    end
+
+    it "treats an empty mask as inactive" do
+      playlist = Generator.playlist
+      playlist.schedules = [Playlist::Schedule.new(mask: "")]
+      playlist.save.should eq true
+    end
+
+    it "only allows 0's and 1's in a mask" do
+      playlist = Generator.playlist
+      ["102", "1 0", "abc", "1,0", "１0"].each do |bits|
+        playlist.schedules = [Playlist::Schedule.new(valid_from: 1_700_000_000_i64, mask: bits)]
+        playlist.save.should eq false
+        playlist.errors.first.field.should eq :schedules
+        playlist.errors.first.message.to_s.should contain "mask can only contain 0's and 1's"
+      end
+    end
+
+    it "limits the mask to 128 characters" do
+      playlist = Generator.playlist
+      playlist.schedules = [Playlist::Schedule.new(valid_from: 1_700_000_000_i64, mask: "1" * 129)]
+      playlist.save.should eq false
+      playlist.errors.first.field.should eq :schedules
+      playlist.errors.first.message.to_s.should contain "mask must not exceed 128 characters"
+
+      playlist.schedules = [Playlist::Schedule.new(valid_from: 1_700_000_000_i64, mask: "01" * 64)]
       playlist.save.should eq true
     end
 
