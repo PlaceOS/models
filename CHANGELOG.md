@@ -1,3 +1,9 @@
+## v9.112.0 (2026-09-17)
+
+### Feat
+
+- **signage**: add bitmask to schedules
+
 ## v9.111.0 (2026-09-17)
 
 ### Feat
