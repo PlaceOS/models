@@ -45,6 +45,16 @@ module PlaceOS::Model
       schedule.save.should eq true
     end
 
+    it "requires valid_until to be after valid_from when both are set" do
+      schedule = Generator.item_schedule
+      schedule.schedules = [Playlist::Schedule.new(valid_from: 1_800_000_000_i64, valid_until: 1_800_000_000_i64)]
+      schedule.save.should eq false
+      schedule.errors.first.field.should eq :schedules
+
+      schedule.schedules = [Playlist::Schedule.new(valid_from: 1_700_000_000_i64, valid_until: 1_800_000_000_i64)]
+      schedule.save.should eq true
+    end
+
     it "requires the item and playlist to share an authority" do
       playlist = Generator.playlist(distribution: true).save!
 

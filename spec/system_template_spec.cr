@@ -51,6 +51,14 @@ module PlaceOS::Model
       sys_template.errors.first.field.should eq :schedule
     end
 
+    it "requires the schedule's valid_until to be after valid_from" do
+      schedule = Playlist::Schedule.new(valid_from: 1_800_000_000_i64, valid_until: 1_700_000_000_i64)
+      sys_template = Generator.system_template(schedule: schedule)
+      sys_template.save.should eq false
+      sys_template.errors.first.field.should eq :schedule
+      sys_template.errors.first.message.to_s.should contain "valid_until must be greater than valid_from"
+    end
+
     it "allows a default and multiple scheduled rows for the same pairing" do
       template = Generator.signage_template.save!
       sys = Generator.control_system.save!

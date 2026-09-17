@@ -129,16 +129,43 @@ module PlaceOS::Model
       schedule.play_takeover.should eq false
       schedule.play_at.should be_nil
       schedule.valid_until.should be_nil
+      schedule.valid_from.should be_nil
     end
 
-    it "round-trips play_at and valid_until" do
+    it "round-trips play_at, valid_from and valid_until" do
       playlist = Generator.playlist
-      playlist.schedules = [Playlist::Schedule.new(play_at: 1_700_000_000_i64, valid_until: 1_800_000_000_i64)]
+      playlist.schedules = [Playlist::Schedule.new(play_at: 1_700_000_000_i64, valid_from: 1_650_000_000_i64, valid_until: 1_800_000_000_i64)]
       playlist.save.should eq true
 
       schedule = Playlist.find!(playlist.id.as(String)).schedules.first
       schedule.play_at.should eq 1_700_000_000_i64
+      schedule.valid_from.should eq 1_650_000_000_i64
       schedule.valid_until.should eq 1_800_000_000_i64
+    end
+
+    it "requires valid_until to be after valid_from when both are set" do
+      playlist = Generator.playlist
+      playlist.schedules = [Playlist::Schedule.new(valid_from: 1_800_000_000_i64, valid_until: 1_700_000_000_i64)]
+      playlist.save.should eq false
+      playlist.errors.first.field.should eq :schedules
+      playlist.errors.first.message.to_s.should contain "valid_until must be greater than valid_from"
+
+      # equal bounds are rejected, the range must be strictly increasing
+      playlist.schedules = [Playlist::Schedule.new(valid_from: 1_800_000_000_i64, valid_until: 1_800_000_000_i64)]
+      playlist.save.should eq false
+      playlist.errors.first.field.should eq :schedules
+
+      playlist.schedules = [Playlist::Schedule.new(valid_from: 1_800_000_000_i64, valid_until: 1_800_000_001_i64)]
+      playlist.save.should eq true
+    end
+
+    it "allows valid_from or valid_until to be set independently" do
+      playlist = Generator.playlist
+      playlist.schedules = [
+        Playlist::Schedule.new(valid_from: 1_800_000_000_i64),
+        Playlist::Schedule.new(valid_until: 1_700_000_000_i64),
+      ]
+      playlist.save.should eq true
     end
 
     it "validates each schedule's cron" do

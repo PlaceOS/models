@@ -14,6 +14,7 @@ module PlaceOS::Model
 
     getter play_at : Int64? = nil
     getter valid_until : Int64? = nil
+    getter valid_from : Int64? = nil
     getter play_takeover : Bool = false
     getter play_period : Int32 = 1440
     getter play_cron : String = "0 0 * * *"
@@ -24,6 +25,7 @@ module PlaceOS::Model
       @play_takeover : Bool = false,
       @play_at : Int64? = nil,
       @valid_until : Int64? = nil,
+      @valid_from : Int64? = nil,
     )
     end
 
@@ -38,6 +40,10 @@ module PlaceOS::Model
       end
 
       return "play_period must be greater than 0" if play_period < 1
+
+      if (starting = valid_from) && (ending = valid_until) && ending <= starting
+        return "valid_until must be greater than valid_from"
+      end
 
       nil
     end
