@@ -1,3 +1,9 @@
+## v9.111.0 (2026-09-17)
+
+### Feat
+
+- **signage**: add valid_from to schedules
+
 ## v9.110.4 (2026-09-16)
 
 ### Fix
