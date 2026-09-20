@@ -1,3 +1,9 @@
+## v9.113.0 (2026-09-20)
+
+### Feat
+
+- **signage_template**: add merge flag
+
 ## v9.112.0 (2026-09-17)
 
 ### Feat
