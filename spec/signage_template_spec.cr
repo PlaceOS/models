@@ -24,6 +24,7 @@ module PlaceOS::Model
       found.name.should eq template.name
       found.tags.should eq ["lobby", "level1"]
       found.full_screen_takeover.should eq false
+      found.merge.should eq false
       found.layouts.size.should eq 2
 
       slice = found.layouts[0]
@@ -197,6 +198,18 @@ module PlaceOS::Model
         history.changed_fields.should eq ["name", "tags"]
       end
 
+      it "persists and records merge changes" do
+        template = Generator.signage_template.save!
+        template.merge.should eq false
+
+        template.merge = true
+        template.save!
+
+        SignageTemplate.find!(template.id.as(UUID)).merge.should eq true
+        History.count.should eq 1
+        History.all.to_a.first.changed_fields.should eq ["merge"]
+      end
+
       it "records layout changes" do
         template = Generator.signage_template.save!
 
@@ -287,6 +300,7 @@ module PlaceOS::Model
         draft.live_template_id = parent.id
         draft.background_item_id = item.id
         draft.full_screen_takeover = true
+        draft.merge = true
         draft.save!
 
         live = draft.approve_draft!(user)
@@ -296,6 +310,7 @@ module PlaceOS::Model
         found.background_item_id.should eq item.id
         found.layouts.size.should eq 1
         found.full_screen_takeover.should eq true
+        found.merge.should eq true
         found.approved.should eq true
         found.approved_by_id.should eq user.id
         found.approved_by_name.should eq user.name

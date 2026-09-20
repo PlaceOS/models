@@ -39,6 +39,7 @@ module PlaceOS::Model
     attribute layouts : Array(Layout) = [] of Layout, converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::SignageTemplate::Layout), es_ignore: true
 
     attribute full_screen_takeover : Bool = false
+    attribute merge : Bool = false
 
     # Approval
     ###############################################################################################
@@ -80,6 +81,7 @@ module PlaceOS::Model
         live.background_item_id = self.background_item_id
         live.layouts = self.layouts
         live.full_screen_takeover = self.full_screen_takeover
+        live.merge = self.merge
         live.approver = user_model_who_approved
         live.save!
         self.destroy
@@ -187,6 +189,7 @@ module PlaceOS::Model
       changed_fields << "background_item_id" if background_item_id_changed?
       changed_fields << "layouts" if layouts_changed?
       changed_fields << "full_screen_takeover" if full_screen_takeover_changed?
+      changed_fields << "merge" if merge_changed?
       changed_fields << "approval_requested" if approval_requested_changed?
       changed_fields << "approved" if approved_changed?
       changed_fields << "live_template_id" if live_template_id_changed?
