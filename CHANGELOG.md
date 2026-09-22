@@ -1,3 +1,9 @@
+## v9.113.1 (2026-09-22)
+
+### Fix
+
+- **group**: zone grants apply only to the owner group's membership
+
 ## v9.113.0 (2026-09-20)
 
 ### Feat
