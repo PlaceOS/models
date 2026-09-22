@@ -111,7 +111,9 @@ module PlaceOS::Model
 
   # End-to-end tests for the subsystem-scoped permission resolution on
   # `Group`:
-  # - transitive group membership with replace override
+  # - transitive group membership with replace override (walking *up* from
+  #   the grant's owner; a descendant group's members never inherit a
+  #   parent group's zone grants)
   # - transitive zone grants with replace override
   # - deny rows masking inherited access
   # - effective_permissions / zone_accessible? / accessible_zone_ids
@@ -162,23 +164,69 @@ module PlaceOS::Model
       f.zone_accessible?(f.floor_2).should be_false
     end
 
-    it "replaces inherited group perms when user is explicitly in a descendant" do
+    it "uses the owner group's membership throughout the grant's zone subtree" do
       f = GroupPermissionsFixture.build
-      # Parent grants Read; child explicitly grants Update only — at the
-      # child and below, Update is in force (Read is *not* inherited).
+      # Read on root, Update on team_a. The only grant is root's, so the
+      # user's root membership (Read) applies at the anchor and below —
+      # the team_a membership is irrelevant to a grant team_a doesn't own.
       Generator.group_user(user: f.user, group: f.root, permissions: Permissions::Read).save!
       Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Update).save!
 
       Generator.group_zone(group: f.root, zone: f.building, permissions: Permissions::All).save!
-      # Note: Permissions::All mask is ANDed with the user's effective perms
-      # in each group, so user sees only what both sides grant.
 
-      # At building (via root, user has Read): user sees Read only
       f.effective_permissions(f.building).should eq Permissions::Read
-      # At floor_1 (covered transitively by building's grant, through team_a
-      # via root's zone grant): user's effective group is team_a with
-      # Update only.
-      f.effective_permissions(f.floor_1).should eq Permissions::Update
+      f.effective_permissions(f.floor_1).should eq Permissions::Read
+      f.effective_permissions(f.room_101).should eq Permissions::Read
+    end
+
+    it "does not extend a parent group's grant to members of a child group" do
+      f = GroupPermissionsFixture.build
+      Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::All).save!
+      Generator.group_zone(group: f.root, zone: f.building, permissions: Permissions::All).save!
+
+      f.zone_accessible?(f.building).should be_false
+      f.zone_accessible?(f.floor_1).should be_false
+      f.zone_accessible?(f.room_101).should be_false
+      f.accessible_zone_ids.should be_empty
+    end
+
+    it "does not extend a grandparent group's grant to a grandchild member" do
+      f = GroupPermissionsFixture.build
+      Generator.group_user(user: f.user, group: f.squad_a1, permissions: Permissions::All).save!
+      Generator.group_zone(group: f.root, zone: f.building, permissions: Permissions::All).save!
+
+      f.zone_accessible?(f.building).should be_false
+      f.zone_accessible?(f.floor_1).should be_false
+      f.zone_accessible?(f.room_101).should be_false
+      f.accessible_zone_ids.should be_empty
+    end
+
+    it "limits a child group member to the child group's own rows" do
+      f = GroupPermissionsFixture.build
+      Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::All).save!
+      Generator.group_zone(group: f.root, zone: f.building, permissions: Permissions::All).save!
+      Generator.group_zone(group: f.team_a, zone: f.floor_2, permissions: Permissions::Read).save!
+      # a zero-mask row on the child grants nothing and must not pick up
+      # the parent's grant either
+      Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::None).save!
+
+      f.effective_permissions(f.floor_2).should eq Permissions::Read
+      f.effective_permissions(f.building).should eq Permissions::None
+      f.effective_permissions(f.floor_1).should eq Permissions::None
+      f.effective_permissions(f.room_101).should eq Permissions::None
+      f.accessible_zone_ids.should eq [f.floor_2.id.not_nil!]
+    end
+
+    it "covers a member of the owner's ancestor group below the anchor" do
+      f = GroupPermissionsFixture.build
+      Generator.group_user(user: f.user, group: f.root, permissions: Permissions::Read).save!
+      Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::All).save!
+
+      f.effective_permissions(f.floor_1).should eq Permissions::Read
+      f.effective_permissions(f.room_101).should eq Permissions::Read
+      f.effective_permissions(f.room_102).should eq Permissions::Read
+      f.zone_accessible?(f.building).should be_false
+      f.zone_accessible?(f.floor_2).should be_false
     end
 
     it "replaces inherited zone grants via a more-specific GroupZone row" do
@@ -393,22 +441,59 @@ module PlaceOS::Model
         f.accessible_zones_sql_set.should eq read_expected
       end
 
-      it "distinguishes anchor and descendant permissions" do
+      it "uses the owner group's membership throughout the grant's zone subtree" do
         f = GroupPermissionsFixture.build
-        # user holds Read via root, but an explicit Update-only entry on
-        # team_a governs descendants of root-owned grants
+        # Read via root, Update via team_a; only root owns a grant, so
+        # Read applies everywhere and Update nowhere
         Generator.group_user(user: f.user, group: f.root, permissions: Permissions::Read).save!
         Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::Update).save!
         Generator.group_zone(group: f.root, zone: f.building, permissions: Permissions::All).save!
 
-        # Update reaches the descendants only — not the anchor itself
-        expected = [f.floor_1, f.floor_2, f.room_101, f.room_102].map(&.id.not_nil!).sort!
-        f.accessible_zones_sql_set(Permissions::Update).should eq expected
-        f.accessible_zones_sql_set(Permissions::Update).should eq f.resolver_zone_set(Permissions::Update)
+        f.accessible_zones_sql_set(Permissions::Update).should be_nil
+        f.resolver_zone_set(Permissions::Update).should be_empty
 
-        # Read holds at the anchor only
-        f.accessible_zones_sql_set(Permissions::Read).should eq [f.building.id.not_nil!]
+        expected = [f.building, f.floor_1, f.floor_2, f.room_101, f.room_102].map(&.id.not_nil!).sort!
+        f.accessible_zones_sql_set(Permissions::Read).should eq expected
         f.accessible_zones_sql_set(Permissions::Read).should eq f.resolver_zone_set(Permissions::Read)
+      end
+
+      it "does not extend a parent group's grant to members of a child group" do
+        f = GroupPermissionsFixture.build
+        Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::All).save!
+        Generator.group_zone(group: f.root, zone: f.building, permissions: Permissions::All).save!
+
+        f.accessible_zones_sql_set.should be_nil
+        f.resolver_zone_set.should be_empty
+      end
+
+      it "does not extend a grandparent group's grant to a grandchild member" do
+        f = GroupPermissionsFixture.build
+        Generator.group_user(user: f.user, group: f.squad_a1, permissions: Permissions::All).save!
+        Generator.group_zone(group: f.root, zone: f.building, permissions: Permissions::All).save!
+
+        f.accessible_zones_sql_set.should be_nil
+        f.resolver_zone_set.should be_empty
+      end
+
+      it "limits a child group member to the child group's own rows" do
+        f = GroupPermissionsFixture.build
+        Generator.group_user(user: f.user, group: f.team_a, permissions: Permissions::All).save!
+        Generator.group_zone(group: f.root, zone: f.building, permissions: Permissions::All).save!
+        Generator.group_zone(group: f.team_a, zone: f.floor_2, permissions: Permissions::Read).save!
+        Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::None).save!
+
+        f.accessible_zones_sql_set.should eq [f.floor_2.id.not_nil!]
+        f.accessible_zones_sql_set.should eq f.resolver_zone_set
+      end
+
+      it "covers a member of the owner's ancestor group below the anchor" do
+        f = GroupPermissionsFixture.build
+        Generator.group_user(user: f.user, group: f.root, permissions: Permissions::Read).save!
+        Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::All).save!
+
+        expected = [f.floor_1, f.room_101, f.room_102].map(&.id.not_nil!).sort!
+        f.accessible_zones_sql_set.should eq expected
+        f.accessible_zones_sql_set.should eq f.resolver_zone_set
       end
 
       it "unions grants across subsystems" do

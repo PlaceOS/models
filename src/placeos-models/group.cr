@@ -151,8 +151,8 @@ module PlaceOS::Model
     # yielding every zone where the user's effective permissions within any
     # of `subsystems` satisfy `required` (Manage is a superset). The same
     # rules as `resolve_subsystem_permissions` apply, but only the
-    # anchor-level grant decisions are made in Crystal (bounded by the
-    # explicit GroupUser / GroupZone rows) — the zone-subtree expansion runs
+    # per-row grant decisions are made in Crystal (bounded by the explicit
+    # GroupUser / GroupZone rows) — the zone-subtree expansion runs
     # in the database via a recursive CTE, so the qualifying zone set is
     # never materialised in application memory. Returns nil when the user
     # holds no qualifying grants (callers should treat nil as an empty set).
@@ -182,8 +182,6 @@ module PlaceOS::Model
       return if member_group_ids.empty?
 
       effective_memberships = walk_up_memberships(direct_memberships, all_group_ids, parent_of)
-      group_depths = compute_group_depths(all_group_ids, parent_of)
-      group_descendants = compute_group_descendants(all_group_ids, parent_of)
 
       rows_by_group = Hash(UUID, Array(GroupZone)).new
       GroupZone.where(group_id: member_group_ids).each do |gz|
@@ -195,54 +193,36 @@ module PlaceOS::Model
         perms.manage? || (perms & required) != Permissions::None
       end
 
-      # zones readable at their own anchor row
-      anchor_hits = Set(String).new
-      # (anchor zone, owner) pairs whose subtrees are readable — expanded in SQL
-      walk_seeds = Set({String, UUID}).new
+      # (anchor zone, owner) pairs whose anchor and subtree qualify — expanded in SQL
+      seeds = Set({String, UUID}).new
       # every explicit row halts other walks of the same owner (replace
       # semantics; deny rows contribute nothing but still stop the walk)
       stops = Set({String, UUID}).new
 
       rows_by_group.each do |owner_id, rows|
-        anchor_perms = effective_memberships[owner_id]?
-        reaching_descendant = deepest_explicit_in_subtree(
-          owner_id, direct_memberships, group_descendants, group_depths,
-        )
-        descendant_perms = effective_memberships[reaching_descendant]?
+        owner_perms = effective_memberships[owner_id]?
 
         rows.each do |row|
           stops << {row.zone_id, owner_id}
+          next unless owner_perms
 
           grant_perms = row.deny ? Permissions::None : Permissions.new(row.permissions)
           next if grant_perms == Permissions::None
 
-          if (perms = anchor_perms) && satisfies.call(perms & grant_perms)
-            anchor_hits << row.zone_id
-          end
-          if (perms = descendant_perms) && satisfies.call(perms & grant_perms)
-            walk_seeds << {row.zone_id, owner_id}
-          end
+          seeds << {row.zone_id, owner_id} if satisfies.call(owner_perms & grant_perms)
         end
       end
-      return if anchor_hits.empty? && walk_seeds.empty?
+      return if seeds.empty?
 
       escape = ->(value : String) { "'#{value.gsub("'", "''")}'" }
-      anchors_sql = anchor_hits.join(", ") { |zid| "(#{escape.call(zid)})" }
-
-      if walk_seeds.empty?
-        return "(SELECT zone_id FROM (VALUES #{anchors_sql}) AS anchors(zone_id))"
-      end
-
-      seeds_sql = walk_seeds.join(", ") { |(zid, owner)| "(#{escape.call(zid)}, #{escape.call(owner.to_s)})" }
+      seeds_sql = seeds.join(", ") { |(zid, owner)| "(#{escape.call(zid)}, #{escape.call(owner.to_s)})" }
       stops_sql = stops.join(", ") { |(zid, owner)| "(#{escape.call(zid)}, #{escape.call(owner.to_s)})" }
 
-      # seed anchors are excluded from the walk results (`WHERE NOT seed`) —
-      # readability at the anchor itself is decided solely by anchor_hits
-      walk_sql = <<-SQL
-        WITH RECURSIVE walk(zone_id, owner_id, seed) AS (
-            SELECT v.zone_id, v.owner_id, TRUE FROM (VALUES #{seeds_sql}) AS v(zone_id, owner_id)
+      <<-SQL
+        (WITH RECURSIVE walk(zone_id, owner_id) AS (
+            SELECT v.zone_id, v.owner_id FROM (VALUES #{seeds_sql}) AS v(zone_id, owner_id)
           UNION
-            SELECT z.id, w.owner_id, FALSE
+            SELECT z.id, w.owner_id
             FROM "zone" z
             INNER JOIN walk w ON z.parent_id = w.zone_id
             WHERE NOT EXISTS (
@@ -250,14 +230,8 @@ module PlaceOS::Model
               WHERE s.zone_id = z.id AND s.owner_id = w.owner_id
             )
         )
-        SELECT zone_id FROM walk WHERE NOT seed
+        SELECT DISTINCT zone_id FROM walk)
         SQL
-
-      if anchor_hits.empty?
-        "(#{walk_sql})"
-      else
-        "(#{walk_sql}\nUNION\nSELECT zone_id FROM (VALUES #{anchors_sql}) AS anchors(zone_id))"
-      end
     end
 
     # Resolve the full `{zone_id => Permissions}` map for the user within
@@ -273,12 +247,10 @@ module PlaceOS::Model
     #   for the same owner sits on the path (masks off).
     # - Only groups whose `subsystems` array includes `subsystem`
     #   contribute grants.
-    # - For each grant reaching a zone Z:
-    #     - If Z == anchor: the user's perms come from `owner` itself.
-    #     - If Z is a strict descendant of anchor: the user's perms come
-    #       from the *deepest group in `owner`'s subtree where the user has
-    #       an explicit GroupUser entry*. If no such explicit descendant
-    #       exists, fall back to `owner`.
+    # - A group only grants the zones on its own GroupZone rows: at every
+    #   zone a grant reaches (anchor and subtree alike) the user's perms are
+    #   their effective membership on `owner`. Membership of a group *below*
+    #   `owner` never picks up `owner`'s grants.
     # - Final perms at Z = OR across every contributing grant.
     private def self.resolve_user_permissions(
       authority_id : String,
@@ -306,8 +278,6 @@ module PlaceOS::Model
       return result if member_group_ids.empty?
 
       effective_memberships = walk_up_memberships(direct_memberships, all_group_ids, parent_of)
-      group_depths = compute_group_depths(all_group_ids, parent_of)
-      group_descendants = compute_group_descendants(all_group_ids, parent_of)
 
       rows_by_group = Hash(UUID, Array(GroupZone)).new
       anchor_zone_ids = [] of String
@@ -323,6 +293,10 @@ module PlaceOS::Model
       zone_children = zone_children_map(anchor_zone_ids)
 
       rows_by_group.each do |owner_id, rows|
+        # No membership at or above the owner: none of its grants apply.
+        owner_perms = effective_memberships[owner_id]?
+        next unless owner_perms
+
         # Which zones does *this* owner have direct rows on? Used to apply
         # replace-on-zone-tree semantics during the walk.
         by_zone = {} of String => GroupZone
@@ -330,13 +304,8 @@ module PlaceOS::Model
 
         rows.each do |row|
           grant_perms = row.deny ? Permissions::None : Permissions.new(row.permissions)
-          next if grant_perms == Permissions::None
-
-          reaching_descendant = deepest_explicit_in_subtree(
-            owner_id, direct_memberships, group_descendants, group_depths,
-          )
-          descendant_perms = effective_memberships[reaching_descendant]?
-          anchor_perms = effective_memberships[owner_id]?
+          contribution = owner_perms & grant_perms
+          next if contribution == Permissions::None
 
           stack = [row.zone_id]
           until stack.empty?
@@ -345,13 +314,7 @@ module PlaceOS::Model
             # its own subtree walk.
             next if zone_id != row.zone_id && by_zone.has_key?(zone_id)
 
-            user_perms = zone_id == row.zone_id ? anchor_perms : descendant_perms
-            if user_perms
-              contribution = user_perms & grant_perms
-              if contribution != Permissions::None
-                result[zone_id] = (result[zone_id]? || Permissions::None) | contribution
-              end
-            end
+            result[zone_id] = (result[zone_id]? || Permissions::None) | contribution
 
             if (children = zone_children[zone_id]?)
               children.each { |c| stack << c }
@@ -406,72 +369,6 @@ module PlaceOS::Model
         end
       end
       effective
-    end
-
-    private def self.compute_group_depths(
-      all_group_ids : Array(UUID),
-      parent_of : Hash(UUID, UUID),
-    ) : Hash(UUID, Int32)
-      depths = {} of UUID => Int32
-      all_group_ids.each do |gid|
-        depth = 0
-        current = gid
-        loop do
-          parent = parent_of[current]?
-          break if parent.nil?
-          depth += 1
-          current = parent
-        end
-        depths[gid] = depth
-      end
-      depths
-    end
-
-    private def self.compute_group_descendants(
-      all_group_ids : Array(UUID),
-      parent_of : Hash(UUID, UUID),
-    ) : Hash(UUID, Array(UUID))
-      children = {} of UUID => Array(UUID)
-      parent_of.each do |child, parent|
-        (children[parent] ||= [] of UUID) << child
-      end
-
-      descendants = {} of UUID => Array(UUID)
-      all_group_ids.each do |root|
-        collected = [] of UUID
-        stack = [root]
-        until stack.empty?
-          node = stack.pop
-          collected << node
-          children[node]?.try &.each { |c| stack << c }
-        end
-        descendants[root] = collected
-      end
-      descendants
-    end
-
-    # Deepest group in `owner`'s subtree (inclusive) that has a direct
-    # GroupUser entry for this user. Falls back to `owner` if none.
-    private def self.deepest_explicit_in_subtree(
-      owner : UUID,
-      direct : Hash(UUID, Permissions),
-      group_descendants : Hash(UUID, Array(UUID)),
-      group_depths : Hash(UUID, Int32),
-    ) : UUID
-      candidates = group_descendants[owner]? || [owner]
-      best = owner
-      best_depth = group_depths[owner]? || 0
-      found_explicit = direct.has_key?(owner)
-      candidates.each do |gid|
-        next unless direct.has_key?(gid)
-        depth = group_depths[gid]? || 0
-        if !found_explicit || depth > best_depth
-          best = gid
-          best_depth = depth
-          found_explicit = true
-        end
-      end
-      best
     end
 
     # Build a zone → children lookup restricted to the subtrees rooted at
