@@ -969,6 +969,7 @@ module PlaceOS::Model
       authority : Authority? = nil,
       parent : Group? = nil,
       subsystems : Array(String) = [] of String,
+      features : Hash(String, Hash(String, JSON::Any)) = {} of String => Hash(String, JSON::Any),
     )
       unless authority
         if parent
@@ -984,6 +985,7 @@ module PlaceOS::Model
         authority_id: authority.id.not_nil!,
         parent_id: parent.try(&.id),
         subsystems: subsystems,
+        features: features,
       )
     end
 

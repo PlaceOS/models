@@ -27,6 +27,12 @@ module PlaceOS::Model
     attribute description : String = "", sanitize: :common
     attribute subsystems : Array(String) = [] of String
 
+    # Per-subsystem feature flags / display config, keyed by subsystem code:
+    # `{"signage" => {"templates" => true, "plugins" => [...]}}`. Keys inside a
+    # subsystem are opaque to the backend. Children inherit their ancestors'
+    # features and may override individual keys (see `effective_features`).
+    attribute features : Hash(String, Hash(String, JSON::Any)) = {} of String => Hash(String, JSON::Any)
+
     attribute authority_id : String
     belongs_to :authority, class_name: PlaceOS::Model::Authority
 
@@ -57,7 +63,97 @@ module PlaceOS::Model
       this.validation_error(:parent_id, "parent must belong to the same authority")
     }
 
+    MAX_FEATURE_KEY_SIZE = 64
+    # Objects may nest inside a feature value at most this many levels deep.
+    MAX_FEATURE_DEPTH = 2
+
+    validate ->(this : Group) {
+      this.features.each do |subsystem, flags|
+        unless this.subsystems.includes?(subsystem)
+          this.validation_error(:features, "subsystem #{subsystem} is not in subsystems")
+          next
+        end
+        flags.each do |key, value|
+          if key.empty? || key.size > MAX_FEATURE_KEY_SIZE
+            this.validation_error(:features, "#{subsystem} feature keys must be 1-#{MAX_FEATURE_KEY_SIZE} characters")
+          elsif !valid_feature_value?(value)
+            this.validation_error(:features, "#{subsystem}.#{key} must be a scalar, an array of scalars, or an object nested at most #{MAX_FEATURE_DEPTH} levels")
+          end
+        end
+      end
+    }
+
+    protected def self.valid_feature_value?(value : JSON::Any, depth : Int32 = 0) : Bool
+      case raw = value.raw
+      when Array
+        raw.all? { |item| !item.raw.is_a?(Array) && !item.raw.is_a?(Hash) }
+      when Hash
+        depth < MAX_FEATURE_DEPTH && raw.all? { |key, item| !key.empty? && valid_feature_value?(item, depth + 1) }
+      else
+        true
+      end
+    end
+
     include GroupHistory::Mixin
+
+    # This group's own features for `subsystem`, without inheritance.
+    def features_for(subsystem : String) : Hash(String, JSON::Any)
+      features[subsystem]? || {} of String => JSON::Any
+    end
+
+    # Features merged down the tree from the root to this group: for each
+    # subsystem, key by key, the deepest group that sets a key wins (a child's
+    # list replaces its parent's rather than unioning with it). Uses this
+    # group's in-memory `features`, so unsaved edits are reflected.
+    def effective_features : Hash(String, Hash(String, JSON::Any))
+      effective = {} of String => Hash(String, JSON::Any)
+      (ancestor_features << features).each do |layer|
+        layer.each do |subsystem, flags|
+          effective.put_if_absent(subsystem) { {} of String => JSON::Any }.merge!(flags)
+        end
+      end
+      effective
+    end
+
+    # Effective features for one subsystem (`{}` when nothing on the path sets it).
+    def effective_features(subsystem : String) : Hash(String, JSON::Any)
+      effective_features[subsystem]? || {} of String => JSON::Any
+    end
+
+    # Is `key` truthy in this group's effective `subsystem` features? Truthy:
+    # `true`, a non-zero number, or a non-empty string / array / object.
+    # Intended for server-side enforcement of features that matter beyond UI.
+    def feature?(subsystem : String, key : String) : Bool
+      case raw = effective_features(subsystem)[key]?.try(&.raw)
+      when Bool                then raw
+      when Int64, Float64      then raw != 0
+      when String, Array, Hash then !raw.empty?
+      else                          false
+      end
+    end
+
+    # Features of every ancestor (excluding self), root first.
+    private def ancestor_features : Array(Hash(String, Hash(String, JSON::Any)))
+      layers = [] of Hash(String, Hash(String, JSON::Any))
+      parent_id = self.parent_id
+      return layers if parent_id.nil?
+
+      sql = <<-SQL
+        WITH RECURSIVE ancestors AS (
+          SELECT id, parent_id, features, 0 AS depth FROM groups WHERE id = $1
+          UNION ALL
+          SELECT g.id, g.parent_id, g.features, a.depth + 1 FROM groups g
+          INNER JOIN ancestors a ON g.id = a.parent_id
+        )
+        SELECT features::text FROM ancestors ORDER BY depth DESC
+      SQL
+      ::PgORM::Database.connection do |conn|
+        conn.query(sql, parent_id) do |rs|
+          rs.each { layers << Hash(String, Hash(String, JSON::Any)).from_json(rs.read(String)) }
+        end
+      end
+      layers
+    end
 
     # Immediate children.
     def children
