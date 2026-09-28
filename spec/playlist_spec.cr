@@ -144,6 +144,69 @@ module PlaceOS::Model
       schedule.valid_until.should eq 1_800_000_000_i64
     end
 
+    it "round-trips play_at_local" do
+      playlist = Generator.playlist
+      playlist.schedules = [Playlist::Schedule.new(play_at_local: "2027-01-01T00:00:00")]
+      playlist.save.should eq true
+
+      schedule = Playlist.find!(playlist.id.as(String)).schedules.first
+      schedule.play_at_local.should eq "2027-01-01T00:00:00"
+      schedule.play_at.should be_nil
+    end
+
+    it "parses play_at_local from JSON" do
+      schedule = Playlist::Schedule.from_json(%({"play_at_local": "2027-06-15T13:45:30"}))
+      schedule.play_at_local.should eq "2027-06-15T13:45:30"
+      schedule.play_at.should be_nil
+      schedule.valid?.should be_true
+    end
+
+    it "only allows one of play_at or play_at_local" do
+      playlist = Generator.playlist
+      playlist.schedules = [Playlist::Schedule.new(play_at: 1_700_000_000_i64, play_at_local: "2027-01-01T00:00:00")]
+      playlist.save.should eq false
+      playlist.errors.first.field.should eq :schedules
+      playlist.errors.first.message.to_s.should contain "only one of play_at or play_at_local can be set"
+
+      playlist.schedules = [Playlist::Schedule.new(play_at: 1_700_000_000_i64)]
+      playlist.save.should eq true
+
+      playlist.schedules = [Playlist::Schedule.new(play_at_local: "2027-01-01T00:00:00")]
+      playlist.save.should eq true
+    end
+
+    it "requires play_at_local to be an ISO 8601 date time with no offset" do
+      playlist = Generator.playlist
+      [
+        "",
+        "2027-01-01",
+        "2027-01-01T00:00",
+        "2027-01-01 00:00:00",
+        "2027-01-01T00:00:00Z",
+        "2027-01-01T00:00:00+10:00",
+        "2027-01-01T00:00:00-0500",
+        "2027-01-01T00:00:00.000",
+        "2027-1-1T0:0:0",
+        "2027-02-30T00:00:00",
+        "2027-13-01T00:00:00",
+        "2027-01-01T24:00:00",
+        "2027-01-01T00:60:00",
+        "2027-01-01T00:00:60",
+        "2027-01-01T00:00:00\n",
+        "not a date",
+      ].each do |value|
+        playlist.schedules = [Playlist::Schedule.new(play_at_local: value)]
+        playlist.save.should eq false
+        playlist.errors.first.field.should eq :schedules
+        playlist.errors.first.message.to_s.should contain "play_at_local must be an ISO 8601 date time with no offset"
+      end
+
+      ["2027-01-01T00:00:00", "2028-02-29T23:59:59", "1999-12-31T12:30:15"].each do |value|
+        playlist.schedules = [Playlist::Schedule.new(play_at_local: value)]
+        playlist.save.should eq true
+      end
+    end
+
     it "requires valid_until to be after valid_from when both are set" do
       playlist = Generator.playlist
       playlist.schedules = [Playlist::Schedule.new(valid_from: 1_800_000_000_i64, valid_until: 1_700_000_000_i64)]

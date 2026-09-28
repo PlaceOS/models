@@ -69,6 +69,21 @@ module PlaceOS::Model
       schedule.save.should eq true
     end
 
+    it "validates each schedule's play_at_local" do
+      schedule = Generator.item_schedule
+      schedule.schedules = [Playlist::Schedule.new(play_at_local: "2027-01-01T00:00:00+10:00")]
+      schedule.save.should eq false
+      schedule.errors.first.field.should eq :schedules
+
+      schedule.schedules = [Playlist::Schedule.new(play_at: 1_700_000_000_i64, play_at_local: "2027-01-01T00:00:00")]
+      schedule.save.should eq false
+      schedule.errors.first.field.should eq :schedules
+
+      schedule.schedules = [Playlist::Schedule.new(play_at_local: "2027-01-01T00:00:00")]
+      schedule.save.should eq true
+      Playlist::ItemSchedule.find!(schedule.id.as(String)).schedules.first.play_at_local.should eq "2027-01-01T00:00:00"
+    end
+
     it "requires the item and playlist to share an authority" do
       playlist = Generator.playlist(distribution: true).save!
 
