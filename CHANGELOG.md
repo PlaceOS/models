@@ -1,3 +1,9 @@
+## v9.115.0 (2026-09-28)
+
+### Feat
+
+- **playlist/schedule**: add play_at_local field
+
 ## v9.114.0 (2026-09-23)
 
 ### Feat
