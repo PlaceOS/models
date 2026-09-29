@@ -31,6 +31,12 @@ module PlaceOS::Model
     # when working with the `Permissions` flags enum directly.
     attribute default_permissions : Int32 = 0
 
+    # AD group id => {display name, permissions bitmask}. Users who are members
+    # of a mapped AD group are added to this group by `add_remove_ad_groups`.
+    # Keys are normalised (stripped + downcased) on save so matching is
+    # case-insensitive.
+    attribute ad_group_mappings : Hash(String, Tuple(String, Int32)) = {} of String => Tuple(String, Int32)
+
     # Per-subsystem feature flags / display config, keyed by subsystem code:
     # `{"signage" => {"templates" => true, "plugins" => [...]}}`. Keys inside a
     # subsystem are opaque to the backend. Children inherit their ancestors'
@@ -86,6 +92,25 @@ module PlaceOS::Model
         end
       end
     }
+
+    validate ->(this : Group) {
+      max_permissions = Permissions::All.to_i
+      this.ad_group_mappings.each do |ad_group_id, (_name, permissions)|
+        if ad_group_id.strip.empty?
+          this.validation_error(:ad_group_mappings, "AD group ids must not be blank")
+        elsif !(0..max_permissions).includes?(permissions)
+          this.validation_error(:ad_group_mappings, "#{ad_group_id} permissions must be between 0 and #{max_permissions}")
+        end
+      end
+    }
+
+    before_save :normalize_ad_group_mappings
+
+    protected def normalize_ad_group_mappings
+      self.ad_group_mappings = ad_group_mappings.to_h do |ad_group_id, (name, permissions)|
+        {ad_group_id.strip.downcase, {ActiveModel::Sanitizer.sanitize(name, :text), permissions}}
+      end
+    end
 
     protected def self.valid_feature_value?(value : JSON::Any, depth : Int32 = 0) : Bool
       case raw = value.raw
@@ -192,6 +217,69 @@ module PlaceOS::Model
         end
       end
       ids
+    end
+
+    # Syncs a user's automatic group memberships with the AD groups they are
+    # currently a member of, within `authority_id`:
+    #
+    # * the user is added to every group whose `ad_group_mappings` contains
+    #   one of `ad_groups` (unless they are already a member),
+    # * auto-assigned memberships (`GroupUser#auto_assigned` set) are removed
+    #   when the user is no longer in a mapped AD group for that group, and
+    #   updated when the mapping's permissions change.
+    #
+    # Memberships added manually (`auto_assigned` nil) are never modified.
+    # When several of the user's AD groups map to the same group the
+    # permissions are combined and the lowest AD group id is recorded.
+    def self.add_remove_ad_groups(authority_id : String, user_id : String, ad_groups : Array(String)) : Nil
+      member_of = ad_groups.compact_map(&.strip.downcase.presence).to_set
+
+      # group id => {AD group id, permissions}
+      desired = {} of UUID => Tuple(String, Int32)
+      unless member_of.empty?
+        args = [authority_id.as(::PgORM::Value), member_of.to_a.to_json.as(::PgORM::Value)]
+        Group.find_all_by_sql(<<-SQL, args: args).each do |group|
+          SELECT * FROM "groups"
+          WHERE authority_id = $1
+            AND ad_group_mappings ?| ARRAY(SELECT jsonb_array_elements_text($2::jsonb))
+        SQL
+          matched = group.ad_group_mappings.select { |ad_group_id, _| member_of.includes?(ad_group_id) }
+          next if matched.empty?
+          permissions = matched.values.reduce(0) { |acc, (_name, perms)| acc | perms }
+          desired[group.id.not_nil!] = {matched.keys.min, permissions}
+        end
+      end
+
+      args = [user_id.as(::PgORM::Value), authority_id.as(::PgORM::Value)]
+      memberships = GroupUser.find_all_by_sql(<<-SQL, args: args)
+        SELECT gu.* FROM "group_users" gu
+        INNER JOIN "groups" g ON g.id = gu.group_id
+        WHERE gu.user_id = $1 AND g.authority_id = $2
+      SQL
+
+      ::PgORM::Database.transaction do
+        memberships.each do |membership|
+          wanted = desired.delete(membership.group_id)
+          # manually assigned memberships are left untouched
+          next if membership.auto_assigned.nil?
+
+          if wanted
+            membership.auto_assigned, membership.permissions = wanted
+            membership.save! if membership.changed?
+          else
+            membership.destroy
+          end
+        end
+
+        desired.each do |group_id, (ad_group_id, permissions)|
+          GroupUser.new(
+            user_id: user_id,
+            group_id: group_id,
+            permissions: permissions,
+            auto_assigned: ad_group_id,
+          ).save!
+        end
+      end
     end
 
     # --------------------------------------------------------------------

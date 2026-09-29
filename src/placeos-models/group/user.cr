@@ -27,6 +27,10 @@ module PlaceOS::Model
     # when working with the `Permissions` flags enum directly.
     attribute permissions : Int32? = nil
 
+    # was added automatically due to group membership
+    # this is the GUID of the group from the Group#ad_group_mappings
+    attribute auto_assigned : String? = nil
+
     validates :user_id, presence: true
     validates :group_id, presence: true
 
