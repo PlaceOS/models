@@ -1,3 +1,9 @@
+## v9.117.0 (2026-09-29)
+
+### Feat
+
+- **group**: add AD group mapping support
+
 ## v9.116.0 (2026-09-29)
 
 ### Feat
