@@ -25,7 +25,7 @@ module PlaceOS::Model
 
     # Stored as an Int32 bitmask. Use `permission_flags` / `permission_flags=`
     # when working with the `Permissions` flags enum directly.
-    attribute permissions : Int32 = 0
+    attribute permissions : Int32? = nil
 
     validates :user_id, presence: true
     validates :group_id, presence: true
@@ -33,7 +33,10 @@ module PlaceOS::Model
     validate ->(this : GroupUser) {
       user = User.find?(this.user_id)
       group = Group.find?(this.group_id)
+      this.validation_error(:user_id, "must reference an existing user") if user.nil?
+      this.validation_error(:group_id, "must reference an existing group") if group.nil?
       return if user.nil? || group.nil?
+      this.permissions = group.default_permissions if this.permissions.nil?
       return if user.authority_id == group.authority_id
       this.validation_error(:user_id, "must belong to the same authority as the group")
     }
@@ -41,7 +44,7 @@ module PlaceOS::Model
     include GroupHistory::Mixin
 
     def permission_flags : Permissions
-      Permissions.new(self.permissions)
+      Permissions.new(self.permissions || 0)
     end
 
     def permission_flags=(flags : Permissions)

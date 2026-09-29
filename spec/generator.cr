@@ -1009,14 +1009,14 @@ module PlaceOS::Model
     def self.group_user(
       user : User? = nil,
       group : Group? = nil,
-      permissions : Permissions = Permissions::Read,
+      permissions : Permissions? = Permissions::Read,
     )
       u = user || self.user.save!
       g = group || self.group.save!
       GroupUser.new(
         user_id: u.id.not_nil!,
         group_id: g.id.not_nil!,
-        permissions: permissions.to_i,
+        permissions: permissions.try(&.to_i),
       )
     end
 

@@ -27,6 +27,10 @@ module PlaceOS::Model
     attribute description : String = "", sanitize: :common
     attribute subsystems : Array(String) = [] of String
 
+    # Stored as an Int32 bitmask. Use `permission_flags` / `permission_flags=`
+    # when working with the `Permissions` flags enum directly.
+    attribute default_permissions : Int32 = 0
+
     # Per-subsystem feature flags / display config, keyed by subsystem code:
     # `{"signage" => {"templates" => true, "plugins" => [...]}}`. Keys inside a
     # subsystem are opaque to the backend. Children inherit their ancestors'
