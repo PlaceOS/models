@@ -1,3 +1,9 @@
+## v9.116.0 (2026-09-29)
+
+### Feat
+
+- **group**: add default permission support
+
 ## v9.115.0 (2026-09-28)
 
 ### Feat
