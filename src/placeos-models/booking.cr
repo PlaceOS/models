@@ -849,8 +849,11 @@ module PlaceOS::Model
     # Recurring booking expansion
     # ===
 
-    def recurring_booking? : Bool
-      !recurrence_type.none? && !deleted && !rejected && instance.nil?
+    # a series whose occurrences `expand_bookings!` generates. With
+    # `include_deleted`, a cancelled series counts too, and every one of its
+    # occurrences comes back cancelled.
+    def recurring_booking?(include_deleted : Bool = false) : Bool
+      !recurrence_type.none? && (include_deleted || !deleted) && !rejected && instance.nil?
     end
 
     def recurring_instance? : Bool
@@ -874,7 +877,7 @@ module PlaceOS::Model
       is_checked_out : Bool? = nil,
       include_deleted : Bool = false,
     ) : ExpansionDetails
-      recurring = parents.select(&.recurring_booking?)
+      recurring = parents.select(&.recurring_booking?(include_deleted))
       return ExpansionDetails.new(parents, 0, 0) if recurring.empty?
       parent_ids = recurring.compact_map(&.id)
       recurring.each { |booking| parents.delete booking }

@@ -743,6 +743,103 @@ module PlaceOS::Model
     deleted_booking.not_nil!.deleted.should be_true
   end
 
+  it "expands a cancelled series as cancelled occurrences only when include_deleted is set" do
+    tenant_id = Generator.tenant.id.not_nil!
+    user_email = "steve@place.tech"
+
+    parent_booking = Booking.new(
+      booking_type: "desk",
+      asset_ids: ["desk1"],
+      booking_start: 1.day.from_now.at_beginning_of_day.to_unix + 9.hours.total_seconds.to_i64,
+      booking_end: 1.day.from_now.at_beginning_of_day.to_unix + 10.hours.total_seconds.to_i64,
+      timezone: "UTC",
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "Steve",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "Steve",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1234",
+      history: [] of Booking::History,
+      recurrence_type: Booking::Recurrence::DAILY,
+      recurrence_days: 0b1111111,
+      recurrence_interval: 1
+    ).save!
+
+    start_time = 1.day.from_now.at_beginning_of_day
+    end_time = start_time + 5.days
+    occurrences = parent_booking.calculate_daily(start_time, end_time).instances.map(&.to_unix)
+    occurrences.size.should eq 5
+
+    # an occurrence with its own override, checked in before the series was cancelled
+    checked_in_at = occurrences[1]
+    BookingInstance.new(
+      id: parent_booking.id.not_nil!,
+      instance_start: checked_in_at,
+      tenant_id: tenant_id,
+      booking_start: checked_in_at,
+      booking_end: checked_in_at + 1.hour.total_seconds.to_i64,
+      checked_in: true,
+      checked_in_at: checked_in_at,
+    ).save!
+
+    parent_booking.deleted = true
+    parent_booking.deleted_at = Time.utc.to_unix
+    parent_booking.save!
+
+    # without include_deleted the cancelled series stays a single, unexpanded row
+    hidden = Booking.expand_bookings!(start_time, end_time, [parent_booking], include_deleted: false).bookings
+    hidden.map(&.instance).should eq [nil]
+
+    expanded = Booking.expand_bookings!(start_time, end_time, [parent_booking], include_deleted: true).bookings
+    expanded.compact_map(&.instance).sort!.should eq occurrences
+    expanded.all?(&.deleted).should be_true
+    expanded.all? { |booking| booking.deleted_at == parent_booking.deleted_at }.should be_true
+
+    checked_in = expanded.find! { |booking| booking.instance == checked_in_at }
+    checked_in.checked_in.should be_true
+  end
+
+  it "hydrates an occurrence of a cancelled series as cancelled" do
+    tenant_id = Generator.tenant.id.not_nil!
+    user_email = "steve@place.tech"
+
+    parent_booking = Booking.new(
+      booking_type: "desk",
+      asset_ids: ["desk1"],
+      booking_start: 1.day.from_now.at_beginning_of_day.to_unix + 9.hours.total_seconds.to_i64,
+      booking_end: 1.day.from_now.at_beginning_of_day.to_unix + 10.hours.total_seconds.to_i64,
+      timezone: "UTC",
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "Steve",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "Steve",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1234",
+      history: [] of Booking::History,
+      recurrence_type: Booking::Recurrence::DAILY,
+      recurrence_days: 0b1111111,
+      recurrence_interval: 1
+    ).save!
+
+    starting = parent_booking.booking_start.not_nil!
+    override = BookingInstance.new(
+      id: parent_booking.id.not_nil!,
+      instance_start: starting,
+      tenant_id: tenant_id,
+      booking_start: starting,
+      booking_end: starting + 1.hour.total_seconds.to_i64,
+    ).save!
+    override.hydrate_booking(parent_booking).deleted.should be_false
+
+    parent_booking.deleted = true
+    parent_booking.deleted_at = Time.utc.to_unix
+    parent_booking.save!
+
+    hydrated = override.hydrate_booking(parent_booking)
+    hydrated.deleted.should be_true
+    hydrated.deleted_at.should eq parent_booking.deleted_at
+  end
+
   it "sanitizes extension_data string values before saving", tags: "extension_data_sanitization" do
     tenant_id = Generator.tenant.id
     user_email = "test@place.tech"
