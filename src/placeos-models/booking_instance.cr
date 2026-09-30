@@ -133,8 +133,11 @@ module PlaceOS::Model
       instance.checked_in = self.checked_in
       instance.checked_in_at = self.checked_in_at
       instance.checked_out_at = self.checked_out_at
-      instance.deleted = self.deleted
-      instance.deleted_at = self.deleted_at
+      # an occurrence of a cancelled series is cancelled, whatever its override says
+      if self.deleted || !main.deleted
+        instance.deleted = self.deleted
+        instance.deleted_at = self.deleted_at
+      end
       instance.process_state = self.process_state
       # A non-empty extension data object is a complete snapshot for this
       # occurrence and replaces the parent booking's extension data wholesale.
