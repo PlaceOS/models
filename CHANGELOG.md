@@ -1,3 +1,9 @@
+## v9.117.1 (2026-09-30)
+
+### Fix
+
+- **booking**: PPT-2436 expand a cancelled series when include_deleted is set ([#331](https://github.com/PlaceOS/models/pull/331))
+
 ## v9.117.0 (2026-09-29)
 
 ### Feat
