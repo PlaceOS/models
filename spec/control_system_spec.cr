@@ -164,6 +164,106 @@ module PlaceOS::Model
       end
     end
 
+    describe "sign dimensions" do
+      it "is valid with neither dimension set" do
+        sys = Generator.control_system
+        sys.valid?.should be_true
+        sys.orientation.should eq Playlist::Orientation::Unspecified
+      end
+
+      it "rejects only sign_height being set" do
+        sys = Generator.control_system
+        sys.sign_height = 1920
+        sys.valid?.should be_false
+        sys.errors.map(&.field).should eq [:sign_width]
+      end
+
+      it "rejects only sign_width being set" do
+        sys = Generator.control_system
+        sys.sign_width = 1080
+        sys.valid?.should be_false
+        sys.errors.map(&.field).should eq [:sign_height]
+      end
+
+      it "rejects non-positive dimensions" do
+        sys = Generator.control_system
+        sys.sign_height = 0
+        sys.sign_width = -5
+        sys.valid?.should be_false
+        sys.errors.map(&.field).should eq [:sign_height, :sign_width]
+        sys.orientation.should eq Playlist::Orientation::Unspecified
+      end
+
+      it "derives portrait orientation" do
+        sys = Generator.control_system
+        sys.sign_height = 1920
+        sys.sign_width = 1080
+        sys.valid?.should be_true
+        sys.orientation.should eq Playlist::Orientation::Portrait
+      end
+
+      it "derives landscape orientation" do
+        sys = Generator.control_system
+        sys.sign_height = 1080
+        sys.sign_width = 1920
+        sys.valid?.should be_true
+        sys.orientation.should eq Playlist::Orientation::Landscape
+      end
+
+      it "derives square orientation" do
+        sys = Generator.control_system
+        sys.sign_height = 1080
+        sys.sign_width = 1080
+        sys.valid?.should be_true
+        sys.orientation.should eq Playlist::Orientation::Square
+      end
+
+      it "overrides an explicitly set orientation that conflicts with the dimensions" do
+        sys = Generator.control_system
+        sys.orientation = Playlist::Orientation::Landscape
+        sys.sign_height = 1920
+        sys.sign_width = 1080
+        sys.valid?.should be_true
+        sys.orientation.should eq Playlist::Orientation::Portrait
+      end
+
+      it "leaves orientation untouched when dimensions are cleared" do
+        sys = Generator.control_system
+        sys.sign_height = 1920
+        sys.sign_width = 1080
+        sys.save!
+        sys.orientation.should eq Playlist::Orientation::Portrait
+
+        sys.sign_height = nil
+        sys.sign_width = nil
+        sys.save!
+        sys.orientation.should eq Playlist::Orientation::Portrait
+      end
+
+      it "persists dimensions and derived orientation" do
+        sys = Generator.control_system
+        sys.sign_height = 1080
+        sys.sign_width = 1920
+        sys.save!
+
+        found = ControlSystem.find!(sys.id.as(String))
+        found.sign_height.should eq 1080
+        found.sign_width.should eq 1920
+        found.orientation.should eq Playlist::Orientation::Landscape
+        found.destroy
+      end
+
+      it "persists nil dimensions" do
+        sys = Generator.control_system
+        sys.save!
+
+        found = ControlSystem.find!(sys.id.as(String))
+        found.sign_height.should be_nil
+        found.sign_width.should be_nil
+        found.destroy
+      end
+    end
+
     describe "add_module" do
       it "adds a module if not already present" do
         control_system = Generator.control_system

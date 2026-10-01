@@ -67,6 +67,9 @@ module PlaceOS::Model
     # playlists can be assigned directly to displays or to zones
     # playlists in zones will only be loaded if they have matching orientations
     attribute orientation : Playlist::Orientation = Playlist::Orientation::Unspecified, converter: PlaceOS::Model::PGEnumConverter(PlaceOS::Model::Playlist::Orientation)
+    # Physical dimensions of the sign, orientation is derived from these when set
+    attribute sign_height : Int32? = nil
+    attribute sign_width : Int32? = nil
     attribute playlists : Array(String) = [] of String, es_type: "keyword"
     attribute signage : Bool = false
 
@@ -76,7 +79,8 @@ module PlaceOS::Model
     # Telemetry and descriptive metadata do not require running drivers to reload.
     # ORM saves advance updated_at; PostgreSQL also regenerates search_vector.
     changefeed_ignore_updates :signage_last_seen, :playlist_item_id,
-      :name, :description, :version, :playlists, :orientation, :updated_at,
+      :name, :description, :version, :playlists, :orientation, :sign_height, :sign_width,
+      :updated_at,
       database_columns: [:search_vector]
 
     attribute space_config : Hash(String, JSON::Any) = {} of String => JSON::Any
@@ -145,6 +149,35 @@ module PlaceOS::Model
 
       return if this.support_url.blank?
       this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
+    }
+
+    # Sign dimensions must be set together, orientation is derived from them
+    validate ->(this : ControlSystem) {
+      height = this.sign_height
+      width = this.sign_width
+      return if height.nil? && width.nil?
+
+      if height.nil?
+        this.validation_error(:sign_height, "must be set when sign_width is set")
+        return
+      end
+      if width.nil?
+        this.validation_error(:sign_width, "must be set when sign_height is set")
+        return
+      end
+
+      this.validation_error(:sign_height, "must be greater than 0") unless height > 0
+      this.validation_error(:sign_width, "must be greater than 0") unless width > 0
+      return unless height > 0 && width > 0
+
+      orientation = if height > width
+                      Playlist::Orientation::Portrait
+                    elsif width > height
+                      Playlist::Orientation::Landscape
+                    else
+                      Playlist::Orientation::Square
+                    end
+      this.orientation = orientation unless this.orientation == orientation
     }
 
     before_save :clean_urls
