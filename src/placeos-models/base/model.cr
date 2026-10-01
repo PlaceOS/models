@@ -197,8 +197,9 @@ module PlaceOS::Model
       T.parse?(pull.read_string) || pull.raise "Unknown enum #{T} value: #{pull.string_value}"
     end
 
+    # postgres enum labels are SCREAMING_SNAKE_CASE (ExternalImage => EXTERNAL_IMAGE)
     def self.to_json(val : T | Nil)
-      val.to_s.upcase
+      val.to_s.underscore.upcase
     end
 
     def self.to_json(val : T | Nil, builder)

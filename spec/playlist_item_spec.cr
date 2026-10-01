@@ -37,6 +37,30 @@ module PlaceOS::Model
       item.save.should eq true
     end
 
+    it "persists multi-word media types" do
+      authority = Authority.find_by_domain("localhost") || Generator.authority.save!
+      item = Playlist::Item.new(
+        name: "poster",
+        media_type: Playlist::Item::MediaType::ExternalImage,
+        media_uri: "https://images.example.com/poster.jpg",
+      )
+      item.authority_id = authority.id
+      item.save!
+
+      Playlist::Item.find!(item.id.as(String)).media_type.should eq Playlist::Item::MediaType::ExternalImage
+    end
+
+    it "writes every media type as a value of the postgres enum" do
+      labels = ::PgORM::Database.connection do |db|
+        db.query_all("SELECT unnest(enum_range(NULL::playlist_item_media_type))::text", as: String)
+      end
+
+      PGEnumConverter(Playlist::Item::MediaType).to_json(Playlist::Item::MediaType::ExternalImage).should eq "EXTERNAL_IMAGE"
+      Playlist::Item::MediaType.values.each do |media_type|
+        labels.should contain PGEnumConverter(Playlist::Item::MediaType).to_json(media_type)
+      end
+    end
+
     it "has unique tags" do
       item = Generator.item
       item.tags << "hello"
