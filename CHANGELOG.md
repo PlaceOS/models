@@ -1,3 +1,9 @@
+## v9.118.0 (2026-10-01)
+
+### Feat
+
+- **control_system**: add signage display dimension fields
+
 ## v9.117.1 (2026-09-30)
 
 ### Fix
