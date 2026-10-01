@@ -1,3 +1,9 @@
+## v9.118.1 (2026-10-01)
+
+### Fix
+
+- **model**: PGEnumConverter correctly underscores
+
 ## v9.118.0 (2026-10-01)
 
 ### Feat
