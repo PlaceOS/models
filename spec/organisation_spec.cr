@@ -26,6 +26,16 @@ module PlaceOS::Model
       org.self_managed?.should be_true
     end
 
+    it "requires a partner for a partner staff organisation" do
+      org = Generator.organisation(partner_staff: true)
+      org.valid?.should be_false
+      org.errors.map(&.field).should contain(:partner_staff)
+
+      staff = Generator.organisation(partner: Generator.partner.save!, partner_staff: true).save!
+      staff.partner_staff.should be_true
+      Organisation.staff_of(staff.partner_id.as(UUID)).to_a.map(&.id).should eq [staff.id]
+    end
+
     it "rejects an unknown payer" do
       org = Generator.organisation(partner: Generator.partner.save!, payer: "nobody")
       org.valid?.should be_false

@@ -2,6 +2,7 @@ require "openssl"
 require "random"
 
 require "./base/model"
+require "./organisation_scoped_name"
 
 module PlaceOS::Model
   class Broker < ModelBase
@@ -50,7 +51,8 @@ module PlaceOS::Model
     validates :host, presence: true
     validates :secret, presence: true
 
-    ensure_unique :name
+    include OrganisationScopedName
+    ensure_unique_name_within_organisation
 
     validate ->Broker.validate_filters(Broker)
 

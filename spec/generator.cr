@@ -573,11 +573,12 @@ module PlaceOS::Model
       )
     end
 
-    def self.organisation(partner : Partner? = nil, payer : String = Organisation::PAYER_PARTNER)
+    def self.organisation(partner : Partner? = nil, payer : String = Organisation::PAYER_PARTNER, partner_staff : Bool = false)
       Organisation.new(
         name: Faker::Hacker.noun + "-" + RANDOM.hex(3),
         partner_id: partner.try(&.id),
         payer: payer,
+        partner_staff: partner_staff,
       )
     end
 

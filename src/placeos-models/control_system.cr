@@ -5,6 +5,7 @@ require "future"
 require "./converter/time_location"
 
 require "./base/model"
+require "./organisation_scoped_name"
 require "./settings"
 require "./email"
 require "./utilities/settings_helper"
@@ -141,10 +142,8 @@ module PlaceOS::Model
     # Zones and settings are only required for confident coding
     validates :name, presence: true
 
-    # TODO: Ensure unique regardless of casing
-    ensure_unique :name do |name|
-      name.strip
-    end
+    include OrganisationScopedName
+    ensure_unique_name_within_organisation
 
     # Validate URIs
     validate ->(this : ControlSystem) {

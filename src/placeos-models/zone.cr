@@ -1,6 +1,7 @@
 require "time"
 
 require "./base/model"
+require "./organisation_scoped_name"
 require "./settings"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
@@ -126,9 +127,8 @@ module PlaceOS::Model
     ###############################################################################################
 
     validates :name, presence: true
-    ensure_unique :name do |name|
-      name.strip
-    end
+    include OrganisationScopedName
+    ensure_unique_name_within_organisation
 
     # Callbacks
     ###############################################################################################
