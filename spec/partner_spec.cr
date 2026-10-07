@@ -6,7 +6,7 @@ module PlaceOS::Model
       ControlSystem.clear
       Zone.clear
       Authority.clear
-      Organization.clear
+      Organisation.clear
       Partner.clear
     end
 
@@ -54,14 +54,14 @@ module PlaceOS::Model
 
     it "lists its clients" do
       partner = Generator.partner.save!
-      org = Generator.organization(partner: partner).save!
-      Generator.organization.save!
-      partner.organizations.to_a.map(&.id).should eq [org.id]
+      org = Generator.organisation(partner: partner).save!
+      Generator.organisation.save!
+      partner.organisations.to_a.map(&.id).should eq [org.id]
     end
 
     it "refuses to delete a partner that still has clients" do
       partner = Generator.partner.save!
-      Generator.organization(partner: partner).save!
+      Generator.organisation(partner: partner).save!
 
       expect_raises(Exception, /foreign key/) { partner.destroy }
       Partner.find?(partner.id.not_nil!).should_not be_nil

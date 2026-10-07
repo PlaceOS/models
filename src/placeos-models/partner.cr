@@ -64,9 +64,9 @@ module PlaceOS::Model
       Partner.where(parent_id: self.id)
     end
 
-    # Organizations under this partner's book of business.
-    def organizations
-      Organization.where(partner_id: self.id)
+    # Organisations under this partner's book of business.
+    def organisations
+      Organisation.where(partner_id: self.id)
     end
   end
 end
