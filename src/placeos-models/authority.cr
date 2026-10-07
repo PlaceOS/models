@@ -28,9 +28,9 @@ module PlaceOS::Model
 
     attribute email_domains : Array(String) = [] of String
 
-    # PPT-526: the Organization (customer organisation) that owns this domain.
+    # PPT-526: the Organisation (customer organisation) that owns this domain.
     # Nullable while ownership backfill and provisioning are phased in.
-    attribute organization_id : UUID?, es_type: "keyword", mass_assignment: false
+    attribute organisation_id : UUID?, es_type: "keyword", mass_assignment: false
 
     macro finished
       # Ensure only the host is saved.
@@ -77,9 +77,9 @@ module PlaceOS::Model
       Authority.where(domain: host).first?
     end
 
-    # The owning Organization, when ownership has been assigned.
-    def organization : PlaceOS::Model::Organization?
-      self.organization_id.try { |id| PlaceOS::Model::Organization.find?(id) }
+    # The owning Organisation, when ownership has been assigned.
+    def organisation : PlaceOS::Model::Organisation?
+      self.organisation_id.try { |id| PlaceOS::Model::Organisation.find?(id) }
     end
 
     # Locates an authority by email domain
