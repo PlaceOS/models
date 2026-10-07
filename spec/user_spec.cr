@@ -161,6 +161,25 @@ module PlaceOS::Model
           end
         end
 
+        it "counts remaining admins within the organisation, not the cluster" do
+          User.clear
+          org_a = Generator.organisation.save!
+          org_b = Generator.organisation.save!
+          authority_a = Generator.authority("a.test").tap(&.organisation_id = org_a.id).save!
+          authority_b = Generator.authority("b.test").tap(&.organisation_id = org_b.id).save!
+          admin_a = Generator.user(authority_a, admin: true).save!
+          Generator.user(authority_b, admin: true).save!
+
+          # another organisation's admin does not count for this one
+          expect_raises(Model::Error, "At least one admin must remain") do
+            admin_a.destroy
+          end
+
+          # a second admin in the same organisation does
+          Generator.user(authority_a, admin: true).save!
+          admin_a.destroy
+        end
+
         it "does not raise if more than one sys_admin User remains" do
           User.clear
           user0 = Generator.user(admin: true).save!

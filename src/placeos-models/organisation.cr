@@ -31,6 +31,10 @@ module PlaceOS::Model
     attribute payer : String = PAYER_PARTNER, mass_assignment: false
     attribute config : Hash(String, JSON::Any) = {} of String => JSON::Any
 
+    # The partner's own staff organisation: its admins and support users reach
+    # every organisation under `partner_id`. Requires a partner.
+    attribute partner_staff : Bool = false, mass_assignment: false
+
     attribute partner_id : UUID?
     belongs_to :partner, class_name: Partner, foreign_key: partner_id
 
@@ -41,6 +45,12 @@ module PlaceOS::Model
     validate ->(this : Organisation) {
       unless PAYERS.includes?(this.payer)
         this.validation_error(:payer, "must be one of #{PAYERS.join(", ")}")
+      end
+    }
+
+    validate ->(this : Organisation) {
+      if this.partner_staff && this.partner_id.nil?
+        this.validation_error(:partner_staff, "requires a partner")
       end
     }
 
@@ -67,6 +77,16 @@ module PlaceOS::Model
     # Domains (authorities) owned by this organisation.
     def authorities
       Authority.where(organisation_id: self.id)
+    end
+
+    # Every organisation under the same partner, this one included.
+    def partner_organisations
+      Organisation.where(partner_id: self.partner_id)
+    end
+
+    # The staff organisations of a partner.
+    def self.staff_of(partner_id : UUID)
+      Organisation.where(partner_id: partner_id, partner_staff: true)
     end
   end
 end

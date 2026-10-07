@@ -1,4 +1,5 @@
 require "./base/model"
+require "./organisation_scoped_name"
 require "./user"
 require "./api_key"
 
@@ -139,8 +140,7 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
-    ensure_unique :name do |name|
-      name.strip
-    end
+    include OrganisationScopedName
+    ensure_unique_name_within_organisation
   end
 end
