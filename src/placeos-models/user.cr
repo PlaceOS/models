@@ -146,17 +146,11 @@ module PlaceOS::Model
       admin_destroy_lock.synchronize { super }
     end
 
-    # Prevent an organisation (or, for domains without one, the cluster) from
-    # entering a state with no admin
+    # Prevent the system from entering a state with no admin
     protected def ensure_admin_remains
       return unless self.sys_admin
 
-      admins = User.where({sys_admin: true})
-      if organisation_id = Authority.find?(self.authority_id.as(String)).try(&.organisation_id)
-        admins = admins.where("authority_id IN (SELECT id FROM authority WHERE organisation_id = ?)", organisation_id)
-      end
-
-      if admins.count == 1
+      if User.where({sys_admin: true}).count == 1
         raise Model::Error.new("At least one admin must remain")
       end
     end
