@@ -1,6 +1,7 @@
 require "CrystalEmail"
 require "crypto/bcrypt/password"
 require "digest/md5"
+require "oauth2"
 require "./base/model"
 require "./api_key"
 require "./metadata"
@@ -393,6 +394,80 @@ module PlaceOS::Model
       @pass_compare = digest = Password.create(new_password)
       self.password_digest = digest.to_s
       new_password
+    end
+
+    # SSO resource tokens
+    ###############################################################################################
+
+    record ResourceToken, token : String, expires : Int64? do
+      include JSON::Serializable
+    end
+
+    # Returns a token for delegated access to the user's SSO resources, such as
+    # the MS Graph API or Google APIs, in the context of the user.
+    #
+    # The stored access token is refreshed (and saved) when it expires within
+    # five minutes. If the refresh fails, a token that hasn't actually expired
+    # yet is still returned.
+    #
+    # Raises `Model::Error::NoResourceToken` when there is nothing to return or refresh with.
+    def resource_token(authority : Authority? = self.authority) : ResourceToken
+      expired = true
+
+      if token = access_token.presence
+        return ResourceToken.new(token, nil) unless expires
+
+        if expiry = expires_at
+          expires_at_time = Time.unix(expiry)
+          return ResourceToken.new(token, expiry) if 5.minutes.from_now < expires_at_time
+
+          # Allow for clock drift
+          expired = 15.seconds.from_now > expires_at_time
+        end
+      end
+
+      refresh = refresh_token.presence
+      raise Model::Error::NoResourceToken.new("no refresh token available") unless refresh
+
+      strategy = authority.try { |auth| oauth_strategy(auth) }
+      raise Model::Error::NoResourceToken.new("no oauth configuration found") unless strategy
+
+      begin
+        token = oauth_client(strategy).get_access_token_using_refresh_token(refresh, strategy.scope)
+
+        self.access_token = token.access_token
+        self.refresh_token = token.refresh_token if token.refresh_token
+        self.expires_at = Time.utc.to_unix + token.expires_in.not_nil!
+        save!
+
+        ResourceToken.new(token.access_token, expires_at)
+      rescue error
+        Log.warn(exception: error) { "failed to refresh resource token for user #{id}" }
+        raise error if expired
+        ResourceToken.new(access_token.as(String), expires_at)
+      end
+    end
+
+    private def oauth_strategy(authority : Authority) : OAuthAuthentication?
+      if strategy_id = authority.internals["oauth-strategy"]?.try(&.as_s?)
+        OAuthAuthentication.find?(strategy_id)
+      else
+        OAuthAuthentication.where(authority_id: authority.id).first?
+      end
+    end
+
+    private def oauth_client(strategy : OAuthAuthentication) : OAuth2::Client
+      # `token_url` may be relative to the provider's `site`
+      token_uri = URI.parse(strategy.site).resolve(strategy.token_url)
+
+      OAuth2::Client.new(
+        token_uri.hostname.as(String),
+        strategy.client_id,
+        strategy.client_secret,
+        port: token_uri.port,
+        scheme: token_uri.scheme || "https",
+        token_uri: token_uri.request_target,
+      )
     end
   end
 end
