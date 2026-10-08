@@ -7,23 +7,34 @@
 The database models for [PlaceOS](https://place.technology/) in [crystal](https://crystal-lang.org/).
 
 PlaceOS is a distributed application, with many concurrent event sources that require persistence.
-We use [RethinkDB](https://rethinkdb.com) to unify our database and event bus, giving us a consistent interface to state and events across the system.
+The models are stored in [PostgreSQL](https://www.postgresql.org/) using [pg-orm](https://github.com/spider-gazelle/pg-orm). PostgreSQL also serves as the event bus and search index:
+
+- **Changefeeds:** changes to models are captured by PostgreSQL triggers, so services can react to them with `Model.changes` (see [Runtime changefeed notifications](#runtime-changefeed-notifications)).
+- **Search:** text search uses PostgreSQL full-text search over generated `search_vector` columns.
+- **Schema:** the schema is managed by the SQL migrations in [`migration/db/migrations`](./migration/db/migrations), which are run with [micrate](https://github.com/amberframework/micrate).
 
 ## Configuration
 
 ### Environment
 
-| Key                       | Description                                    | Default     |
-| ------------------------- | ---------------------------------------------- | ----------- |
-| `PLACE_MAX_VERSIONS`      | Number of versions to keep of versioned models | 20          |
-| `PG_HOST`                 | Postgresql host                                | "localhost" |
-| `PG_PORT`                 | Postgresql port                                | 5432        |
-| `PG_DB`                   | Database name  or `PG_DATABASE`                | "test"      |
-| `PG_USER`                 | Database user                                  | "postgres"  |
-| `PG_PASSWORD`             | Database password                              | ""          |
-| `PG_QUERY`                | Query string, that can be used to configure pooling | ""     |
-| `PG_LOCK_TIMEOUT`         | Timeout on retrying Advisory lock in seconds   | 5           |
-| `PG_DATABASE_URL`         | Or provide a Database DSN                      |             |
+| Key                     | Description                                                | Default                       |
+| ----------------------- | ---------------------------------------------------------- | ----------------------------- |
+| `PG_HOST`               | PostgreSQL host                                            | `localhost`                   |
+| `PG_PORT`               | PostgreSQL port                                            | `5432`                        |
+| `PG_DB`                 | Database name (or `PG_DATABASE`)                           | `test`                        |
+| `PG_USER`               | Database user                                              | `postgres`                    |
+| `PG_PASSWORD`           | Database password                                          | `""`                          |
+| `PG_QUERY`              | Connection query string, e.g. to configure pooling         | `""`                          |
+| `PG_RO_HOST`            | Optional read-only replica host                            |                               |
+| `PG_RO_QUERY`           | Connection query string for the read-only replica          | `PG_QUERY`                    |
+| `PG_LOCK_TIMEOUT`       | Timeout on retrying an advisory lock, in seconds           | `5`                           |
+| `PLACE_MAX_VERSIONS`    | Number of versions to keep of versioned models             | `20`                          |
+| `PLACE_SERVER_SECRET`   | Secret used to encrypt sensitive fields (e.g. settings)    | insecure default, logs a warning |
+| `JWT_PUBLIC`            | Base64 encoded public key used to verify JWTs              |                               |
+| `JWT_SECRET`            | Base64 encoded private key used to sign JWTs               | insecure default, logs a warning |
+| `SIGNAGE_AI_CLEANUP_DAYS` | Days to keep signage AI job records (`0` keeps them forever) | `0`                           |
+
+Alternatively, services can configure the connection from a DSN, for example `PgORM::Database.parse(ENV["PG_DATABASE_URL"])`, which is how the specs connect.
 
 ## Runtime changefeed notifications
 
