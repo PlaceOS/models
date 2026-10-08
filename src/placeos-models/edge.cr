@@ -1,4 +1,5 @@
 require "./base/model"
+require "./organisation_scoped_name"
 require "./user"
 require "./api_key"
 
@@ -19,6 +20,15 @@ module PlaceOS::Model
     @[JSON::Field(type: "integer", format: "Int64")]
     attribute last_seen : Time?, converter: Time::EpochConverterOptional, mass_assignment: false
     attribute online : Bool = false, mass_assignment: false
+
+    # PPT-526: the Organisation (customer organisation) that owns this edge node.
+    # Nullable while ownership backfill and query enforcement are phased in.
+    attribute organisation_id : UUID?, es_type: "keyword", mass_assignment: false
+
+    # The owning Organisation, when ownership has been assigned.
+    def organisation : PlaceOS::Model::Organisation?
+      self.organisation_id.try { |id| PlaceOS::Model::Organisation.find?(id) }
+    end
 
     @[JSON::Field(ignore: true)]
     getter x_api_key : String do
@@ -130,8 +140,7 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
-    ensure_unique :name do |name|
-      name.strip
-    end
+    include OrganisationScopedName
+    ensure_unique_name_within_organisation
   end
 end

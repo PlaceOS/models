@@ -27,6 +27,16 @@ module PlaceOS::Model
     METHODS = %w(GET POST PUT PATCH DELETE)
     attribute supported_methods : Array(String) = ["POST"]
 
+    # PPT-526: the Organisation (customer organisation) that owns this trigger
+    # definition. NULL = shared/cluster-wide definition. Nullable while
+    # ownership backfill and query enforcement are phased in.
+    attribute organisation_id : UUID?, es_type: "keyword", mass_assignment: false
+
+    # The owning Organisation, when ownership has been assigned.
+    def organisation : PlaceOS::Model::Organisation?
+      self.organisation_id.try { |id| PlaceOS::Model::Organisation.find?(id) }
+    end
+
     # Association
     ###############################################################################################
 

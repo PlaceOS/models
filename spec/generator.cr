@@ -565,6 +565,40 @@ module PlaceOS::Model
       )
     end
 
+    def self.partner(management : Bool = false, parent : Partner? = nil)
+      Partner.new(
+        name: Faker::Hacker.noun + "-" + RANDOM.hex(3),
+        management: management,
+        parent_id: parent.try(&.id),
+      )
+    end
+
+    def self.organisation(partner : Partner? = nil, payer : String = Organisation::PAYER_PARTNER, partner_staff : Bool = false)
+      Organisation.new(
+        name: Faker::Hacker.noun + "-" + RANDOM.hex(3),
+        partner_id: partner.try(&.id),
+        payer: payer,
+        partner_staff: partner_staff,
+      )
+    end
+
+    def self.grant(
+      user : User,
+      scope_type : String,
+      scope_id : String,
+      permissions : Permissions = Permissions::Read,
+      expires_at : Time? = nil,
+    )
+      grant = Grant.new(
+        user_id: user.id.not_nil!,
+        scope_type: scope_type,
+        scope_id: scope_id,
+        expires_at: expires_at,
+      )
+      grant.permission_flags = permissions
+      grant
+    end
+
     def self.user(authority : Authority? = nil, support : Bool = false, admin : Bool = false)
       unless authority
         # look up an existing authority
