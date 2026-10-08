@@ -1,3 +1,9 @@
+## v9.119.0 (2026-10-08)
+
+### Feat
+
+- **user**: add `User#resource_token` for delegated SSO access ([#333](https://github.com/PlaceOS/models/pull/333))
+
 ## v9.118.1 (2026-10-01)
 
 ### Fix
