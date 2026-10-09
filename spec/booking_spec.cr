@@ -864,6 +864,53 @@ module PlaceOS::Model
     saved.extension_data["note"].as_s.should eq "hello"
   end
 
+  describe "is_extension_data filter" do
+    # helper: make and persist a booking carrying the given extension_data
+    make = ->(tenant_id : Int64, asset : String, ext : Hash(String, JSON::Any)) do
+      booking = Generator.booking(tenant_id, asset, 1.hour.from_now, 2.hours.from_now, booking_type: "desk")
+      booking.extension_data = JSON::Any.new(ext)
+      booking.save!
+      booking
+    end
+
+    # reuse (or create) the shared tenant so these examples run correctly whether or not a
+    # sibling spec's global before_each has cleared the tenants table
+    tenant = -> { (Tenant.find_by?(domain: "toby.staff-api.dev") || Generator.tenant).id.not_nil! }
+
+    it "matches bookings whose extension_data contains the key/value" do
+      tenant_id = tenant.call
+      wanted = make.call(tenant_id, "desk-match", {"booking_for" => JSON::Any.new("alice@example.com")})
+      make.call(tenant_id, "desk-other", {"booking_for" => JSON::Any.new("bob@example.com")})
+
+      results = Booking.where(tenant_id: tenant_id).is_extension_data("{booking_for:alice@example.com}").to_a
+      results.map(&.id).should eq [wanted.id]
+    end
+
+    it "matches on multiple key/value pairs" do
+      tenant_id = tenant.call
+      wanted = make.call(tenant_id, "desk-multi", {"booking_for" => JSON::Any.new("alice@example.com"), "team" => JSON::Any.new("eng")})
+      make.call(tenant_id, "desk-partial", {"booking_for" => JSON::Any.new("alice@example.com")})
+
+      results = Booking.where(tenant_id: tenant_id).is_extension_data("{booking_for:alice@example.com,team:eng}").to_a
+      results.map(&.id).should eq [wanted.id]
+    end
+
+    it "is not vulnerable to SQL injection via the filter value" do
+      tenant_id = tenant.call
+      make.call(tenant_id, "desk-sqli", {"booking_for" => JSON::Any.new("alice@example.com")})
+
+      # a single quote in the value previously broke out of the interpolated SQL string
+      # literal and raised a Postgres syntax error. Bound as a parameter it is just data:
+      # a value that matches nothing, with no error.
+      query = Booking.where(tenant_id: tenant_id).is_extension_data("{booking_for:alice@example.com'}")
+      results = query.to_a
+      results.should be_empty
+
+      # a classic tautology payload is likewise treated as literal data, not SQL
+      Booking.where(tenant_id: tenant_id).is_extension_data("{booking_for:x' OR '1'='1}").to_a.should be_empty
+    end
+  end
+
   describe "tenant booking_range" do
     it "rejects a booking that ends beyond the booking range" do
       tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_range: {"desk" => 7_u32}))

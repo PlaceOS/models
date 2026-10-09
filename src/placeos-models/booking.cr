@@ -341,7 +341,9 @@ module PlaceOS::Model
         query = self
         array.each do |entry|
           split_entry = entry.split(":")
-          query = query.where(sql: "bookings.extension_data @> '#{PlaceOS::Model::JSONBQuery.to_query(split_entry[0], split_entry[1])}'")
+          # bind the json as a parameter (cast server-side) so the caller's key/value can
+          # never break out of the SQL string -- see spec "is not vulnerable to SQL injection"
+          query = query.where("bookings.extension_data @> ?::jsonb", PlaceOS::Model::JSONBQuery.to_query(split_entry[0], split_entry[1]))
         end
         query
       else
