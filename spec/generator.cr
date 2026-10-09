@@ -878,6 +878,7 @@ module PlaceOS::Model
       max_rating : Int32? = nil,
       tags : Array(String) = [] of String,
       deleted_at : Int64? = nil,
+      authority : Authority = localhost_authority,
     )
       Survey::Question.new(
         title: title,
@@ -889,6 +890,7 @@ module PlaceOS::Model
         max_rating: max_rating,
         tags: tags,
         deleted_at: deleted_at,
+        authority_id: authority.id,
       )
     end
 
