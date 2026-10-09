@@ -1,3 +1,9 @@
+## v9.119.3 (2026-10-09)
+
+### Fix
+
+- **survey**: question versioning
+
 ## v9.119.2 (2026-10-09)
 
 ### Fix
