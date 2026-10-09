@@ -10,9 +10,10 @@ module PlaceOS::Model
 
       validates :question_id, :survey_id, :type, presence: true
 
-      def self.list(survey_id : Int64? = nil, created_after : Int64? = nil, created_before : Int64? = nil)
+      def self.list(survey_id : Int64? = nil, created_after : Int64? = nil, created_before : Int64? = nil, authority_id : String? = nil)
         query = Answer.select("id, question_id, survey_id, type, answer_json")
         # filter
+        query = query.where("survey_id IN (SELECT id FROM surveys WHERE authority_id = ?)", authority_id) if authority_id
         query = query.where(survey_id: survey_id) if survey_id
         after_time = created_after ? Time.unix(created_after) : Time.unix(0)
         before_time = created_before ? Time.unix(created_before) : Time.local

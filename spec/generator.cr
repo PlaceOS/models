@@ -833,14 +833,18 @@ module PlaceOS::Model
       ChatMessage.new(chat_id: cid.id, role: role, content: msg, function_name: func, tool_call_id: call_id)
     end
 
+    # a survey needs an authority and a zone_id or building_id, a new zone is created when
+    # neither is provided
     def self.survey(
       title : String = Faker::Hacker.abbreviation,
       description : String = Faker::Hacker.say_something_smart,
       trigger : Survey::TriggerType = Survey::TriggerType::NONE,
-      zone_id : String = "",
-      building_id = "",
+      zone_id : String? = nil,
+      building_id : String? = nil,
       pages : Array(Survey::Page) = [self.page],
+      authority : Authority = localhost_authority,
     )
+      zone_id = self.zone.save!.id if zone_id.nil? && building_id.nil?
       Survey.new(
         title: title,
         description: description,
@@ -848,6 +852,7 @@ module PlaceOS::Model
         zone_id: zone_id,
         building_id: building_id,
         pages: pages,
+        authority_id: authority.id,
       )
     end
 

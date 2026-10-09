@@ -45,21 +45,25 @@ module PlaceOS::Model
       return unless checked_in_changed?
       state = checked_in ? Survey::TriggerType::VISITOR_CHECKEDIN : Survey::TriggerType::VISITOR_CHECKEDOUT
 
-      query = Survey.select("id").where(trigger: PlaceOS::Model::PGEnumConverter.to_json(state))
-
-      if (b = booking) && (zones = b.zones) && !zones.empty?
-        query = query.where({:zone_id => zones, :building_id => zones})
-      end
+      surveys = Survey.triggered_by(state, survey_zones)
 
       email = guest.not_nil!.email
       unless email.empty?
-        surveys = query.to_a
         surveys.each do |survey|
           Survey::Invitation.create!(
             survey_id: survey.id,
             email: email,
           )
         end
+      end
+    end
+
+    # the zones of the booking, or of the room an event is booked in, used to pick surveys
+    private def survey_zones : Array(String)?
+      if b = booking
+        b.zones
+      elsif (meta = event_metadata) && (system = ControlSystem.find?(meta.system_id))
+        system.zones
       end
     end
 

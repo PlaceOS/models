@@ -168,13 +168,14 @@ module PlaceOS::Model
       describe "survey triggers" do
         it "invites the host when an occurrence transitions" do
           booking.tenant_id = Generator.tenant(domain: "recurrence-survey.dev").id
-          booking.zones = ["zone-survey-1"]
+          zone_id = Generator.zone.save!.id.as(String)
+          booking.zones = [zone_id]
           booking.save!
 
           survey = Generator.survey(
             trigger: Survey::TriggerType::CHECKEDIN,
-            zone_id: "zone-survey-1",
-            building_id: "zone-survey-1",
+            zone_id: zone_id,
+            building_id: zone_id,
           )
           survey.save!
 
@@ -193,13 +194,14 @@ module PlaceOS::Model
 
         it "only invites on the matching state" do
           booking.tenant_id = Generator.tenant(domain: "recurrence-survey2.dev").id
-          booking.zones = ["zone-survey-2"]
+          zone_id = Generator.zone.save!.id.as(String)
+          booking.zones = [zone_id]
           booking.save!
 
           survey = Generator.survey(
             trigger: Survey::TriggerType::CHECKEDOUT,
-            zone_id: "zone-survey-2",
-            building_id: "zone-survey-2",
+            zone_id: zone_id,
+            building_id: zone_id,
           )
           survey.save!
 
@@ -219,13 +221,14 @@ module PlaceOS::Model
 
         it "does not re-invite when a save leaves the state unchanged" do
           booking.tenant_id = Generator.tenant(domain: "recurrence-survey3.dev").id
-          booking.zones = ["zone-survey-3"]
+          zone_id = Generator.zone.save!.id.as(String)
+          booking.zones = [zone_id]
           booking.save!
 
           survey = Generator.survey(
             trigger: Survey::TriggerType::CHECKEDIN,
-            zone_id: "zone-survey-3",
-            building_id: "zone-survey-3",
+            zone_id: zone_id,
+            building_id: zone_id,
           )
           survey.save!
 
@@ -252,12 +255,13 @@ module PlaceOS::Model
             start: start_time,
             ending: end_time
           )
-          plain.zones = ["zone-survey-4"]
+          zone_id = Generator.zone.save!.id.as(String)
+          plain.zones = [zone_id]
 
           survey = Generator.survey(
             trigger: Survey::TriggerType::RESERVED,
-            zone_id: "zone-survey-4",
-            building_id: "zone-survey-4",
+            zone_id: zone_id,
+            building_id: zone_id,
           )
           survey.save!
 

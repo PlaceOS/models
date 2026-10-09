@@ -18,10 +18,11 @@ module PlaceOS::Model
 
       validates :survey_id, :email, presence: true
 
-      def self.list(survey_id : Int64? = nil, sent : Bool? = nil)
+      def self.list(survey_id : Int64? = nil, sent : Bool? = nil, authority_id : String? = nil)
         query = Survey::Invitation.select("id, survey_id, token, email, sent")
 
         # filter
+        query = query.where("survey_id IN (SELECT id FROM surveys WHERE authority_id = ?)", authority_id) if authority_id
         query = query.where(survey_id: survey_id) if survey_id
         # can't use `query.where_not(sent: true)` here due to
         # sent <> true` not being equivalent to `sent IS NOT true` in PostgreSQL

@@ -264,14 +264,12 @@ module PlaceOS::Model
     # ones configured against this booking's zones and host, so it calls this on
     # the hydrated occurrence (see `BookingInstance#update_history`).
     def trigger_survey_invitations(state : State) : Nil
-      query = Survey.select("id").where(trigger: state.to_s.upcase)
-      if (zone_list = zones) && !zone_list.empty?
-        query = query.where(zone_id: zone_list, building_id: zone_list)
-      end
+      return unless trigger = Survey::TriggerType.parse?(state.to_s)
+      surveys = Survey.triggered_by(trigger, zones)
+      return if surveys.empty?
 
       email = extension_data ? extension_data["host_override"]?.try &.to_s || user_email.to_s : user_email.to_s
 
-      surveys = query.to_a
       surveys.each do |survey|
         Survey::Invitation.create!(
           survey_id: survey.id,
