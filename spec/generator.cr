@@ -551,9 +551,10 @@ module PlaceOS::Model
       )
     end
 
-    def self.asset_purchase_order
+    def self.asset_purchase_order(authority : Authority = localhost_authority)
       AssetPurchaseOrder.new(
         purchase_order_number: Faker::Hacker.noun,
+        authority_id: authority.id,
       )
     end
 
