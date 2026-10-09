@@ -1,3 +1,9 @@
+## v9.119.4 (2026-10-09)
+
+### Fix
+
+- **purchase_order**: associate with an authority
+
 ## v9.119.3 (2026-10-09)
 
 ### Fix
