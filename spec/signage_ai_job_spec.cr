@@ -82,6 +82,12 @@ module PlaceOS::Model
       SignageAIJob.sum_candidates(user.id.as(String), since, SignageAIJob::Kind::Generate).should eq 3
       SignageAIJob.sum_candidates_for_authority(authority.id.as(String), since, SignageAIJob::Kind::MapEdit).should eq 2
       SignageAIJob.sum_candidates_for_authority(authority.id.as(String), since, SignageAIJob::Kind::Edit).should eq 0
+
+      # a list of kinds, as the image quota asks for
+      SignageAIJob.sum_candidates(user.id.as(String), since, SignageAIJob::Kind.image).should eq 3
+      SignageAIJob.sum_candidates_for_authority(authority.id.as(String), since, SignageAIJob::Kind.image).should eq 3
+      SignageAIJob.sum_candidates(user.id.as(String), since, [SignageAIJob::Kind::Generate, SignageAIJob::Kind::MapEdit]).should eq 5
+      SignageAIJob.sum_candidates(user.id.as(String), since, [] of SignageAIJob::Kind).should eq 5
     end
 
     it "stores a map edit and reads it back" do
@@ -165,6 +171,9 @@ module PlaceOS::Model
       only_maps = SignageAIJob.usage(authority.id.as(String), 1.day.ago, 1.day.from_now, SignageAIJob::Kind::MapEdit)
       only_maps.map(&.kind).should eq ["map_edit"]
       only_maps.first.to_json.should contain %("kind":"map_edit")
+
+      images = SignageAIJob.usage(authority.id.as(String), 1.day.ago, 1.day.from_now, SignageAIJob::Kind.image)
+      images.map(&.kind).should eq ["generate"]
     end
 
     describe "automatic cleanup" do

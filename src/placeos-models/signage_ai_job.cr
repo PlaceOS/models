@@ -224,56 +224,59 @@ module PlaceOS::Model
     end
 
     # Candidates requested by a user since a point in time, for the per user quota.
+    # `kind` narrows the sum to one kind or a list of kinds; nil sums every kind.
     #
     # Failed jobs count. Most of them reached the vendor and were billed, and
     # exempting them meant a caller whose requests kept failing had no limit at
     # all, which is the one case where a limit matters most.
-    def self.sum_candidates(user_id : String, since : Time, kind : Kind? = nil) : Int32
+    def self.sum_candidates(user_id : String, since : Time, kind : Kind | Array(Kind) | Nil = nil) : Int32
+      filter, labels = kind_filter(kind, 3)
+      args = [user_id, since] of ::PgORM::Value
+      args.concat(labels)
       ::PgORM::Database.connection do |db|
-        if kind
-          db.query_one(<<-SQL, user_id, since, kind_label(kind), as: Int64)
-            SELECT COALESCE(SUM(candidates), 0)::bigint
-            FROM signage_ai_jobs
-            WHERE user_id = $1
-              AND created_at >= $2
-              AND kind = $3
-          SQL
-        else
-          db.query_one(<<-SQL, user_id, since, as: Int64)
-            SELECT COALESCE(SUM(candidates), 0)::bigint
-            FROM signage_ai_jobs
-            WHERE user_id = $1
-              AND created_at >= $2
-          SQL
-        end
+        db.query_one(<<-SQL, args: args, as: Int64)
+          SELECT COALESCE(SUM(candidates), 0)::bigint
+          FROM signage_ai_jobs
+          WHERE user_id = $1
+            AND created_at >= $2
+            #{filter}
+        SQL
       end.to_i32
     end
 
     # Candidates requested across a domain since a point in time, for the domain quota.
-    def self.sum_candidates_for_authority(authority_id : String, since : Time, kind : Kind? = nil) : Int32
+    def self.sum_candidates_for_authority(authority_id : String, since : Time, kind : Kind | Array(Kind) | Nil = nil) : Int32
+      filter, labels = kind_filter(kind, 3)
+      args = [authority_id, since] of ::PgORM::Value
+      args.concat(labels)
       ::PgORM::Database.connection do |db|
-        if kind
-          db.query_one(<<-SQL, authority_id, since, kind_label(kind), as: Int64)
-            SELECT COALESCE(SUM(candidates), 0)::bigint
-            FROM signage_ai_jobs
-            WHERE authority_id = $1
-              AND created_at >= $2
-              AND kind = $3
-          SQL
-        else
-          db.query_one(<<-SQL, authority_id, since, as: Int64)
-            SELECT COALESCE(SUM(candidates), 0)::bigint
-            FROM signage_ai_jobs
-            WHERE authority_id = $1
-              AND created_at >= $2
-          SQL
-        end
+        db.query_one(<<-SQL, args: args, as: Int64)
+          SELECT COALESCE(SUM(candidates), 0)::bigint
+          FROM signage_ai_jobs
+          WHERE authority_id = $1
+            AND created_at >= $2
+            #{filter}
+        SQL
       end.to_i32
     end
 
     # the label `PGEnumConverter` stores for a kind, for raw SQL
     def self.kind_label(kind : Kind) : String
       kind.to_s.underscore.upcase
+    end
+
+    # An `AND kind IN (...)` clause with its bound labels, placeholders numbered
+    # from `first`; empty for nil.
+    private def self.kind_filter(kind : Kind | Array(Kind) | Nil, first : Int32) : Tuple(String, Array(::PgORM::Value))
+      kinds = case kind
+              in Kind        then [kind]
+              in Array(Kind) then kind
+              in Nil         then [] of Kind
+              end
+      return {"", [] of ::PgORM::Value} if kinds.empty?
+
+      placeholders = kinds.map_with_index { |_, index| "$#{first + index}" }.join(", ")
+      {"AND kind IN (#{placeholders})", kinds.map { |entry| kind_label(entry).as(::PgORM::Value) }}
     end
 
     # Housekeeping, run as each new job is created. Does nothing unless an
@@ -355,14 +358,11 @@ module PlaceOS::Model
       include JSON::Serializable
     end
 
-    def self.usage(authority_id : String, from : Time, to : Time, kind : Kind? = nil) : Array(UsageRow)
+    def self.usage(authority_id : String, from : Time, to : Time, kind : Kind | Array(Kind) | Nil = nil) : Array(UsageRow)
       rows = [] of UsageRow
+      filter, labels = kind_filter(kind, 4)
       args = [authority_id, from, to] of ::PgORM::Value
-      filter = ""
-      if kind
-        args << kind_label(kind)
-        filter = "AND kind = $4"
-      end
+      args.concat(labels)
       ::PgORM::Database.connection do |db|
         db.query(<<-SQL, args: args) do |rs|
           SELECT
