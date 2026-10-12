@@ -751,6 +751,7 @@ module PlaceOS::Model
       is_default : Bool = false,
       enabled : Bool = true,
       quotas : Hash(String, JSON::Any) = {} of String => JSON::Any,
+      text_model : String? = nil,
     )
       row = SignageAIProvider.new
       row.name = name || Faker::Hacker.noun
@@ -758,6 +759,7 @@ module PlaceOS::Model
       row.authority_id = authority.try(&.id.as(String))
       row.credentials = credentials
       row.default_model = provider.google? ? "gemini-3.1-flash-image" : "gpt-image-2"
+      row.text_model = text_model
       row.is_default = is_default
       row.enabled = enabled
       row.quotas = JSON::Any.new(quotas)
@@ -788,12 +790,17 @@ module PlaceOS::Model
       job.state = state
       job.candidates = candidates
       job.parent_job_id = parent_job_id
-      job.prompt = "a poster for the office party"
-      job.result = JSON::Any.new({"images" => JSON::Any.new(Array(JSON::Any).new(candidates) { JSON::Any.new(nil) })})
+      if kind.map_edit?
+        job.prompt = "recolour the boardroom light blue"
+        job.result = JSON::Any.new({"ops" => JSON::Any.new([] of JSON::Any)})
+      else
+        job.prompt = "a poster for the office party"
+        job.result = JSON::Any.new({"images" => JSON::Any.new(Array(JSON::Any).new(candidates) { JSON::Any.new(nil) })})
+      end
       if provider
         job.provider_id = provider.id.as(UUID)
         job.provider_type = provider.provider.to_s
-        job.model = provider.default_model
+        job.model = kind.map_edit? ? (provider.text_model || "gpt-5.4-mini") : provider.default_model
       end
       job
     end

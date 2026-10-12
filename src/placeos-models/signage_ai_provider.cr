@@ -7,7 +7,7 @@ require "./authority"
 require "./utilities/encryption"
 
 module PlaceOS::Model
-  # Vendor credentials used to generate or edit signage artwork.
+  # Vendor credentials used to generate or edit signage artwork and to edit maps.
   #
   # A row with a `nil` authority_id is the shared fallback, the same arrangement
   # `Storage` uses. Credentials are a JSON object whose shape depends on the
@@ -51,12 +51,14 @@ module PlaceOS::Model
     attribute endpoint : String? = nil, sanitize: :text
     attribute location : String? = nil, sanitize: :text
     attribute default_model : String? = nil, sanitize: :text
+    # the text/vision model used for map editing, nil for the adapter's default
+    attribute text_model : String? = nil, sanitize: :text
     attribute allowed_models : Array(String) = [] of String, es_type: "keyword"
 
     attribute enabled : Bool = true
     attribute is_default : Bool = false
 
-    # {"user_per_day": 60, "domain_per_month": 2000}
+    # {"user_per_day": 60, "domain_per_month": 2000, "map_user_per_day": 40, "map_domain_per_month": 1000}
     attribute quotas : JSON::Any = JSON::Any.new({} of String => JSON::Any), es_ignore: true
 
     validates :name, presence: true
@@ -118,6 +120,7 @@ module PlaceOS::Model
         endpoint:       endpoint,
         location:       location,
         default_model:  default_model,
+        text_model:     text_model,
         allowed_models: allowed_models,
         enabled:        enabled,
         is_default:     is_default,

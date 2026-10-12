@@ -72,6 +72,17 @@ module PlaceOS::Model
       SignageAIProvider.default_for(authority.id.as(String)).try(&.id).should eq shared.id
     end
 
+    it "stores the text model and renders it" do
+      row = Generator.signage_ai_provider(text_model: "gpt-5.4-mini").save!
+      found = SignageAIProvider.find!(row.id.as(UUID))
+      found.text_model.should eq "gpt-5.4-mini"
+      found.as_json[:text_model].should eq "gpt-5.4-mini"
+
+      bare = Generator.signage_ai_provider.save!
+      SignageAIProvider.find!(bare.id.as(UUID)).text_model.should be_nil
+      bare.as_json[:text_model].should be_nil
+    end
+
     it "reads quotas" do
       row = Generator.signage_ai_provider(quotas: {"user_per_day" => JSON::Any.new(12_i64)}).save!
       SignageAIProvider.find!(row.id.as(UUID)).quota("user_per_day").should eq 12

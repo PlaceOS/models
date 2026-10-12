@@ -69,6 +69,36 @@ module PlaceOS::Model
       SignageAIJob.sum_candidates(user.id.as(String), 1.minute.from_now).should eq 0
     end
 
+    it "filters the quota sums by kind" do
+      authority = Generator.localhost_authority
+      user = Generator.user(authority: authority).save!
+      Generator.signage_ai_job(authority: authority, user: user, candidates: 3).save!
+      Generator.signage_ai_job(authority: authority, user: user, candidates: 1, kind: SignageAIJob::Kind::MapEdit).save!
+      Generator.signage_ai_job(authority: authority, user: user, candidates: 1, kind: SignageAIJob::Kind::MapEdit, state: SignageAIJob::State::Failed).save!
+
+      since = 1.day.ago
+      SignageAIJob.sum_candidates(user.id.as(String), since).should eq 5
+      SignageAIJob.sum_candidates(user.id.as(String), since, SignageAIJob::Kind::MapEdit).should eq 2
+      SignageAIJob.sum_candidates(user.id.as(String), since, SignageAIJob::Kind::Generate).should eq 3
+      SignageAIJob.sum_candidates_for_authority(authority.id.as(String), since, SignageAIJob::Kind::MapEdit).should eq 2
+      SignageAIJob.sum_candidates_for_authority(authority.id.as(String), since, SignageAIJob::Kind::Edit).should eq 0
+    end
+
+    it "stores a map edit and reads it back" do
+      job = Generator.signage_ai_job(kind: SignageAIJob::Kind::MapEdit, candidates: 1).save!
+      found = SignageAIJob.find!(job.id.as(UUID))
+      found.kind.should eq SignageAIJob::Kind::MapEdit
+      found.kind.to_s.should eq "map_edit"
+      found.kind.image?.should be_false
+      SignageAIJob::Kind::Edit.image?.should be_true
+      SignageAIJob::Kind.image.should eq [SignageAIJob::Kind::Generate, SignageAIJob::Kind::Edit]
+      SignageAIJob.kind_label(SignageAIJob::Kind::MapEdit).should eq "MAP_EDIT"
+
+      rendered = found.to_json
+      rendered.should contain %("kind":"map_edit")
+      SignageAIJob.from_trusted_json(rendered).kind.should eq SignageAIJob::Kind::MapEdit
+    end
+
     it "walks a refine chain oldest first" do
       first = Generator.signage_ai_job.save!
       second = Generator.signage_ai_job(parent_job_id: first.id.as(UUID)).save!
@@ -108,12 +138,33 @@ module PlaceOS::Model
       rows = SignageAIJob.usage(authority.id.as(String), 1.day.ago, 1.day.from_now)
       rows.size.should eq 1
       row = rows.first
+      row.kind.should eq "generate"
       row.provider.should eq "OPENAI"
       row.model.should eq "gpt-image-2"
       row.jobs.should eq 2
       row.candidates.should eq 4
       row.images_produced.should eq 4
       row.cost_units.should eq 1.0
+    end
+
+    it "separates map edits from image jobs in the usage report" do
+      authority = Generator.localhost_authority
+      provider = Generator.signage_ai_provider(authority: authority, text_model: "gpt-5.4-mini").save!
+      Generator.signage_ai_job(authority: authority, provider: provider, candidates: 2).save!
+      map_job = Generator.signage_ai_job(authority: authority, provider: provider, candidates: 1, kind: SignageAIJob::Kind::MapEdit).save!
+      map_job.cost_units = 4321.0
+      map_job.save!
+
+      rows = SignageAIJob.usage(authority.id.as(String), 1.day.ago, 1.day.from_now)
+      rows.map(&.kind).should eq ["generate", "map_edit"]
+      rows.last.model.should eq "gpt-5.4-mini"
+      rows.last.candidates.should eq 1
+      rows.last.images_produced.should eq 0
+      rows.last.cost_units.should eq 4321.0
+
+      only_maps = SignageAIJob.usage(authority.id.as(String), 1.day.ago, 1.day.from_now, SignageAIJob::Kind::MapEdit)
+      only_maps.map(&.kind).should eq ["map_edit"]
+      only_maps.first.to_json.should contain %("kind":"map_edit")
     end
 
     describe "automatic cleanup" do
