@@ -39,6 +39,9 @@ Spec.after_suite do
     PlaceOS::Model::GroupPlaylistItem,
     PlaceOS::Model::GroupPlaylist,
     PlaceOS::Model::Group,
+    PlaceOS::Model::Grant,
+    PlaceOS::Model::Organisation,
+    PlaceOS::Model::Partner,
   ].each(&.clear)
 end
 

@@ -1,6 +1,7 @@
 require "time"
 
 require "./base/model"
+require "./organisation_scoped_name"
 require "./settings"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
@@ -48,6 +49,15 @@ module PlaceOS::Model
     attribute triggers : Array(String) = [] of String
     attribute images : Array(String) = [] of String
     attribute playlists : Array(String) = [] of String, es_type: "keyword"
+
+    # PPT-526: the Organisation (customer organisation) that owns this zone.
+    # Nullable while ownership backfill and query enforcement are phased in.
+    attribute organisation_id : UUID?, es_type: "keyword", mass_assignment: false
+
+    # The owning Organisation, when ownership has been assigned.
+    def organisation : PlaceOS::Model::Organisation?
+      self.organisation_id.try { |id| PlaceOS::Model::Organisation.find?(id) }
+    end
 
     attribute place_id : String?
 
@@ -117,9 +127,8 @@ module PlaceOS::Model
     ###############################################################################################
 
     validates :name, presence: true
-    ensure_unique :name do |name|
-      name.strip
-    end
+    include OrganisationScopedName
+    ensure_unique_name_within_organisation
 
     # Callbacks
     ###############################################################################################

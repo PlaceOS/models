@@ -5,6 +5,7 @@ require "future"
 require "./converter/time_location"
 
 require "./base/model"
+require "./organisation_scoped_name"
 require "./settings"
 require "./email"
 require "./utilities/settings_helper"
@@ -41,6 +42,15 @@ module PlaceOS::Model
 
     # Array of security group ids for room access
     attribute security_groups : Array(String) = -> { [] of String }
+
+    # PPT-526: the Organisation (customer organisation) that owns this system.
+    # Nullable while ownership backfill and query enforcement are phased in.
+    attribute organisation_id : UUID?, es_type: "keyword", mass_assignment: false
+
+    # The owning Organisation, when ownership has been assigned.
+    def organisation : PlaceOS::Model::Organisation?
+      self.organisation_id.try { |id| PlaceOS::Model::Organisation.find?(id) }
+    end
 
     attribute timezone : Time::Location?, converter: Time::Location::Converter, es_type: "text"
 
@@ -132,10 +142,8 @@ module PlaceOS::Model
     # Zones and settings are only required for confident coding
     validates :name, presence: true
 
-    # TODO: Ensure unique regardless of casing
-    ensure_unique :name do |name|
-      name.strip
-    end
+    include OrganisationScopedName
+    ensure_unique_name_within_organisation
 
     # Validate URIs
     validate ->(this : ControlSystem) {
