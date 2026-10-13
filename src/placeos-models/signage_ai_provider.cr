@@ -26,9 +26,14 @@ module PlaceOS::Model
       OPENAI
       AZURE_OPENAI
       GOOGLE_VERTEX
+      ANTHROPIC
 
       def google?
         self == GOOGLE_VERTEX
+      end
+
+      def anthropic?
+        self == ANTHROPIC
       end
 
       # OpenAI and Azure OpenAI speak the same request and response shape
