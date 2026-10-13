@@ -41,9 +41,9 @@ module PlaceOS::Model
       authority = Generator.localhost_authority
       other = Generator.authority(domain: "http://default-#{UUID.random}.test").save!
 
-      first = Generator.signage_ai_provider(authority: authority, is_default: true).save!
-      elsewhere = Generator.signage_ai_provider(authority: other, is_default: true).save!
-      second = Generator.signage_ai_provider(authority: authority, is_default: true).save!
+      first = Generator.signage_ai_provider(name: "first", authority: authority, is_default: true).save!
+      elsewhere = Generator.signage_ai_provider(name: "elsewhere", authority: other, is_default: true).save!
+      second = Generator.signage_ai_provider(name: "second", authority: authority, is_default: true).save!
 
       SignageAIProvider.find!(first.id.as(UUID)).is_default.should be_false
       SignageAIProvider.find!(second.id.as(UUID)).is_default.should be_true
