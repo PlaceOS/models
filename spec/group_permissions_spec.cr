@@ -327,6 +327,25 @@ module PlaceOS::Model
       ).should eq Permissions::Read
     end
 
+    it "doesn't share membership between separate root groups" do
+      f = GroupPermissionsFixture.build
+      other_root = Generator.group(authority: f.authority, parent: nil, subsystems: [f.subsystem]).save!
+      other_team = Generator.group(authority: f.authority, parent: other_root, subsystems: [f.subsystem]).save!
+
+      Generator.group_user(user: f.user, group: f.root, permissions: Permissions::Read).save!
+      Generator.group_zone(group: f.team_a, zone: f.floor_1, permissions: Permissions::Read).save!
+      Generator.group_zone(group: other_team, zone: f.floor_2, permissions: Permissions::All).save!
+
+      # Membership of the first root reaches its own tree's grants only
+      f.zone_accessible?(f.floor_1).should be_true
+      f.zone_accessible?(f.floor_2).should be_false
+
+      # Membership of the second root reaches the second tree's grants
+      Generator.group_user(user: f.user, group: other_root, permissions: Permissions::Update).save!
+      f.effective_permissions(f.floor_2).should eq Permissions::Update
+      f.effective_permissions(f.floor_1).should eq Permissions::Read
+    end
+
     describe "effective_permissions with a batch of zone ids" do
       it "returns None for an empty list" do
         f = GroupPermissionsFixture.build

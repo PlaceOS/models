@@ -14,8 +14,8 @@ module PlaceOS::Model
   # organisational hierarchy. Each group declares which *subsystems*
   # (signage, events, parking, ...) it participates in via the `subsystems`
   # text array; subsystem-scoped permission queries are filtered against
-  # that array. A single root per authority is enforced by a partial unique
-  # index on `(authority_id) WHERE parent_id IS NULL`.
+  # that array. An authority may have several root groups (`parent_id` nil),
+  # each heading its own independent tree.
   class Group < ::PgORM::Base
     include PgORM::Timestamps
 
@@ -51,17 +51,6 @@ module PlaceOS::Model
 
     validates :name, presence: true
     validates :authority_id, presence: true
-
-    validate ->(this : Group) {
-      # Only validate "single root" at the model level when the parent_id
-      # is NULL. The database's partial unique index is the source of truth;
-      # this check short-circuits on obvious cases with a friendlier error.
-      return unless this.parent_id.nil?
-      existing = Group.where(authority_id: this.authority_id, parent_id: nil).first?
-      return if existing.nil?
-      return if this.persisted? && existing.id == this.id
-      this.validation_error(:parent_id, "authority already has a root group")
-    }
 
     validate ->(this : Group) {
       # Parent must belong to the same authority.

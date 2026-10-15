@@ -1,3 +1,9 @@
+## v9.119.5 (2026-10-14)
+
+### Fix
+
+- **groups**: allow multiple roots
+
 ## v9.119.4 (2026-10-09)
 
 ### Fix
