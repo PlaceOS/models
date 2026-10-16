@@ -809,6 +809,8 @@ module PlaceOS::Model
 
     def self.hydrate_parents(bookings : Array(Booking))
       parent_ids = bookings.compact_map(&.parent_id).uniq!
+      # an empty list renders as `IN ()`, which Postgres rejects
+      return bookings if parent_ids.empty?
       parents = Booking.where(id: parent_ids).to_a
       parents_by_id = parents.index_by(&.id)
       bookings.each do |booking|

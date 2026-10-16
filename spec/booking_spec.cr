@@ -679,6 +679,28 @@ module PlaceOS::Model
     child_booking_json["linked_parent_booking"].as_h.should_not be_nil
     child_booking_json["linked_parent_booking"].as_h["id"].should eq(parent_booking.id)
   end
+  it "hydrate_parents returns bookings that have no parent unchanged" do
+    tenant_id = Generator.tenant.id.not_nil!
+    user_email = "one@place.tech"
+    booking = Booking.new(
+      booking_type: "asset-request",
+      asset_ids: ["laptop-1"],
+      booking_start: 1.hour.from_now.to_unix,
+      booking_end: 2.hours.from_now.to_unix,
+      user_email: PlaceOS::Model::Email.new(user_email),
+      user_name: "One",
+      booked_by_email: PlaceOS::Model::Email.new(user_email),
+      booked_by_name: "One",
+      tenant_id: tenant_id,
+      booked_by_id: "user-1",
+      history: [] of Booking::History,
+    ).save!
+
+    hydrated = Booking.hydrate_parents([Booking.find(booking.id)])
+    hydrated.map(&.id).should eq([booking.id])
+    JSON.parse(hydrated[0].to_json).as_h["linked_parent_booking"]?.try(&.raw).should be_nil
+  end
+
   it "excludes deleted recurring instances from expand_bookings" do
     tenant_id = Generator.tenant.id.not_nil!
     user_email = "steve@place.tech"
