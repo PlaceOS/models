@@ -41,9 +41,9 @@ module PlaceOS::Model
       authority = Generator.localhost_authority
       other = Generator.authority(domain: "http://default-#{UUID.random}.test").save!
 
-      first = Generator.signage_ai_provider(authority: authority, is_default: true).save!
-      elsewhere = Generator.signage_ai_provider(authority: other, is_default: true).save!
-      second = Generator.signage_ai_provider(authority: authority, is_default: true).save!
+      first = Generator.signage_ai_provider(name: "first", authority: authority, is_default: true).save!
+      elsewhere = Generator.signage_ai_provider(name: "elsewhere", authority: other, is_default: true).save!
+      second = Generator.signage_ai_provider(name: "second", authority: authority, is_default: true).save!
 
       SignageAIProvider.find!(first.id.as(UUID)).is_default.should be_false
       SignageAIProvider.find!(second.id.as(UUID)).is_default.should be_true
@@ -70,6 +70,17 @@ module PlaceOS::Model
       shared = Generator.signage_ai_provider(authority: nil).save!
 
       SignageAIProvider.default_for(authority.id.as(String)).try(&.id).should eq shared.id
+    end
+
+    it "stores the text model and renders it" do
+      row = Generator.signage_ai_provider(text_model: "gpt-5.4-mini").save!
+      found = SignageAIProvider.find!(row.id.as(UUID))
+      found.text_model.should eq "gpt-5.4-mini"
+      found.as_json[:text_model].should eq "gpt-5.4-mini"
+
+      bare = Generator.signage_ai_provider.save!
+      SignageAIProvider.find!(bare.id.as(UUID)).text_model.should be_nil
+      bare.as_json[:text_model].should be_nil
     end
 
     it "reads quotas" do
