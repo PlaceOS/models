@@ -1,3 +1,9 @@
+## v9.119.6 (2026-10-16)
+
+### Fix
+
+- **booking**: PROJ-1652 hydrate_parents with no parent ids ([#335](https://github.com/PlaceOS/models/pull/335))
+
 ## v9.119.5 (2026-10-14)
 
 ### Fix
