@@ -7,6 +7,7 @@ require "./api_key"
 require "./metadata"
 require "./email"
 require "./utilities/metadata_helper"
+require "./history"
 
 module PlaceOS::Model
   class User < ModelBase
@@ -14,6 +15,10 @@ module PlaceOS::Model
     include Utilities::MetadataHelper
 
     table :user
+
+    include History::Tracked
+    history_ignore :email_digest, :login_count, :last_login, :logged_out_at, :expires_at, :expires
+    history_redact :password_digest, :password, :access_token, :refresh_token
 
     # start_time: Start time of work hours. e.g. `7.5` being 7:30AM
     # end_time: End time of work hours. e.g. `18.5` being 6:30PM

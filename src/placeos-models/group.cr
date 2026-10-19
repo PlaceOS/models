@@ -4,10 +4,7 @@ require "uuid/json"
 require "./base/model"
 require "./authority"
 require "./permissions"
-# `history` defines `GroupHistory::Mixin`, which every group-subsystem
-# model pulls in via `include`. It must be required before any class that
-# does the include, so it goes first.
-require "./group/history"
+require "./history"
 
 module PlaceOS::Model
   # A node in the group tree for an authority. The tree represents the
@@ -112,7 +109,7 @@ module PlaceOS::Model
       end
     end
 
-    include GroupHistory::Mixin
+    include History::Tracked
 
     # This group's own features for `subsystem`, without inheritance.
     def features_for(subsystem : String) : Hash(String, JSON::Any)
@@ -582,19 +579,11 @@ module PlaceOS::Model
     end
 
     # --------------------------------------------------------------------
-    # GroupHistory hooks
+    # History
     # --------------------------------------------------------------------
 
-    protected def group_history_resource_type : String
-      "group"
-    end
-
-    protected def group_history_resource_id : String
+    def history_correlation_id : String?
       self.id.to_s
-    end
-
-    protected def group_history_group_id : UUID?
-      self.id
     end
   end
 end

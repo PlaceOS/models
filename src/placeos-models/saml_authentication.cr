@@ -1,6 +1,7 @@
 require "uri"
 require "json"
 require "./base/model"
+require "./history"
 
 module PlaceOS::Model
   # See: https://github.com/omniauth/omniauth-saml
@@ -8,6 +9,8 @@ module PlaceOS::Model
     include PlaceOS::Model::Timestamps
 
     table :adfs_strat
+
+    include History::Tracked
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
 

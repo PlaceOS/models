@@ -5,7 +5,7 @@ require "../base/model"
 require "../group"
 require "../permissions"
 require "../zone"
-require "./history"
+require "../history"
 
 module PlaceOS::Model
   # Junction table: a group's access to a zone, with a permission bitmask
@@ -31,7 +31,7 @@ module PlaceOS::Model
     validates :group_id, presence: true
     validates :zone_id, presence: true
 
-    include GroupHistory::Mixin
+    include History::Tracked
 
     def permission_flags : Permissions
       Permissions.new(self.permissions)
@@ -41,12 +41,8 @@ module PlaceOS::Model
       self.permissions = flags.to_i
     end
 
-    protected def group_history_resource_id : String
-      "#{self.group_id}:#{self.zone_id}"
-    end
-
-    protected def group_history_group_id : UUID?
-      self.group_id
+    def history_correlation_id : String?
+      self.group_id.to_s
     end
   end
 end

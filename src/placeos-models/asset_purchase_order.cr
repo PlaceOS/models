@@ -1,11 +1,14 @@
 require "./base/model"
 require "./asset"
+require "./history"
 
 module PlaceOS::Model
   class AssetPurchaseOrder < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :asset_purchase_order
+
+    include History::Tracked
 
     attribute purchase_order_number : String, sanitize: :text, es_type: "keyword"
     attribute invoice_number : String?, sanitize: :text

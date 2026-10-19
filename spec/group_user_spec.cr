@@ -3,7 +3,7 @@ require "./helper"
 module PlaceOS::Model
   describe GroupUser do
     Spec.before_each do
-      GroupHistory.clear
+      History.clear
       GroupInvitation.clear
       GroupZone.clear
       GroupUser.clear
@@ -57,17 +57,18 @@ module PlaceOS::Model
       GroupUser.where(user_id: user.id).to_a.should be_empty
     end
 
-    it "records history on create when acting_user is set" do
+    it "records history on create with the acting user" do
       group = Generator.group.save!
       user = Generator.user.save!
 
       gu = Generator.group_user(user: user, group: group)
-      gu.acting_user = user
+      gu.history_metadata = History::Metadata.new.with_user(user)
       gu.save!
 
-      histories = GroupHistory.where(resource_type: "group_user").to_a
+      histories = History.where(resource_type: "group_users").to_a
       histories.size.should eq 1
-      histories.first.group_id.should eq group.id
+      histories.first.correlation_id.should eq group.id.to_s
+      histories.first.user_id.should eq user.id
     end
 
     it "rejects a user and group from different authorities" do

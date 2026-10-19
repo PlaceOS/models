@@ -4,10 +4,14 @@ require "time"
 require "random/secure"
 require "./base/model"
 require "digest/md5"
+require "./history"
 
 module PlaceOS::Model
   class DoorkeeperApplication < ModelWithAutoKey
     table :oauth_applications
+
+    include History::Tracked
+    history_redact :secret
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute secret : String

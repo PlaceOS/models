@@ -6,12 +6,16 @@ require "./ldap_authentication"
 require "./oauth_authentication"
 require "./saml_authentication"
 require "./user"
+require "./history"
 
 module PlaceOS::Model
   class Authority < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :authority
+
+    include History::Tracked
+    history_redact :internals
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common

@@ -10,6 +10,7 @@ require "./email"
 require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
 require "./playlist"
+require "./history"
 
 module PlaceOS::Model
   class ControlSystem < ModelBase
@@ -19,6 +20,9 @@ module PlaceOS::Model
     include Playlist::Checker
 
     table :sys
+
+    include History::Tracked
+    history_ignore :signage_last_seen, :playlist_item_id, :version, :installed_ui_devices
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common

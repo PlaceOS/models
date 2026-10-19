@@ -57,6 +57,7 @@ module PlaceOS::Model
       self.approved_by_name = user.name
       self.approved_by_email = user.email
       self.approved = true
+      self.history_action = "approve"
     end
 
     # approved templates should not be edited in place, so drafts are
@@ -174,36 +175,11 @@ module PlaceOS::Model
     # History
     ###############################################################################################
 
-    before_save :record_template_history
+    include History::Tracked
 
-    # tracks which fields changed on updates (creates and draft edits are
-    # not recorded, history is captured when a draft is approved)
-    protected def record_template_history
-      return unless persisted?
-      return if draft?
-
-      changed_fields = [] of String
-      changed_fields << "name" if name_changed?
-      changed_fields << "description" if description_changed?
-      changed_fields << "tags" if tags_changed?
-      changed_fields << "background_item_id" if background_item_id_changed?
-      changed_fields << "layouts" if layouts_changed?
-      changed_fields << "full_screen_takeover" if full_screen_takeover_changed?
-      changed_fields << "merge" if merge_changed?
-      changed_fields << "approval_requested" if approval_requested_changed?
-      changed_fields << "approved" if approved_changed?
-      changed_fields << "live_template_id" if live_template_id_changed?
-
-      return if changed_fields.empty?
-
-      History.create!(
-        type: "template",
-        resource_id: self.id.to_s,
-        action: "updated",
-        changed_fields: changed_fields,
-      )
-    rescue ex
-      Log.error(exception: ex) { "failed to record signage template history for #{self.id}" }
+    # drafts are not recorded, history is captured when a draft is approved
+    protected def history_record_as(action : String) : String?
+      super unless draft?
     end
   end
 end

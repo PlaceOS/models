@@ -178,9 +178,13 @@ module PlaceOS::Model
     end
 
     describe "history recording" do
-      it "does not record history on create" do
-        Generator.signage_template.save!
-        History.count.should eq 0
+      it "records history on create" do
+        template = Generator.signage_template.save!
+        History.where(resource_type: "signage_template").count.should eq 1
+        history = template.change_history.to_a.first
+        history.action.should eq "create"
+        history.resource_type.should eq "signage_template"
+        history.diff["name"].should eq JSON::Any.new([JSON::Any.new(nil), JSON::Any.new(template.name)])
       end
 
       it "records changed fields on update" do
@@ -190,12 +194,13 @@ module PlaceOS::Model
         template.tags = ["new-tag"]
         template.save!
 
-        History.count.should eq 1
-        history = History.all.to_a.first
-        history.type.should eq "template"
+        History.where(resource_type: "signage_template").count.should eq 2
+        history = template.change_history.to_a.first
+        history.resource_type.should eq "signage_template"
         history.resource_id.should eq template.id.to_s
-        history.action.should eq "updated"
+        history.action.should eq "update"
         history.changed_fields.should eq ["name", "tags"]
+        history.diff["tags"].should eq JSON.parse(%([[], ["new-tag"]]))
       end
 
       it "persists and records merge changes" do
@@ -206,8 +211,8 @@ module PlaceOS::Model
         template.save!
 
         SignageTemplate.find!(template.id.as(UUID)).merge.should eq true
-        History.count.should eq 1
-        History.all.to_a.first.changed_fields.should eq ["merge"]
+        History.where(resource_type: "signage_template").count.should eq 2
+        template.change_history.to_a.first.changed_fields.should eq ["merge"]
       end
 
       it "records layout changes" do
@@ -216,14 +221,14 @@ module PlaceOS::Model
         template.layouts = [Generator.layout]
         template.save!
 
-        History.count.should eq 1
-        History.all.to_a.first.changed_fields.should eq ["layouts"]
+        History.where(resource_type: "signage_template").count.should eq 2
+        template.change_history.to_a.first.changed_fields.should eq ["layouts"]
       end
 
       it "does not record history when nothing changed" do
         template = Generator.signage_template.save!
         template.save!
-        History.count.should eq 0
+        History.where(resource_type: "signage_template").count.should eq 1
       end
     end
 
@@ -250,8 +255,11 @@ module PlaceOS::Model
         found.approved_by_name.should eq user.name
         found.approved_by_email.should eq user.email
 
-        History.count.should eq 1
-        History.all.to_a.first.changed_fields.should eq ["approved"]
+        History.where(resource_type: "signage_template").count.should eq 2
+        history = template.change_history.to_a.first
+        history.action.should eq "approve"
+        history.changed_fields.should contain "approved"
+        history.snapshot.not_nil!["approved_by_id"].should eq user.id
       end
 
       it "removes draft rows when the approved parent is deleted" do
@@ -287,8 +295,9 @@ module PlaceOS::Model
         draft.name = "draft edit"
         draft.layouts = [Generator.layout]
         draft.save!
+        draft.destroy
 
-        History.count.should eq 0
+        History.where(resource_id: draft.id.to_s).count.should eq 0
       end
 
       it "approves a draft onto the live template" do
@@ -318,9 +327,13 @@ module PlaceOS::Model
         # the draft is removed once applied
         SignageTemplate.find?(draft.id.as(UUID)).should be_nil
 
-        # the promotion is recorded against the live template
-        History.count.should eq 1
-        History.all.to_a.first.changed_fields.should contain "approved"
+        # the promotion is recorded against the live template, the draft isn't recorded
+        History.where(resource_id: draft.id.to_s).count.should eq 0
+        history = live.change_history.to_a.first
+        history.action.should eq "approve"
+        history.changed_fields.should contain "layouts"
+        history.user_id.should be_nil
+        history.snapshot.not_nil!["merge"].should eq true
       end
 
       it "raises when approving a template that is not a draft" do
@@ -339,8 +352,8 @@ module PlaceOS::Model
         template.requested_by_id = Generator.user.save!.id
         template.save!
 
-        History.count.should eq 1
-        History.all.to_a.first.changed_fields.should eq ["approval_requested"]
+        History.where(resource_type: "signage_template").count.should eq 2
+        template.change_history.to_a.first.changed_fields.should eq ["approval_requested", "requested_by_id"]
       end
     end
 

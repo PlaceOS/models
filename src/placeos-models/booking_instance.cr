@@ -1,10 +1,23 @@
 require "json"
 require "./base/model"
 require "./booking"
+require "./history"
 
 module PlaceOS::Model
   class BookingInstance < ModelWithAutoKey
     table :booking_instances
+
+    include History::Tracked
+    history_ignore :history
+
+    # an occurrence of the booking, recorded against it
+    def history_resource_id : String
+      "#{id}:#{instance_start}"
+    end
+
+    def history_correlation_id : String?
+      id.to_s
+    end
 
     alias History = Booking::History
 

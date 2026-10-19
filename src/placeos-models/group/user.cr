@@ -5,7 +5,7 @@ require "../base/model"
 require "../group"
 require "../permissions"
 require "../user"
-require "./history"
+require "../history"
 
 module PlaceOS::Model
   # Junction table: a user's membership in a group, with a permission
@@ -45,7 +45,7 @@ module PlaceOS::Model
       this.validation_error(:user_id, "must belong to the same authority as the group")
     }
 
-    include GroupHistory::Mixin
+    include History::Tracked
 
     def permission_flags : Permissions
       Permissions.new(self.permissions || 0)
@@ -55,12 +55,8 @@ module PlaceOS::Model
       self.permissions = flags.to_i
     end
 
-    protected def group_history_resource_id : String
-      "#{self.user_id}:#{self.group_id}"
-    end
-
-    protected def group_history_group_id : UUID?
-      self.group_id
+    def history_correlation_id : String?
+      self.group_id.to_s
     end
   end
 end

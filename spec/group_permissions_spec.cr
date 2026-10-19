@@ -119,7 +119,7 @@ module PlaceOS::Model
   # - effective_permissions / zone_accessible? / accessible_zone_ids
   describe Group do
     Spec.before_each do
-      GroupHistory.clear
+      History.clear
       GroupInvitation.clear
       GroupZone.clear
       GroupUser.clear

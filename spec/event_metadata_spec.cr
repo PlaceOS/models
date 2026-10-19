@@ -63,10 +63,11 @@ module PlaceOS::Model
 
         histories = History.all.to_a
         histories.size.should eq 1
-        histories.first.type.should eq "event"
+        histories.first.resource_type.should eq "event_metadatas"
         histories.first.resource_id.should eq event.event_id
-        histories.first.action.should eq "updated"
-        histories.first.changed_fields.should contain "setup_time"
+        histories.first.action.should eq "update"
+        histories.first.changed_fields.should eq ["setup_time"]
+        histories.first.diff["setup_time"].should eq JSON.parse("[0, 300]")
       end
 
       it "records multiple changed fields" do
@@ -106,6 +107,8 @@ module PlaceOS::Model
         histories.size.should eq 1
         histories.first.changed_fields.should contain "ext_data.catering"
         histories.first.changed_fields.should contain "ext_data.notes"
+        histories.first.changed_fields.should_not contain "ext_data"
+        histories.first.diff["ext_data"][1].should eq JSON.parse(%({"catering": true, "notes": "test"}))
       end
 
       it "does not record history when no fields changed" do
@@ -120,6 +123,19 @@ module PlaceOS::Model
         event.save!
 
         History.all.to_a.size.should eq 0
+      end
+
+      it "records deletes with a snapshot" do
+        tenant = get_tenant
+        event = Generator.event_metadata(tenant.id, 5.minutes.from_now, 10.minutes.from_now)
+        event.save!
+        event.destroy
+
+        histories = History.all.to_a
+        histories.size.should eq 1
+        histories.first.action.should eq "delete"
+        histories.first.resource_id.should eq event.event_id
+        histories.first.snapshot.not_nil!["event_id"].should eq event.event_id
       end
     end
   end

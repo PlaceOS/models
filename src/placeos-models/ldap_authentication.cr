@@ -1,6 +1,7 @@
 require "uri"
 require "json"
 require "./base/model"
+require "./history"
 
 module PlaceOS::Model
   # see: https://github.com/omniauth/omniauth-ldap
@@ -8,6 +9,9 @@ module PlaceOS::Model
     include PlaceOS::Model::Timestamps
 
     table :ldap_strat
+
+    include History::Tracked
+    history_redact :password
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute port : Int32 = 636

@@ -3,12 +3,15 @@ require "time"
 
 require "./base/model"
 require "./trigger/*"
+require "./history"
 
 module PlaceOS::Model
   class Trigger < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :trigger
+
+    include History::Tracked
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common
