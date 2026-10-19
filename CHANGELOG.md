@@ -1,3 +1,9 @@
+## v9.120.0 (2026-10-19)
+
+### Feat
+
+- **models**: support AI map edit jobs (PPT-2832) ([#334](https://github.com/PlaceOS/models/pull/334))
+
 ## v9.119.6 (2026-10-16)
 
 ### Fix
