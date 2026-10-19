@@ -8,10 +8,11 @@ require "./signage_ai_provider"
 require "./user"
 
 module PlaceOS::Model
-  # One image generation or edit request.
+  # One image generation or edit request, or one map edit request.
   #
   # Candidates are written into `result["images"]` one at a time by the runner as
-  # each vendor call finishes. Every write bumps `version`, which is what the long
+  # each vendor call finishes. A map edit is a single vendor call whose operations
+  # land in `result["ops"]`. Every write bumps `version`, which is what the long
   # polling endpoint compares against so a client can tell what it has already seen
   # (`updated_at` only has whole second resolution and cannot order two writes in
   # the same second).
@@ -51,9 +52,19 @@ module PlaceOS::Model
     enum Kind
       Generate
       Edit
+      MapEdit
 
       def to_s : String
-        super.downcase
+        super.underscore
+      end
+
+      # the kinds that produce images
+      def image? : Bool
+        generate? || edit?
+      end
+
+      def self.image : Array(Kind)
+        [Generate, Edit]
       end
     end
 
@@ -213,31 +224,59 @@ module PlaceOS::Model
     end
 
     # Candidates requested by a user since a point in time, for the per user quota.
+    # `kind` narrows the sum to one kind or a list of kinds; nil sums every kind.
     #
     # Failed jobs count. Most of them reached the vendor and were billed, and
     # exempting them meant a caller whose requests kept failing had no limit at
     # all, which is the one case where a limit matters most.
-    def self.sum_candidates(user_id : String, since : Time) : Int32
+    def self.sum_candidates(user_id : String, since : Time, kind : Kind | Array(Kind) | Nil = nil) : Int32
+      filter, labels = kind_filter(kind, 3)
+      args = [user_id, since] of ::PgORM::Value
+      args.concat(labels)
       ::PgORM::Database.connection do |db|
-        db.query_one(<<-SQL, user_id, since, as: Int64)
+        db.query_one(<<-SQL, args: args, as: Int64)
           SELECT COALESCE(SUM(candidates), 0)::bigint
           FROM signage_ai_jobs
           WHERE user_id = $1
             AND created_at >= $2
+            #{filter}
         SQL
       end.to_i32
     end
 
     # Candidates requested across a domain since a point in time, for the domain quota.
-    def self.sum_candidates_for_authority(authority_id : String, since : Time) : Int32
+    def self.sum_candidates_for_authority(authority_id : String, since : Time, kind : Kind | Array(Kind) | Nil = nil) : Int32
+      filter, labels = kind_filter(kind, 3)
+      args = [authority_id, since] of ::PgORM::Value
+      args.concat(labels)
       ::PgORM::Database.connection do |db|
-        db.query_one(<<-SQL, authority_id, since, as: Int64)
+        db.query_one(<<-SQL, args: args, as: Int64)
           SELECT COALESCE(SUM(candidates), 0)::bigint
           FROM signage_ai_jobs
           WHERE authority_id = $1
             AND created_at >= $2
+            #{filter}
         SQL
       end.to_i32
+    end
+
+    # the label `PGEnumConverter` stores for a kind, for raw SQL
+    def self.kind_label(kind : Kind) : String
+      kind.to_s.underscore.upcase
+    end
+
+    # An `AND kind IN (...)` clause with its bound labels, placeholders numbered
+    # from `first`; empty for nil.
+    private def self.kind_filter(kind : Kind | Array(Kind) | Nil, first : Int32) : Tuple(String, Array(::PgORM::Value))
+      kinds = case kind
+              in Kind        then [kind]
+              in Array(Kind) then kind
+              in Nil         then [] of Kind
+              end
+      return {"", [] of ::PgORM::Value} if kinds.empty?
+
+      placeholders = kinds.map_with_index { |_, index| "$#{first + index}" }.join(", ")
+      {"AND kind IN (#{placeholders})", kinds.map { |entry| kind_label(entry).as(::PgORM::Value) }}
     end
 
     # Housekeeping, run as each new job is created. Does nothing unless an
@@ -313,17 +352,21 @@ module PlaceOS::Model
       where("state = 'RUNNING' AND started_at < ?", older_than).to_a
     end
 
-    # Usage per provider and model, for the Backoffice usage tab.
-    record UsageRow, provider : String, model : String, jobs : Int64, candidates : Int64,
+    # Usage per kind, provider and model, for the Backoffice usage tab.
+    record UsageRow, kind : String, provider : String, model : String, jobs : Int64, candidates : Int64,
       images_produced : Int64, cost_units : Float64 do
       include JSON::Serializable
     end
 
-    def self.usage(authority_id : String, from : Time, to : Time) : Array(UsageRow)
+    def self.usage(authority_id : String, from : Time, to : Time, kind : Kind | Array(Kind) | Nil = nil) : Array(UsageRow)
       rows = [] of UsageRow
+      filter, labels = kind_filter(kind, 4)
+      args = [authority_id, from, to] of ::PgORM::Value
+      args.concat(labels)
       ::PgORM::Database.connection do |db|
-        db.query(<<-SQL, authority_id, from, to) do |rs|
+        db.query(<<-SQL, args: args) do |rs|
           SELECT
+            LOWER(kind) AS kind,
             COALESCE(provider_type, 'unknown') AS provider,
             COALESCE(model, 'unknown') AS model,
             COUNT(*)::bigint AS jobs,
@@ -331,12 +374,13 @@ module PlaceOS::Model
             COALESCE(SUM(images_produced), 0)::bigint AS images_produced,
             COALESCE(SUM(cost_units), 0)::double precision AS cost_units
           FROM signage_ai_jobs
-          WHERE authority_id = $1 AND created_at >= $2 AND created_at < $3
-          GROUP BY 1, 2
-          ORDER BY 1, 2
+          WHERE authority_id = $1 AND created_at >= $2 AND created_at < $3 #{filter}
+          GROUP BY 1, 2, 3
+          ORDER BY 1, 2, 3
         SQL
           rs.each do
             rows << UsageRow.new(
+              kind: rs.read(String),
               provider: rs.read(String),
               model: rs.read(String),
               jobs: rs.read(Int64),
