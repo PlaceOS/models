@@ -6,7 +6,7 @@ require "uuid/json"
 require "../base/model"
 require "../group"
 require "../permissions"
-require "./history"
+require "../history"
 
 module PlaceOS::Model
   # Grants a user who is not yet in the system (or external) access to a
@@ -43,7 +43,10 @@ module PlaceOS::Model
 
     before_save :normalise_email
 
-    include GroupHistory::Mixin
+    include History::Tracked
+
+    # the digest is sensitive even post-hashing
+    history_redact :secret_digest
 
     # Build a fresh invitation, generating a cryptographically strong
     # secret. The returned instance exposes `.plaintext_secret` *only until
@@ -103,9 +106,10 @@ module PlaceOS::Model
       existing = GroupUser.where(user_id: user.id, group_id: self.group_id).first?
       gu = existing || GroupUser.new(user_id: user.id.not_nil!, group_id: self.group_id)
       gu.permissions = self.permissions
-      gu.acting_user = user
+      metadata = (History.current_metadata || History::Metadata.new).with_user(user)
+      gu.history_metadata = metadata
       gu.save!
-      self.acting_user = user
+      self.history_metadata = metadata
       destroy
       gu
     end
@@ -114,18 +118,8 @@ module PlaceOS::Model
       self.email = self.email.strip.downcase
     end
 
-    protected def group_history_resource_id : String
-      self.id.to_s
-    end
-
-    protected def group_history_group_id : UUID?
-      self.group_id
-    end
-
-    # Treat the SHA256 digest as sensitive even post-hashing — keep it
-    # out of the audit trail's changed_fields list.
-    protected def group_history_changed_fields : Array(String)
-      captured_changed_fields.reject("secret_digest")
+    def history_correlation_id : String?
+      self.group_id.to_s
     end
   end
 end

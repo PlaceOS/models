@@ -7,6 +7,7 @@ require "./api_key"
 require "./metadata"
 require "./email"
 require "./utilities/metadata_helper"
+require "./history"
 
 module PlaceOS::Model
   class User < ModelBase
@@ -14,6 +15,10 @@ module PlaceOS::Model
     include Utilities::MetadataHelper
 
     table :user
+
+    include History::Tracked
+    history_ignore :email_digest, :login_count, :last_login, :logged_out_at, :expires_at, :expires
+    history_redact :password_digest, :password, :access_token, :refresh_token
 
     # start_time: Start time of work hours. e.g. `7.5` being 7:30AM
     # end_time: End time of work hours. e.g. `18.5` being 6:30PM
@@ -136,21 +141,12 @@ module PlaceOS::Model
     before_save :build_name
     before_save :write_email_fields
 
-    private getter admin_destroy_lock : ::PgORM::PgAdvisoryLock do
-      ::PgORM::PgAdvisoryLock.new("admin_destroy_lock")
-    end
-
-    # :inherit:
-    def destroy
-      return super unless self.sys_admin
-      # Locking to protect against concurrent deletes
-      admin_destroy_lock.synchronize { super }
-    end
-
     # Prevent the system from entering a state with no admin
     protected def ensure_admin_remains
       return unless self.sys_admin
 
+      # Serialise admin deletes, the lock is held until the destroy transaction completes
+      ::PgORM::Database.with_connection &.exec("SELECT pg_advisory_xact_lock(hashtext('admin_destroy_lock'))")
       if User.where({sys_admin: true}).count == 1
         raise Model::Error.new("At least one admin must remain")
       end

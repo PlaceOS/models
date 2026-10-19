@@ -2,12 +2,16 @@ require "../base/model"
 require "../playlist"
 require "../upload"
 require "uri"
+require "../history"
 
 module PlaceOS::Model
   class Playlist::Item < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :playlist_items
+
+    include History::Tracked
+    history_ignore :play_count
 
     enum MediaType
       Image

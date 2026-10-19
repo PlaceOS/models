@@ -8,6 +8,7 @@ require "./zone"
 # submodels (item, revision, checker) are loaded via `require "./playlist/*"`
 # at the bottom of this file.
 require "./playlist/schedule"
+require "./history"
 
 module PlaceOS::Model
   class Playlist < ModelBase
@@ -31,6 +32,9 @@ module PlaceOS::Model
     end
 
     table :playlists
+
+    include History::Tracked
+    history_ignore :play_count, :play_through_count
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common

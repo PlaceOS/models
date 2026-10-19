@@ -6,7 +6,7 @@ dependencies:
   # Data validation library
   active-model:
     github: spider-gazelle/active-model
-    version: ~> 4.4
+    version: ~> 4.7
 
   # Data validation library
   CrystalEmail:
@@ -41,7 +41,7 @@ dependencies:
   # ORM for Postgres built on active-model
   pg-orm:
     github: spider-gazelle/pg-orm
-    version: ">= 2.4.1"
+    version: ">= 2.5.1"
 
   # PlaceOS calendar for Tenant model
   place_calendar:

@@ -1,4 +1,5 @@
 require "../base/model"
+require "../history"
 require "./item"
 require "./item_schedule"
 
@@ -51,6 +52,21 @@ module PlaceOS::Model
       self.approved_by_name = user.name
       self.approved_by_email = user.email
       self.approved = true
+      self.history_action = "approve"
+    end
+
+    # History
+    ###############################################################################################
+
+    include History::Tracked
+
+    # only approvals are recorded, the approved revision is what's displayed
+    protected def history_record_as(action : String) : String?
+      history_action
+    end
+
+    def history_correlation_id : String?
+      playlist_id
     end
 
     # finds the latest approved playlist revision for each of the playlist ids provided

@@ -2,6 +2,7 @@ require "uri"
 require "json"
 
 require "./base/model"
+require "./history"
 
 module PlaceOS::Model
   # See: https://github.com/omniauth/omniauth-oauth2
@@ -9,6 +10,9 @@ module PlaceOS::Model
     include PlaceOS::Model::Timestamps
 
     table :oauth_strat
+
+    include History::Tracked
+    history_redact :client_secret
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
 

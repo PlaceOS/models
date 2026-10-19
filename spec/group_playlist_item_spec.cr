@@ -3,7 +3,7 @@ require "./helper"
 module PlaceOS::Model
   describe GroupPlaylistItem do
     Spec.before_each do
-      GroupHistory.clear
+      History.clear
       GroupInvitation.clear
       GroupZone.clear
       GroupUser.clear

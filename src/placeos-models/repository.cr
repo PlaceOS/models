@@ -2,6 +2,7 @@ require "time"
 
 require "./base/model"
 require "./utilities/encryption"
+require "./history"
 
 module PlaceOS::Model
   # Pins engine's driver sources to a specific repository state.
@@ -10,6 +11,10 @@ module PlaceOS::Model
     include PlaceOS::Model::Timestamps
 
     table :repo
+
+    include History::Tracked
+    history_ignore :deployed_commit_hash, :has_runtime_error, :error_message
+    history_redact :password
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common

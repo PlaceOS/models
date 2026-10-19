@@ -6,6 +6,7 @@ require "./driver"
 require "./edge"
 require "./settings"
 require "./utilities/settings_helper"
+require "./history"
 
 module PlaceOS::Model
   class Module < ModelBase
@@ -13,6 +14,9 @@ module PlaceOS::Model
     include Utilities::SettingsHelper
 
     table :mod
+
+    include History::Tracked
+    history_ignore :connected, :has_runtime_error, :error_timestamp
 
     # Runtime error reporting and save timestamps do not require a driver reload.
     changefeed_ignore_updates :updated_at, :has_runtime_error, :error_timestamp

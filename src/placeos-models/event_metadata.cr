@@ -1,5 +1,6 @@
 require "json"
 require "./base/model"
+require "./history"
 require "./utilities/jsonb_query_helper"
 
 module PlaceOS::Model
@@ -171,49 +172,33 @@ module PlaceOS::Model
       end
     end
 
-    before_save :record_metadata_history
+    # History
+    ###############################################################################################
 
-    protected def record_metadata_history
-      # Skip if this is a new record being created - event creation is tracked via notify_change
-      return unless persisted?
+    include History::Tracked
 
-      changed_fields = [] of String
+    # event creation is tracked via notify_change
+    protected def history_record_as(action : String) : String?
+      super unless action == "create" && history_action.nil?
+    end
 
-      # Check each trackable field
-      changed_fields << "system_id" if system_id_changed?
-      changed_fields << "event_start" if event_start_changed?
-      changed_fields << "event_end" if event_end_changed?
-      changed_fields << "cancelled" if cancelled_changed?
-      changed_fields << "setup_time" if setup_time_changed?
-      changed_fields << "breakdown_time" if breakdown_time_changed?
-      changed_fields << "setup_event_id" if setup_event_id_changed?
-      changed_fields << "breakdown_event_id" if breakdown_event_id_changed?
-      changed_fields << "permission" if permission_changed?
+    # ext_data changes are listed per key, i.e. `ext_data.catering`
+    protected def history_changed_fields(diff : Hash(String, JSON::Any)) : Array(String)
+      fields = diff.keys
+      return fields unless change = diff["ext_data"]?
 
-      # For ext_data, peek one level to see which keys changed
-      if ext_data_changed?
-        current = ext_data.try(&.as_h?) || {} of String => JSON::Any
-        previous = ext_data_was.try(&.as_h?) || {} of String => JSON::Any
-
-        # Find keys that were added, removed, or modified
-        all_keys = (current.keys + previous.keys).uniq
-        all_keys.each do |key|
-          if current[key]? != previous[key]?
-            changed_fields << "ext_data.#{key}"
-          end
-        end
+      previous = change[0].as_h? || {} of String => JSON::Any
+      current = change[1].as_h? || {} of String => JSON::Any
+      fields.delete("ext_data")
+      (previous.keys | current.keys).each do |key|
+        fields << "ext_data.#{key}" if previous[key]? != current[key]?
       end
+      fields
+    end
 
-      return if changed_fields.empty?
-
-      History.create!(
-        type: "event",
-        resource_id: event_id,
-        action: "updated",
-        changed_fields: changed_fields
-      )
-    rescue ex
-      Log.error(exception: ex) { "failed to record event metadata history for #{event_id}" }
+    # recorded against the calendar event
+    def history_resource_id : String
+      event_id
     end
 
     def self.migrate_recurring_metadata(system_id : String, recurrance : PlaceCalendar::Event, parent_metadata : EventMetadata)

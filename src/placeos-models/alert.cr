@@ -1,12 +1,15 @@
 require "json"
 require "./base/model"
 require "./trigger/conditions"
+require "./history"
 
 module PlaceOS::Model
   class Alert < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :alert
+
+    include History::Tracked
 
     enum Severity
       LOW

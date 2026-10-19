@@ -6,6 +6,7 @@ require "./utilities/settings_helper"
 require "./utilities/metadata_helper"
 require "./converter/time_location"
 require "./playlist"
+require "./history"
 
 module PlaceOS::Model
   class Zone < ModelBase
@@ -15,6 +16,8 @@ module PlaceOS::Model
     include Playlist::Checker
 
     table :zone
+
+    include History::Tracked
 
     # Descriptive and signage fields do not change running driver configuration.
     changefeed_ignore_updates :name, :description, :display_name, :playlists,

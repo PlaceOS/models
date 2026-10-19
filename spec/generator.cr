@@ -963,16 +963,20 @@ module PlaceOS::Model
     end
 
     def self.history(
-      type : String = "zone",
+      resource_type : String = "zone",
       resource_id : String = "zone-#{RANDOM.hex(4)}",
       action : String = "update",
-      changed_fields : Array(String) = ["name", "description"],
+      correlation_id : String? = nil,
+      created_at : Time = Time.utc,
     )
       History.new(
-        type: type,
+        resource_type: resource_type,
         resource_id: resource_id,
         action: action,
-        changed_fields: changed_fields
+        correlation_id: correlation_id,
+        changed_fields: ["name"],
+        diff: JSON.parse(%({"name": ["old", "new"]})),
+        created_at: created_at,
       )
     end
 
@@ -1063,27 +1067,6 @@ module PlaceOS::Model
         email: email || Faker::Internet.email,
         permissions: permissions,
         expires_at: expires_at,
-      )
-    end
-
-    def self.group_history(
-      group_id : UUID? = nil,
-      user : User? = nil,
-      action : String = "update",
-      resource_type : String = "group",
-      resource_id : String? = nil,
-      changed_fields : Array(String) = ["name"],
-    )
-      actor_email = user.try(&.email.to_s) || Faker::Internet.email
-      actor_id = user.try(&.id)
-      GroupHistory.new(
-        group_id: group_id,
-        user_id: actor_id,
-        email: actor_email,
-        action: action,
-        resource_type: resource_type,
-        resource_id: resource_id || "res-#{RANDOM.hex(4)}",
-        changed_fields: changed_fields,
       )
     end
 

@@ -7,7 +7,7 @@ end
 module PlaceOS::Model
   describe "Group features" do
     Spec.before_each do
-      GroupHistory.clear
+      History.clear
       GroupInvitation.clear
       GroupZone.clear
       GroupUser.clear
@@ -97,11 +97,11 @@ module PlaceOS::Model
         actor = Generator.user(authority: authority).save!
         group = Generator.group(authority: authority, subsystems: ["signage"]).save!
 
-        group.acting_user = actor
+        group.history_metadata = History::Metadata.new.with_user(actor)
         group.features = feature_json(%({"signage": {"ai": true}}))
         group.save!
 
-        entry = GroupHistory.where(resource_type: "group", resource_id: group.id.to_s, action: "update").to_a.first
+        entry = History.where(resource_type: "groups", resource_id: group.id.to_s, action: "update").to_a.first
         entry.changed_fields.should contain("features")
       end
 

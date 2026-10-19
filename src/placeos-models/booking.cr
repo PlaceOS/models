@@ -5,10 +5,19 @@ require "./attendee"
 require "./tenant"
 require "./utilities/jsonb_query_helper"
 require "./email"
+require "./history"
 
 module PlaceOS::Model
   class Booking < ModelWithAutoKey
     table :bookings
+
+    include History::Tracked
+    history_ignore :history, :last_changed, :email_digest, :booked_by_email_digest
+
+    # linked bookings are recorded against their parent
+    def history_correlation_id : String?
+      parent_id.try(&.to_s)
+    end
 
     record History, state : State, time : Int64, source : String? = nil do
       include JSON::Serializable

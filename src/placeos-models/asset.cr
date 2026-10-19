@@ -1,12 +1,15 @@
 require "./base/model"
 require "./asset_type"
 require "./asset_purchase_order"
+require "./history"
 
 module PlaceOS::Model
   class Asset < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :asset
+
+    include History::Tracked
 
     attribute identifier : String?, es_type: "keyword"
     attribute serial_number : String?

@@ -4,6 +4,7 @@ require "./utilities/settings_helper"
 
 require "./repository"
 require "./settings"
+require "./history"
 
 module PlaceOS::Model
   class Driver < ModelBase
@@ -11,6 +12,9 @@ module PlaceOS::Model
     include Utilities::SettingsHelper
 
     table :driver
+
+    include History::Tracked
+    history_ignore :compilation_output, :update_available, :update_info
 
     # Driver metadata and build progress do not change running module configuration.
     changefeed_ignore_updates :name, :description, :update_available, :update_info,

@@ -369,7 +369,7 @@ module PlaceOS::Model
 
     describe "#subsystem_access" do
       Spec.before_each do
-        GroupHistory.clear
+        History.clear
         GroupInvitation.clear
         GroupZone.clear
         GroupUser.clear

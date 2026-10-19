@@ -10,7 +10,7 @@ module PlaceOS::Model
   # UUID). Same M:N shape as `GroupPlaylistItem` — allows templates to be
   # shared with groups so they can manage their own templates.
   #
-  # Presence-only — no per-row permission bitmask, no GroupHistory audit.
+  # Presence-only — no per-row permission bitmask, no change history.
   # A user's capability on a linked template comes from their
   # `GroupUser.permissions` within the group.
   #

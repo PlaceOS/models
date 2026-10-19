@@ -2,6 +2,7 @@ require "random"
 require "time"
 
 require "./base/model"
+require "./history"
 
 module PlaceOS::Model
   class TriggerInstance < ModelBase
@@ -9,6 +10,14 @@ module PlaceOS::Model
     include Playlist::Checker
 
     table :trig
+
+    include History::Tracked
+    history_ignore :trigger_count, :triggered
+    history_redact :webhook_secret
+
+    def history_correlation_id : String?
+      control_system_id
+    end
 
     attribute enabled : Bool = true
     attribute triggered : Bool = false

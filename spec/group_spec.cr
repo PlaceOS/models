@@ -3,7 +3,7 @@ require "./helper"
 module PlaceOS::Model
   describe Group do
     Spec.before_each do
-      GroupHistory.clear
+      History.clear
       GroupInvitation.clear
       GroupZone.clear
       GroupUser.clear
@@ -116,22 +116,22 @@ module PlaceOS::Model
       Group.find?(group.id.not_nil!).should be_nil
     end
 
-    it "records history on create/update/delete when acting_user is set" do
+    it "records history on create/update/delete with the acting user" do
       authority = Generator.authority.save!
       actor = Generator.user(authority: authority).save!
 
       group = Generator.group(authority: authority)
-      group.acting_user = actor
+      group.history_metadata = History::Metadata.new.with_user(actor)
       group.save!
 
-      group.acting_user = actor
+      group.history_metadata = History::Metadata.new.with_user(actor)
       group.name = "renamed"
       group.save!
 
-      group.acting_user = actor
+      group.history_metadata = History::Metadata.new.with_user(actor)
       group.destroy
 
-      entries = GroupHistory.where(resource_type: "group", resource_id: group.id.to_s).to_a
+      entries = History.where(resource_type: "groups", resource_id: group.id.to_s).to_a
       actions = entries.map(&.action).sort!
       actions.should eq ["create", "delete", "update"]
     end

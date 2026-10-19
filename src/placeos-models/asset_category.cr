@@ -1,11 +1,14 @@
 require "./base/model"
 require "./asset_type"
+require "./history"
 
 module PlaceOS::Model
   class AssetCategory < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :asset_category
+
+    include History::Tracked
 
     # i.e. a tablet
     attribute name : String, sanitize: :text, es_subfield: "keyword"

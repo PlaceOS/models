@@ -10,8 +10,8 @@ module PlaceOS::Model
   # (authority-scoped, legacy TEXT PK). Lets groups co-own / share
   # playlists with each other within the same authority.
   #
-  # Presence-only — no per-row permission bitmask, no GroupHistory
-  # audit. A user's capability on a linked playlist comes from their
+  # Presence-only — no per-row permission bitmask, no change
+  # history. A user's capability on a linked playlist comes from their
   # `GroupUser.permissions` within the group.
   #
   # Both sides must share an authority — enforced at the model layer

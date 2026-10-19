@@ -11,8 +11,8 @@ module PlaceOS::Model
   # as `GroupPlaylist` but against individual media / plugin / webpage
   # items.
   #
-  # Presence-only — no per-row permission bitmask, no GroupHistory
-  # audit. A user's capability on a linked item comes from their
+  # Presence-only — no per-row permission bitmask, no change
+  # history. A user's capability on a linked item comes from their
   # `GroupUser.permissions` within the group.
   #
   # Both sides must share an authority — enforced here at the model

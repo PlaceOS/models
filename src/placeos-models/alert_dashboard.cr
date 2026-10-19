@@ -1,11 +1,14 @@
 require "json"
 require "./base/model"
+require "./history"
 
 module PlaceOS::Model
   class AlertDashboard < ModelBase
     include PlaceOS::Model::Timestamps
 
     table :alert_dashboard
+
+    include History::Tracked
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common
