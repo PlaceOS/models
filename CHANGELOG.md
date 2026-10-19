@@ -1,3 +1,9 @@
+## v9.121.0 (2026-10-19)
+
+### Feat
+
+- **history**: unified change history ([#337](https://github.com/PlaceOS/models/pull/337))
+
 ## v9.120.0 (2026-10-19)
 
 ### Feat
