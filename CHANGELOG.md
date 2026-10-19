@@ -1,3 +1,9 @@
+## v9.122.0 (2026-10-19)
+
+### Feat
+
+- **history**: lazily built metadata provider ([#338](https://github.com/PlaceOS/models/pull/338))
+
 ## v9.121.0 (2026-10-19)
 
 ### Feat
