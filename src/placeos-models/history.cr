@@ -89,18 +89,28 @@ module PlaceOS::Model
       end
     end
 
-    @@fiber_metadata = {} of UInt64 => Metadata
+    # Builds metadata on demand, see `with_metadata`
+    alias MetadataProvider = Proc(Metadata)
+
+    @@fiber_metadata = {} of UInt64 => Metadata | MetadataProvider
+    @@fiber_metadata_lock = Mutex.new
 
     # Metadata of the current fiber, see `with_metadata`
     def self.current_metadata : Metadata?
-      @@fiber_metadata[Fiber.current.object_id]?
+      case value = @@fiber_metadata_lock.synchronize { @@fiber_metadata[Fiber.current.object_id]? }
+      in Metadata         then value
+      in MetadataProvider then value.call
+      in Nil              then nil
+      end
     end
 
     # Attributes changes made by the block, including those of cascading
-    # callbacks, to `metadata`
-    def self.with_metadata(metadata : Metadata?, &)
+    # callbacks, to `metadata`. A `MetadataProvider` is only called when a
+    # change is recorded, so it can depend on state set within the block, such
+    # as the user once a request has been authenticated.
+    def self.with_metadata(metadata : Metadata | MetadataProvider | Nil, &)
       fiber_id = Fiber.current.object_id
-      previous = @@fiber_metadata[fiber_id]?
+      previous = @@fiber_metadata_lock.synchronize { @@fiber_metadata[fiber_id]? }
       set_fiber_metadata(fiber_id, metadata)
       begin
         yield
@@ -109,11 +119,13 @@ module PlaceOS::Model
       end
     end
 
-    private def self.set_fiber_metadata(fiber_id : UInt64, metadata : Metadata?) : Nil
-      if metadata
-        @@fiber_metadata[fiber_id] = metadata
-      else
-        @@fiber_metadata.delete(fiber_id)
+    private def self.set_fiber_metadata(fiber_id : UInt64, metadata : Metadata | MetadataProvider | Nil) : Nil
+      @@fiber_metadata_lock.synchronize do
+        if metadata
+          @@fiber_metadata[fiber_id] = metadata
+        else
+          @@fiber_metadata.delete(fiber_id)
+        end
       end
     end
 

@@ -214,6 +214,29 @@ module PlaceOS::Model
           own_zone.change_history.to_a.first.metadata.app_name.should eq "own"
         end
 
+        it "builds metadata from a provider only when a change is recorded" do
+          calls = 0
+          app_name = "before"
+          provider = History::MetadataProvider.new do
+            calls += 1
+            History::Metadata.new(app_name: app_name)
+          end
+
+          zone = Generator.zone
+          History.with_metadata(provider) do
+            History.with_metadata(History::Metadata.new(app_name: "inner")) { }
+            calls.should eq 0
+
+            app_name = "after"
+            zone.save!
+            Zone.find!(zone.id.as(String))
+          end
+          History.current_metadata.should be_nil
+
+          calls.should eq 1
+          zone.change_history.to_a.first.metadata.app_name.should eq "after"
+        end
+
         it "records changes without metadata" do
           zone = Generator.zone.save!
           entry = zone.change_history.to_a.first
