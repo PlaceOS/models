@@ -1,3 +1,9 @@
+## v9.122.1 (2026-10-20)
+
+### Fix
+
+- **history**: keep existing event and template history ([#339](https://github.com/PlaceOS/models/pull/339))
+
 ## v9.122.0 (2026-10-19)
 
 ### Feat
