@@ -2,10 +2,10 @@
 -- SQL in section 'Up' is executed when this migration is applied
 
 -- Unified change history for tracked models (see `History::Tracked`).
--- Replaces the previous `history` table (changed fields only, never read)
--- and `group_history`, whose rows are migrated with the group id as the
+-- Replaces the previous `history` table (changed fields only) and
+-- `group_history`, whose rows are migrated with the group id as the
 -- correlation id.
-DROP TABLE IF EXISTS "history";
+ALTER TABLE IF EXISTS "history" RENAME TO "history_legacy";
 
 CREATE TABLE IF NOT EXISTS "history" (
   id UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -59,6 +59,18 @@ FROM "group_history";
 
 DROP TABLE IF EXISTS "group_history";
 
+-- Calendar event (staff-api) and signage template changes
+INSERT INTO "history" (resource_type, resource_id, action, changed_fields, created_at)
+SELECT
+  CASE type WHEN 'template' THEN 'signage_template' ELSE type END,
+  resource_id,
+  action,
+  changed_fields,
+  created_at
+FROM "history_legacy";
+
+DROP TABLE IF EXISTS "history_legacy";
+
 -- +micrate Down
 -- SQL section 'Down' is executed when this migration is rolled back
 
@@ -103,7 +115,7 @@ LEFT JOIN "user" u ON u.id = h.user_id
 WHERE h.resource_type IN ('groups', 'group_users', 'group_zones', 'group_invitations')
   AND h.user_email IS NOT NULL;
 
-DROP TABLE IF EXISTS "history";
+ALTER TABLE "history" RENAME TO "history_unified";
 
 CREATE TABLE IF NOT EXISTS "history" (
   id TEXT NOT NULL PRIMARY KEY,
@@ -117,3 +129,18 @@ CREATE TABLE IF NOT EXISTS "history" (
 
 CREATE INDEX IF NOT EXISTS history_type_index ON "history" USING BTREE (type);
 CREATE INDEX IF NOT EXISTS history_resource_id_index ON "history" USING BTREE (resource_id);
+
+INSERT INTO "history" (id, type, resource_id, action, changed_fields, created_at, updated_at)
+SELECT
+  id::TEXT,
+  CASE resource_type WHEN 'signage_template' THEN 'template' ELSE resource_type END,
+  resource_id,
+  action,
+  changed_fields,
+  created_at,
+  created_at
+FROM "history_unified"
+WHERE resource_type = 'event'
+   OR (resource_type = 'signage_template' AND action = 'updated');
+
+DROP TABLE IF EXISTS "history_unified";
