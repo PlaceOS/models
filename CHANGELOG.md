@@ -1,3 +1,9 @@
+## v9.123.1 (2026-10-21)
+
+### Fix
+
+- **booking**: reject open-ended recurring bookings when a range is set
+
 ## v9.123.0 (2026-10-21)
 
 ### Feat
