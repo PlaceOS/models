@@ -31,6 +31,9 @@ module PlaceOS::Model
     # booking type => days from now a booking can be made
     attribute booking_range : Hash(String, UInt32) = {} of String => UInt32
 
+    # booking type => maximum length of a booking in minutes
+    attribute booking_period : Hash(String, UInt32) = {} of String => UInt32
+
     attribute outlook_config : OutlookConfig?
 
     attribute delegated : Bool = false
@@ -133,10 +136,11 @@ module PlaceOS::Model
       getter credentials : JSON::Any? = nil
       getter booking_limits : JSON::Any? = nil
       getter booking_range : Hash(String, UInt32)? = nil
+      getter booking_period : Hash(String, UInt32)? = nil
       getter outlook_config : OutlookConfig? = nil
       getter early_checkin : Int64? = nil
 
-      def initialize(@id, @name, @domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil, @email_domain = nil, @early_checkin = nil, @booking_range = nil)
+      def initialize(@id, @name, @domain, @platform, @delegated, @service_account, @credentials = nil, @booking_limits = nil, @outlook_config = nil, @email_domain = nil, @early_checkin = nil, @booking_range = nil, @booking_period = nil)
       end
 
       def to_tenant(update : Bool = false)
@@ -159,6 +163,10 @@ module PlaceOS::Model
           tenant.booking_range = range
         end
 
+        if period = booking_period
+          tenant.booking_period = period
+        end
+
         tenant
       end
     end
@@ -179,6 +187,7 @@ module PlaceOS::Model
         delegated: is_delegated,
         booking_limits: limits,
         booking_range: self.booking_range,
+        booking_period: self.booking_period,
         outlook_config: outlook_config,
         early_checkin: self.early_checkin
       )

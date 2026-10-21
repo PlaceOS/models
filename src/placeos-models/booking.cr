@@ -227,6 +227,17 @@ module PlaceOS::Model
       end
     }
 
+    # Ensure the booking isn't longer than the tenant allows
+    validate ->(this : Booking) {
+      return unless this.new_record? || this.booking_type_changed? || this.booking_start_changed? || this.booking_end_changed?
+      return unless tenant = this.tenant
+      return unless minutes = tenant.booking_period[this.booking_type]?
+
+      if this.booking_end - this.booking_start > minutes.to_i64 * 60
+        this.validation_error(:booking_end, "must be within #{minutes} minutes of booking_start")
+      end
+    }
+
     before_save do
       @user_id ||= booked_by_id
       @user_email ||= booked_by_email

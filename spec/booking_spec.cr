@@ -985,5 +985,197 @@ module PlaceOS::Model
       booking.save.should be_false
       booking.errors.map(&.field).should contain(:booking_end)
     end
+
+    describe "on a recurring booking occurrence" do
+      recurring = ->(tenant_id : Int64?, asset_id : String, recurrence_end : Time) do
+        starting = 1.day.from_now.at_beginning_of_hour
+        booking = Generator.booking(tenant_id, asset_id, starting, starting + 1.hour, booking_type: "desk")
+        booking.timezone = "UTC"
+        booking.recurrence_type = Booking::Recurrence::DAILY
+        booking.recurrence_days = 0b1111111
+        booking.recurrence_end = recurrence_end.to_unix
+        booking.save!
+        booking
+      end
+
+      it "rejects an occurrence moved beyond the booking range" do
+        tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_range: {"desk" => 7_u32}))
+        booking = recurring.call(tenant.id, "desk7", 5.days.from_now)
+        occurrence = booking.booking_start + 1.day.total_seconds.to_i64
+
+        instance = booking.to_instance(occurrence)
+        instance.booking_start = occurrence + 9.days.total_seconds.to_i64
+        instance.booking_end = instance.booking_start + 1.hour.total_seconds.to_i64
+        instance.save.should be_false
+        instance.errors.map(&.field).should contain(:booking_end)
+
+        instance.booking_start = occurrence + 3.hours.total_seconds.to_i64
+        instance.booking_end = instance.booking_start + 1.hour.total_seconds.to_i64
+        instance.save.should be_true
+      end
+
+      it "rejects an occurrence moved beyond the booking range via Booking#save" do
+        tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_range: {"desk" => 7_u32}))
+        booking = recurring.call(tenant.id, "desk8", 5.days.from_now)
+        query_start = booking.booking_start - 1.hour.total_seconds.to_i64
+        query_end = booking.booking_start + 2.days.total_seconds.to_i64
+
+        bookings = [booking]
+        Booking.expand_bookings!(Time.unix(query_start), Time.unix(query_end), bookings)
+        hydrated = bookings[1]
+        hydrated.instance.should_not be_nil
+
+        hydrated.booking_start = hydrated.booking_start + 9.days.total_seconds.to_i64
+        hydrated.booking_end = hydrated.booking_start + 1.hour.total_seconds.to_i64
+        hydrated.save.should be_false
+      end
+
+      it "allows changes to an occurrence of a series made before the range was tightened" do
+        tenant = Generator.tenant
+        booking = recurring.call(tenant.id, "desk9", 30.days.from_now)
+        tenant.booking_range = {"desk" => 7_u32}
+        tenant.save!
+
+        occurrence = booking.booking_start + 20.days.total_seconds.to_i64
+        instance = Booking.find(booking.id.as(Int64)).to_instance(occurrence)
+        instance.approved = true
+        instance.save.should be_true
+
+        # moving it earlier is allowed
+        instance.booking_start -= 1.hour.total_seconds.to_i64
+        instance.booking_end -= 1.hour.total_seconds.to_i64
+        instance.save.should be_true
+
+        # but not later than where the series put it
+        instance.booking_start += 1.day.total_seconds.to_i64
+        instance.booking_end += 1.day.total_seconds.to_i64
+        instance.save.should be_false
+        instance.errors.map(&.field).should contain(:booking_end)
+      end
+    end
+  end
+
+  describe "tenant booking_period" do
+    it "rejects a booking longer than the booking period" do
+      tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_period: {"desk" => 1440_u32}))
+      starting = 1.day.from_now
+
+      booking = Generator.booking(tenant.id, "desk1", starting, starting + 25.hours, booking_type: "desk")
+      booking.save.should be_false
+      booking.errors.map(&.field).should contain(:booking_end)
+
+      # exactly the limit is allowed
+      booking.booking_end = (starting + 24.hours).to_unix
+      booking.save.should be_true
+    end
+
+    it "checks the length of each occurrence, not the whole series" do
+      tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_period: {"desk" => 120_u32}))
+
+      booking = Generator.booking(tenant.id, "desk2", 1.hour.from_now, 2.hours.from_now, booking_type: "desk")
+      booking.timezone = "UTC"
+      booking.recurrence_type = Booking::Recurrence::DAILY
+      booking.recurrence_days = 0b1111111
+      booking.recurrence_end = 30.days.from_now.to_unix
+      booking.save.should be_true
+    end
+
+    it "ignores booking types not in the booking period" do
+      tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_period: {"desk" => 60_u32}))
+
+      booking = Generator.booking(tenant.id, "car1", 1.day.from_now, 3.days.from_now, booking_type: "parking")
+      booking.save.should be_true
+    end
+
+    it "checks the period when the booking type changes" do
+      tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_period: {"desk" => 60_u32}))
+
+      booking = Generator.booking(tenant.id, "car2", 1.day.from_now, 1.day.from_now + 2.hours, booking_type: "parking")
+      booking.save!
+
+      booking.booking_type = "desk"
+      booking.save.should be_false
+      booking.errors.map(&.field).should contain(:booking_end)
+    end
+
+    it "only checks the period when the booking times or type change" do
+      tenant = Generator.tenant
+      starting = 1.day.from_now
+      booking = Generator.booking(tenant.id, "desk3", starting, starting + 8.hours, booking_type: "desk")
+      booking.save!
+
+      # period tightened after the booking was made
+      booking.tenant!.booking_period = {"desk" => 240_u32}
+
+      booking.description = "unrelated change"
+      booking.save.should be_true
+
+      booking.booking_start = (starting + 1.hour).to_unix
+      booking.save.should be_false
+      booking.errors.map(&.field).should contain(:booking_end)
+    end
+
+    describe "on a recurring booking occurrence" do
+      recurring = ->(tenant_id : Int64?, asset_id : String, length : Time::Span) do
+        starting = 1.day.from_now.at_beginning_of_hour
+        booking = Generator.booking(tenant_id, asset_id, starting, starting + length, booking_type: "desk")
+        booking.timezone = "UTC"
+        booking.recurrence_type = Booking::Recurrence::DAILY
+        booking.recurrence_days = 0b1111111
+        booking.save!
+        booking
+      end
+
+      it "rejects an occurrence resized beyond the booking period" do
+        tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_period: {"desk" => 120_u32}))
+        booking = recurring.call(tenant.id, "desk4", 1.hour)
+        occurrence = booking.booking_start + 1.day.total_seconds.to_i64
+
+        instance = booking.to_instance(occurrence)
+        instance.booking_end = occurrence + 3.hours.total_seconds.to_i64
+        instance.save.should be_false
+        instance.errors.map(&.field).should contain(:booking_end)
+
+        instance.booking_end = occurrence + 2.hours.total_seconds.to_i64
+        instance.save.should be_true
+      end
+
+      it "rejects an occurrence resized beyond the booking period via Booking#save" do
+        tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_period: {"desk" => 120_u32}))
+        booking = recurring.call(tenant.id, "desk5", 1.hour)
+        query_start = booking.booking_start - 1.hour.total_seconds.to_i64
+        query_end = booking.booking_start + 2.days.total_seconds.to_i64
+
+        bookings = [booking]
+        Booking.expand_bookings!(Time.unix(query_start), Time.unix(query_end), bookings)
+        hydrated = bookings[1]
+        hydrated.instance.should_not be_nil
+
+        hydrated.booking_end = hydrated.booking_start + 3.hours.total_seconds.to_i64
+        hydrated.save.should be_false
+      end
+
+      it "allows changes to an occurrence of a series made before the period was tightened" do
+        tenant = Generator.tenant
+        booking = recurring.call(tenant.id, "desk6", 8.hours)
+        tenant.booking_period = {"desk" => 240_u32}
+        tenant.save!
+
+        occurrence = booking.booking_start + 1.day.total_seconds.to_i64
+        instance = Booking.find(booking.id.as(Int64)).to_instance(occurrence)
+        instance.checked_in = true
+        instance.save.should be_true
+
+        # moving the occurrence keeps its length, so it is still allowed
+        instance.booking_start += 1.hour.total_seconds.to_i64
+        instance.booking_end += 1.hour.total_seconds.to_i64
+        instance.save.should be_true
+
+        # but it can't be stretched further
+        instance.booking_end += 1.hour.total_seconds.to_i64
+        instance.save.should be_false
+        instance.errors.map(&.field).should contain(:booking_end)
+      end
+    end
   end
 end

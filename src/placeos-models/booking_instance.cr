@@ -205,6 +205,33 @@ module PlaceOS::Model
     end
 
     validate :booking_start, "must not clash with an existing booking", ->(this : self) { this.skip_clash_check || !this.slot_changed? || !this.hydrate_booking.clashing? }
+
+    # Ensure an occurrence moved or resized on its own stays within the tenant's
+    # booking_range and booking_period. Where the series put it was already checked
+    # on the booking, so a limit tightened later doesn't block approvals or check-ins
+    validate ->(this : BookingInstance) {
+      return unless this.booking_start_changed? || this.booking_end_changed?
+      # parent_booking may be the hydrated occurrence being saved, fine for the type and tenant
+      parent = this.parent_booking
+      return unless tenant = parent.tenant
+      days = tenant.booking_range[parent.booking_type]?
+      minutes = tenant.booking_period[parent.booking_type]?
+
+      length = this.booking_end - this.booking_start
+      too_far = days && this.booking_end > days.days.from_now.to_unix
+      too_long = minutes && length > minutes.to_i64 * 60
+      return unless too_far || too_long
+
+      # but not the series times, so load the stored series
+      series = Booking.find(this.id)
+      series_length = series.booking_end - series.booking_start
+      if too_far && this.booking_end > this.instance_start + series_length
+        this.validation_error(:booking_end, "must be within #{days} days from now")
+      end
+      if too_long && length != series_length
+        this.validation_error(:booking_end, "must be within #{minutes} minutes of booking_start")
+      end
+    }
     validate :asset_ids, "must be unique", ->(this : self) { this.unique_ids? }
     validate :extension_data, "must be a JSON object", ->(this : self) do
       data = this.extension_data
