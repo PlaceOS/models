@@ -963,6 +963,52 @@ module PlaceOS::Model
       booking.save.should be_true
     end
 
+    it "rejects an open-ended recurring booking" do
+      tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_range: {"desk" => 7_u32}))
+
+      booking = Generator.booking(tenant.id, "desk10", 1.hour.from_now, 2.hours.from_now, booking_type: "desk")
+      booking.timezone = "UTC"
+      booking.recurrence_type = Booking::Recurrence::DAILY
+      booking.recurrence_days = 0b1111111
+      booking.save.should be_false
+      booking.errors.map(&.field).should contain(:recurrence_end)
+
+      # open-ended is fine for booking types without a range
+      parking = Generator.booking(tenant.id, "car10", 1.hour.from_now, 2.hours.from_now, booking_type: "parking")
+      parking.timezone = "UTC"
+      parking.recurrence_type = Booking::Recurrence::DAILY
+      parking.recurrence_days = 0b1111111
+      parking.save.should be_true
+    end
+
+    it "rejects making an existing booking an open-ended series" do
+      tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_range: {"desk" => 7_u32}))
+      booking = Generator.booking(tenant.id, "desk11", 1.hour.from_now, 2.hours.from_now, booking_type: "desk")
+      booking.save!
+
+      booking.timezone = "UTC"
+      booking.recurrence_type = Booking::Recurrence::WEEKLY
+      booking.recurrence_days = 0b1111111
+      booking.save.should be_false
+      booking.errors.map(&.field).should contain(:recurrence_end)
+
+      booking.recurrence_end = 5.days.from_now.to_unix
+      booking.save.should be_true
+    end
+
+    it "allows unrelated changes to an open-ended series made before the range was set" do
+      tenant = Generator.tenant
+      booking = Generator.booking(tenant.id, "desk12", 1.hour.from_now, 2.hours.from_now, booking_type: "desk")
+      booking.timezone = "UTC"
+      booking.recurrence_type = Booking::Recurrence::DAILY
+      booking.recurrence_days = 0b1111111
+      booking.save!
+
+      booking.tenant!.booking_range = {"desk" => 7_u32}
+      booking.description = "unrelated change"
+      booking.save.should be_true
+    end
+
     it "ignores booking types not in the booking range" do
       tenant = Generator.tenant(Generator::MOCK_TENANT_PARAMS.merge(booking_range: {"desk" => 7_u32}))
 
