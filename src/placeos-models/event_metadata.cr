@@ -95,8 +95,8 @@ module PlaceOS::Model
 
     scope :by_event_ids do |event_ids|
       if event_ids && !event_ids.empty?
-        the_ids = event_ids.join("', '")
-        where(sql: "event_id IN ('#{the_ids}') OR ical_uid IN ('#{the_ids}')")
+        ids = Array.new(event_ids.size, "?").join(", ")
+        where("event_id IN (#{ids}) OR ical_uid IN (#{ids})", event_ids + event_ids)
       else
         self
       end
@@ -104,34 +104,35 @@ module PlaceOS::Model
 
     scope :by_master_ids do |master_ids|
       if master_ids && !master_ids.empty?
-        the_ids = master_ids.join("', '")
-        where(sql: "recurring_master_id IN ('#{the_ids}') OR resource_master_id IN ('#{the_ids}')")
+        ids = Array.new(master_ids.size, "?").join(", ")
+        where("recurring_master_id IN (#{ids}) OR resource_master_id IN (#{ids})", master_ids + master_ids)
       else
         self
       end
     end
 
     scope :by_events_or_master_ids do |event_ids, master_ids|
-      execute = false
-      statement = String.build do |q|
-        if event_ids && !event_ids.empty?
-          execute = true
-          the_ids = event_ids.uniq!.join("', '")
-          q << "event_id IN ('#{the_ids}') OR ical_uid IN ('#{the_ids}')"
-        end
+      clauses = [] of String
+      args = [] of ::PgORM::Value
 
-        if master_ids && !master_ids.empty?
-          q << " OR " if execute
-          execute = true
-          the_ids = master_ids.uniq!.join("', '")
-          q << "recurring_master_id IN ('#{the_ids}') OR resource_master_id IN ('#{the_ids}')"
-        end
+      if event_ids && !event_ids.empty?
+        event_ids = event_ids.uniq
+        ids = Array.new(event_ids.size, "?").join(", ")
+        clauses << "event_id IN (#{ids}) OR ical_uid IN (#{ids})"
+        args.concat(event_ids).concat(event_ids)
       end
 
-      if execute
-        where(sql: statement)
-      else
+      if master_ids && !master_ids.empty?
+        master_ids = master_ids.uniq
+        ids = Array.new(master_ids.size, "?").join(", ")
+        clauses << "recurring_master_id IN (#{ids}) OR resource_master_id IN (#{ids})"
+        args.concat(master_ids).concat(master_ids)
+      end
+
+      if clauses.empty?
         self
+      else
+        where(clauses.join(" OR "), args)
       end
     end
 

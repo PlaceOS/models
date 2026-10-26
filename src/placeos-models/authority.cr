@@ -82,7 +82,7 @@ module PlaceOS::Model
       parts = email.split('@', 2)
       return unless parts.size == 2
       search_domain = parts[1].downcase
-      Authority.where("email_domains @> ARRAY['#{search_domain}']").first?
+      Authority.where("email_domains @> ARRAY[?]::text[]", search_domain).first?
     end
   end
 end

@@ -43,6 +43,17 @@ module PlaceOS::Model
       found.try(&.id).should eq authority.id
     end
 
+    it "find_by_email treats the domain as a value, not SQL" do
+      authority = Generator.authority.save!
+      authority.email_domains = ["placeos.com"]
+      authority.save!
+
+      Authority.find_by_email("test@x'] OR true --").should be_nil
+      Authority.find_by_email("test@x'] OR email_domains @> ARRAY['placeos.com").should be_nil
+      Authority.find_by_email("test@placeos.com' --").should be_nil
+      Authority.find_by_email("test@placeos.com").try(&.id).should eq authority.id
+    end
+
     describe "#destroy" do
       it "removes dependent saml authentications" do
         auth = Generator.authority.save!

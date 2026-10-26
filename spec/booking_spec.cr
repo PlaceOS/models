@@ -84,6 +84,30 @@ module PlaceOS::Model
       list.map(&.id).should_not contain(bookings[1].id)
     end
 
+    it "by_user_or_email treats the booked_by user id as a value, not SQL" do
+      tenant_id = Generator.tenant.id
+
+      bookings = ["user-1", "user-2"].map_with_index do |user_id, index|
+        Booking.new(
+          booking_type: "desk",
+          asset_ids: ["desk-#{index}"],
+          booking_start: 1.hour.from_now.to_unix,
+          booking_end: 2.hours.from_now.to_unix,
+          user_email: PlaceOS::Model::Email.new("#{user_id}@example.com"),
+          user_name: user_id,
+          booked_by_email: PlaceOS::Model::Email.new("#{user_id}@example.com"),
+          booked_by_name: user_id,
+          tenant_id: tenant_id,
+          booked_by_id: user_id,
+          history: [] of Booking::History,
+        ).save!
+      end
+
+      Booking.by_tenant(tenant_id).by_user_or_email("nobody' OR '1'='1", nil, true).to_a.should be_empty
+      Booking.by_tenant(tenant_id).by_user_or_email("nobody' OR '1'='1", "user-1@example.com", true).to_a.map(&.id).should eq [bookings[0].id]
+      Booking.by_tenant(tenant_id).by_user_or_email("user-1", nil, true).to_a.map(&.id).should eq [bookings[0].id]
+    end
+
     it "returns bookings by_user_or_email including open and public permissions" do
       tenant_id = Generator.tenant.id
 

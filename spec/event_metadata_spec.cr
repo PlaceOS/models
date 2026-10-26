@@ -27,6 +27,18 @@ module PlaceOS::Model
       end
     end
 
+    it "treats event and master ids as values, not SQL" do
+      tenant = get_tenant
+      event = Generator.event_metadata(tenant.id, 5.minutes.from_now, 10.minutes.from_now)
+      event.save!
+
+      injection = "nothing') OR ('1'='1"
+      EventMetadata.by_tenant(tenant.id).by_event_ids([injection]).to_a.should be_empty
+      EventMetadata.by_tenant(tenant.id).by_master_ids([injection]).to_a.should be_empty
+      EventMetadata.by_tenant(tenant.id).by_events_or_master_ids([injection], [injection]).to_a.should be_empty
+      EventMetadata.by_tenant(tenant.id).by_events_or_master_ids([injection, event.event_id], nil).to_a.size.should eq 1
+    end
+
     describe "event metadata permissions" do
       it "sets the permission field to PRIVATE by default" do
         tenant = get_tenant
