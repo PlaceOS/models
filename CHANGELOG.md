@@ -1,3 +1,9 @@
+## v9.123.2 (2026-10-26)
+
+### Fix
+
+- **security**: bind user input in raw SQL where clauses
+
 ## v9.123.1 (2026-10-21)
 
 ### Fix
