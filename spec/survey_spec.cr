@@ -86,44 +86,57 @@ module PlaceOS::Model
       checked_in = Survey::TriggerType::CHECKEDIN
       # zones are created per example, a sibling spec's global before_each may clear the table
       new_zone = -> { Generator.zone.save!.id.as(String) }
+      # surveys default to the localhost authority, triggers come from a tenant on that domain
+      tenant_id = -> { (Tenant.find_by?(domain: "localhost") || Generator.tenant(domain: "localhost")).id }
 
       it "matches a survey with only a zone_id on that zone" do
         level, building = new_zone.call, new_zone.call
         survey = Generator.survey(trigger: checked_in, zone_id: level).save!
 
-        Survey.triggered_by(checked_in, [building, level]).map(&.id).should eq [survey.id]
-        Survey.triggered_by(checked_in, [building]).should be_empty
+        Survey.triggered_by(checked_in, [building, level], tenant_id.call).map(&.id).should eq [survey.id]
+        Survey.triggered_by(checked_in, [building], tenant_id.call).should be_empty
       end
 
       it "matches a survey with only a building_id on that building" do
         level, building, other_level = new_zone.call, new_zone.call, new_zone.call
         survey = Generator.survey(trigger: checked_in, building_id: building).save!
 
-        Survey.triggered_by(checked_in, [building, other_level]).map(&.id).should eq [survey.id]
-        Survey.triggered_by(checked_in, [level]).should be_empty
+        Survey.triggered_by(checked_in, [building, other_level], tenant_id.call).map(&.id).should eq [survey.id]
+        Survey.triggered_by(checked_in, [level], tenant_id.call).should be_empty
       end
 
       it "matches a survey with both only when both match" do
         level, building, other_level = new_zone.call, new_zone.call, new_zone.call
         survey = Generator.survey(trigger: checked_in, zone_id: level, building_id: building).save!
 
-        Survey.triggered_by(checked_in, [building, level]).map(&.id).should eq [survey.id]
-        Survey.triggered_by(checked_in, [building, other_level]).should be_empty
-        Survey.triggered_by(checked_in, [level]).should be_empty
+        Survey.triggered_by(checked_in, [building, level], tenant_id.call).map(&.id).should eq [survey.id]
+        Survey.triggered_by(checked_in, [building, other_level], tenant_id.call).should be_empty
+        Survey.triggered_by(checked_in, [level], tenant_id.call).should be_empty
       end
 
       it "triggers nothing without zones" do
         Generator.survey(trigger: checked_in, zone_id: new_zone.call).save!
 
-        Survey.triggered_by(checked_in, [] of String).should be_empty
-        Survey.triggered_by(checked_in, nil).should be_empty
+        Survey.triggered_by(checked_in, [] of String, tenant_id.call).should be_empty
+        Survey.triggered_by(checked_in, nil, tenant_id.call).should be_empty
       end
 
       it "only matches the survey's trigger" do
         level = new_zone.call
         Generator.survey(trigger: Survey::TriggerType::CHECKEDOUT, zone_id: level).save!
 
-        Survey.triggered_by(checked_in, [level]).should be_empty
+        Survey.triggered_by(checked_in, [level], tenant_id.call).should be_empty
+      end
+
+      it "only matches surveys of the tenant's authority" do
+        level = new_zone.call
+        mine = Generator.survey(trigger: checked_in, zone_id: level).save!
+        other = Generator.authority("triggered-by-other.dev").save!
+        Generator.survey(trigger: checked_in, zone_id: level, authority: other).save!
+
+        Survey.triggered_by(checked_in, [level], tenant_id.call).map(&.id).should eq [mine.id]
+        Survey.triggered_by(checked_in, [level], Generator.tenant(domain: "triggered-by-unknown.dev").id).should be_empty
+        Survey.triggered_by(checked_in, [level], nil).should be_empty
       end
 
       it "never matches a survey whose zones were deleted" do
@@ -132,7 +145,7 @@ module PlaceOS::Model
         zone_id = zone.id.as(String)
         zone.delete
 
-        Survey.triggered_by(checked_in, [zone_id]).should be_empty
+        Survey.triggered_by(checked_in, [zone_id], tenant_id.call).should be_empty
       end
     end
 

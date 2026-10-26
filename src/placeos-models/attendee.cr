@@ -45,7 +45,7 @@ module PlaceOS::Model
       return unless checked_in_changed?
       state = checked_in ? Survey::TriggerType::VISITOR_CHECKEDIN : Survey::TriggerType::VISITOR_CHECKEDOUT
 
-      surveys = Survey.triggered_by(state, survey_zones)
+      surveys = Survey.triggered_by(state, survey_zones, tenant_id)
 
       email = guest.not_nil!.email
       unless email.empty?

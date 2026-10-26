@@ -287,7 +287,7 @@ module PlaceOS::Model
     # the hydrated occurrence (see `BookingInstance#update_history`).
     def trigger_survey_invitations(state : State) : Nil
       return unless trigger = Survey::TriggerType.parse?(state.to_s)
-      surveys = Survey.triggered_by(trigger, zones)
+      surveys = Survey.triggered_by(trigger, zones, tenant_id)
       return if surveys.empty?
 
       email = extension_data ? extension_data["host_override"]?.try &.to_s || user_email.to_s : user_email.to_s

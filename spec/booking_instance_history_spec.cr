@@ -167,7 +167,7 @@ module PlaceOS::Model
 
       describe "survey triggers" do
         it "invites the host when an occurrence transitions" do
-          booking.tenant_id = Generator.tenant(domain: "recurrence-survey.dev").id
+          booking.tenant_id = Generator.tenant(domain: "localhost").id
           zone_id = Generator.zone.save!.id.as(String)
           booking.zones = [zone_id]
           booking.save!
@@ -192,8 +192,34 @@ module PlaceOS::Model
           invitations.first.email.should eq booking.user_email.to_s
         end
 
+        it "does not invite through another authority's survey on the same zone" do
+          booking.tenant_id = Generator.tenant(domain: "localhost").id
+          zone_id = Generator.zone.save!.id.as(String)
+          booking.zones = [zone_id]
+          booking.save!
+
+          other = Generator.authority("recurrence-survey-other.dev").save!
+          survey = Generator.survey(
+            trigger: Survey::TriggerType::CHECKEDIN,
+            zone_id: zone_id,
+            building_id: zone_id,
+            authority: other,
+          )
+          survey.save!
+
+          times = booking.calculate_daily(start_query, end_query).instances
+          instance_start = times[1].to_unix
+
+          instance = booking.to_instance(instance_start)
+          instance.checked_in = true
+          instance.checked_in_at = instance_start - 60_i64
+          instance.save!
+
+          Survey::Invitation.list(survey.id).should be_empty
+        end
+
         it "only invites on the matching state" do
-          booking.tenant_id = Generator.tenant(domain: "recurrence-survey2.dev").id
+          booking.tenant_id = Generator.tenant(domain: "localhost").id
           zone_id = Generator.zone.save!.id.as(String)
           booking.zones = [zone_id]
           booking.save!
@@ -220,7 +246,7 @@ module PlaceOS::Model
         end
 
         it "does not re-invite when a save leaves the state unchanged" do
-          booking.tenant_id = Generator.tenant(domain: "recurrence-survey3.dev").id
+          booking.tenant_id = Generator.tenant(domain: "localhost").id
           zone_id = Generator.zone.save!.id.as(String)
           booking.zones = [zone_id]
           booking.save!
@@ -248,7 +274,7 @@ module PlaceOS::Model
 
         # guards the `survey_trigger` -> `trigger_survey_invitations` extraction
         it "still invites on a plain (non recurring) booking" do
-          tenant_id = Generator.tenant(domain: "plain-survey.dev").id
+          tenant_id = Generator.tenant(domain: "localhost").id
           plain = Generator.booking(
             tenant_id,
             asset_id: "desk-plain",

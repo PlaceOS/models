@@ -60,13 +60,18 @@ module PlaceOS::Model
 
     # surveys that send invitations when a booking or visitor in `zones` changes to `trigger`.
     # A survey with only a zone_id or only a building_id must match that zone, one with both
-    # must match both. Nothing is triggered without zones to match on
-    def self.triggered_by(trigger : TriggerType, zones : Array(String)?) : Array(self)
-      return [] of self if zones.nil? || zones.empty?
+    # must match both. Only surveys of the authority sharing the tenant's domain match, zones
+    # aren't owned by an authority. Nothing is triggered without zones or a tenant to match on
+    def self.triggered_by(trigger : TriggerType, zones : Array(String)?, tenant_id : Int64?) : Array(self)
+      return [] of self if zones.nil? || zones.empty? || tenant_id.nil?
 
       zone_list = Array.new(zones.size, "?").join(", ")
       Survey.select("id")
         .where(trigger: trigger.to_s)
+        .where(
+          "authority_id = (SELECT a.id FROM authority a JOIN tenants t ON a.domain = lower(t.domain) WHERE t.id = ?)",
+          tenant_id
+        )
         .where(
           "(zone_id IS NOT NULL OR building_id IS NOT NULL) " \
           "AND (zone_id IS NULL OR zone_id IN (#{zone_list})) " \
