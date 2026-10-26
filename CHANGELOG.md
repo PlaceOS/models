@@ -1,3 +1,9 @@
+## v9.123.3 (2026-10-26)
+
+### Fix
+
+- **survey**: only trigger surveys of the booking's authority
+
 ## v9.123.2 (2026-10-26)
 
 ### Fix
