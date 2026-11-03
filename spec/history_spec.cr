@@ -159,6 +159,23 @@ module PlaceOS::Model
         History.correlated(revision.playlist_id.not_nil!).count.should eq 1
       end
 
+      it "records item schedule changes against the playlist" do
+        schedule = Generator.item_schedule.save!
+        schedule.schedules = [Playlist::Schedule.new(play_cron: "*/5 * * * *")]
+        schedule.save!
+        schedule.destroy
+
+        entries = schedule.change_history.to_a
+        entries.map(&.action).should eq ["delete", "update", "create"]
+        entries.each(&.correlation_id.should(eq(schedule.playlist_id)))
+        entries[1].changed_fields.should eq ["schedules"]
+        entries[1].diff["schedules"][1][0]["play_cron"].should eq "*/5 * * * *"
+        entries.first.snapshot.not_nil!["item_id"].should eq schedule.item_id
+
+        History.correlated(schedule.playlist_id.not_nil!)
+          .where(resource_type: "playlist_item_schedules").count.should eq 3
+      end
+
       it "records booking changes" do
         tenant = get_tenant
         booking = Generator.booking(tenant.id, "desk-1", 1.hour.from_now, 2.hours.from_now)

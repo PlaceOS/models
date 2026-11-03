@@ -1,6 +1,7 @@
 require "../base/model"
 require "../playlist"
 require "./item"
+require "../history"
 
 # Schedule is referenced by the `attribute schedules` declaration below.
 require "./schedule"
@@ -24,6 +25,17 @@ module PlaceOS::Model
     attribute schedules : Array(Playlist::Schedule) = -> { [Playlist::Schedule.new] },
       converter: PlaceOS::Model::DBArrConverter(PlaceOS::Model::Playlist::Schedule),
       es_ignore: true
+
+    # History
+    ###############################################################################################
+
+    include History::Tracked
+
+    # schedules are owned by their distribution playlist, so changes are also
+    # found under the playlist (alongside its approved revisions)
+    def history_correlation_id : String?
+      playlist_id
+    end
 
     # Validation
     ###############################################################################################
