@@ -1,3 +1,9 @@
+## v9.123.4 (2026-11-03)
+
+### Fix
+
+- **playlist/item_schedule**: record change history against the playlist
+
 ## v9.123.3 (2026-10-26)
 
 ### Fix
