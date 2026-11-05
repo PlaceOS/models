@@ -788,7 +788,7 @@ module PlaceOS::Model
       text_model : String? = nil,
     )
       row = SignageAIProvider.new
-      row.name = name || Faker::Hacker.noun
+      row.name = name || "#{Faker::Hacker.noun}-#{RANDOM.hex(3)}"
       row.provider = provider
       row.authority_id = authority.try(&.id.as(String))
       row.credentials = credentials
