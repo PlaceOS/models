@@ -3,7 +3,7 @@
 
 -- MERGE-TIME CHECK: micrate refuses out-of-order version ids (see models#323).
 -- If any later-dated migration lands on master before this merges, renumber
--- this file AND 20261007100600000 above it (preserving schema-before-backfill
+-- this file AND 20261105100600000 above it (preserving schema-before-backfill
 -- order). Safe: neither has been applied anywhere and the backfill is
 -- idempotent.
 

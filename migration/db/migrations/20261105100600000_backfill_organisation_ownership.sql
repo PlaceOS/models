@@ -219,4 +219,4 @@ WHERE e.id = c.id
 -- Deliberate no-op: the backfill only fills NULLs and creates rows that
 -- operators may since have adopted; unwinding it automatically could destroy
 -- hand-made ownership assignments. Rolling back the schema migration
--- (20261007100500000) removes the columns and tables wholesale.
+-- (20261105100500000) removes the columns and tables wholesale.
