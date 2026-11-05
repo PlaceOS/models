@@ -3,6 +3,7 @@ require "uuid/json"
 
 require "./base/model"
 require "./partner"
+require "./history"
 
 module PlaceOS::Model
   # A customer organisation (e.g. UCLA, Acadian) — the estate owner in the
@@ -17,6 +18,7 @@ module PlaceOS::Model
   # invariant ahead of the DB CHECK constraint.
   class Organisation < ::PgORM::Base
     include PgORM::Timestamps
+    include History::Tracked
 
     table :organisations
 
@@ -87,6 +89,11 @@ module PlaceOS::Model
     # The staff organisations of a partner.
     def self.staff_of(partner_id : UUID)
       Organisation.where(partner_id: partner_id, partner_staff: true)
+    end
+
+    # Changes are also found under the managing partner
+    def history_correlation_id : String?
+      partner_id.try(&.to_s)
     end
   end
 end

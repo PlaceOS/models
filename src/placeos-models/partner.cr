@@ -2,6 +2,7 @@ require "uuid"
 require "uuid/json"
 
 require "./base/model"
+require "./history"
 
 module PlaceOS::Model
   # An integrator/reseller organisation (e.g. NTT) that brings clients onto
@@ -14,6 +15,7 @@ module PlaceOS::Model
   # (distributor -> reseller); it carries no behaviour yet.
   class Partner < ::PgORM::Base
     include PgORM::Timestamps
+    include History::Tracked
 
     table :partners
 

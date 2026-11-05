@@ -66,5 +66,17 @@ module PlaceOS::Model
       expect_raises(Exception, /foreign key/) { partner.destroy }
       Partner.find?(partner.id.not_nil!).should_not be_nil
     end
+
+    it "records changes in history" do
+      partner = Generator.partner.save!
+      partner.description = "managed services"
+      partner.save!
+      partner.destroy
+
+      entries = partner.change_history.to_a
+      entries.map(&.action).should eq ["delete", "update", "create"]
+      entries[1].changed_fields.should eq ["description"]
+      entries[0].snapshot.not_nil!["name"].should eq partner.name
+    end
   end
 end

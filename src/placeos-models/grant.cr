@@ -6,6 +6,7 @@ require "./permissions"
 require "./authority"
 require "./organisation"
 require "./partner"
+require "./history"
 
 module PlaceOS::Model
   # PPT-526 Stage 3: a cross-tenant authorization grant.
@@ -21,6 +22,7 @@ module PlaceOS::Model
   # TEXT id) so it carries no FK; a grant naming a deleted scope is inert.
   class Grant < ::PgORM::Base
     include PgORM::Timestamps
+    include History::Tracked
 
     table :grants
 
@@ -130,6 +132,12 @@ module PlaceOS::Model
     # Everyone granted access to a specific scope (partner/organisation admin console).
     def self.for_scope(scope_type : String, scope_id : String) : Array(Grant)
       Grant.where(scope_type: scope_type, scope_id: scope_id).to_a
+    end
+
+    # Changes are also found under the scope, so a partner, organisation or
+    # authority can audit who was given access to it
+    def history_correlation_id : String?
+      scope_id
     end
   end
 end

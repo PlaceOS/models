@@ -110,5 +110,22 @@ module PlaceOS::Model
       Zone.find!(zone.id.not_nil!).organisation.try(&.id).should eq org.id
       ControlSystem.find!(sys.id.not_nil!).organisation.try(&.id).should eq org.id
     end
+
+    it "records changes in history against its partner" do
+      partner = Generator.partner.save!
+      org = Generator.organisation(partner: partner).save!
+      org.name = "renamed-#{RANDOM.hex(3)}"
+      org.save!
+
+      org.change_history.to_a.map(&.action).should eq ["update", "create"]
+      entries = History.correlated(partner.id.not_nil!.to_s).where(resource_type: "organisations").to_a
+      entries.map(&.resource_id).uniq!.should eq [org.id.to_s]
+      entries.first.changed_fields.should eq ["name"]
+    end
+
+    it "records a self-managed organisation without a correlation" do
+      org = Generator.organisation.save!
+      org.change_history.to_a.first.correlation_id.should be_nil
+    end
   end
 end

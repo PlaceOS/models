@@ -105,5 +105,23 @@ module PlaceOS::Model
       user.destroy
       Grant.find?(grant.id.not_nil!).should be_nil
     end
+
+    it "records changes in history against the scope" do
+      _, org, _, user = build_estate
+      grantor = Generator.user.save!
+      grant = Generator.grant(user, Grant::SCOPE_ORGANISATION, org.id.not_nil!.to_s)
+      grant.granted_by = grantor.id
+      grant.save!
+      grant.permission_flags = Permissions::Manage
+      grant.save!
+      grant.destroy
+
+      entries = History.correlated(org.id.not_nil!.to_s).where(resource_type: "grants").to_a
+      entries.map(&.action).should eq ["delete", "update", "create"]
+      entries.map(&.resource_id).uniq!.should eq [grant.id.to_s]
+      entries[1].changed_fields.should eq ["permissions"]
+      entries[2].diff["granted_by"].should eq JSON.parse([nil, grantor.id].to_json)
+      entries[0].snapshot.not_nil!["user_id"].should eq user.id
+    end
   end
 end
