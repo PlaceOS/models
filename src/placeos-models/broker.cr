@@ -2,6 +2,7 @@ require "openssl"
 require "random"
 
 require "./base/model"
+require "./organisation_scoped_name"
 
 module PlaceOS::Model
   class Broker < ModelBase
@@ -33,6 +34,16 @@ module PlaceOS::Model
     # Matches will be replaced with a hmac_256(secret, match).
     attribute filters : Array(String) = -> { [] of String }
 
+    # PPT-526: the Organisation (customer organisation) that owns this broker.
+    # NULL = cluster-level infrastructure (the default; the backfill never
+    # assigns brokers). Nullable while query enforcement is phased in.
+    attribute organisation_id : UUID?, es_type: "keyword", mass_assignment: false
+
+    # The owning Organisation, when ownership has been assigned.
+    def organisation : PlaceOS::Model::Organisation?
+      self.organisation_id.try { |id| PlaceOS::Model::Organisation.find?(id) }
+    end
+
     # Validation
     ###############################################################################################
 
@@ -40,7 +51,8 @@ module PlaceOS::Model
     validates :host, presence: true
     validates :secret, presence: true
 
-    ensure_unique :name
+    include OrganisationScopedName
+    ensure_unique_name_within_organisation
 
     validate ->Broker.validate_filters(Broker)
 
