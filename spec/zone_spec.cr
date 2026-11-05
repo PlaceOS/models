@@ -47,8 +47,8 @@ module PlaceOS::Model
       duplicate.errors.map(&.field).should contain(:name)
 
       # rows with no organisation are unique among themselves
-      unowned = Generator.zone.tap { |z| z.name = name }.save!
-      Generator.zone.tap { |z| z.name = name }.valid?.should be_false
+      unowned = Generator.zone.tap(&.name=(name)).save!
+      Generator.zone.tap(&.name=(name)).valid?.should be_false
 
       first.destroy
       unowned.destroy
