@@ -56,19 +56,20 @@ module PlaceOS::Model
     attribute department : String?, sanitize: :text
     attribute preferred_language : String?
 
-    attribute password_digest : String?, mass_assignment: false
+    # Secrets are never serialised (they're still read, e.g. by changefeeds)
+    attribute password_digest : String?, mass_assignment: false, ignore_serialize: true
     attribute email_digest : String?, mass_assignment: false
     attribute card_number : String?, mass_assignment: false
 
     attribute deleted : Bool = false, mass_assignment: false
     attribute groups : Array(String) = [] of String, mass_assignment: false
 
-    attribute access_token : String?, mass_assignment: false
-    attribute refresh_token : String?, mass_assignment: false
-    attribute expires_at : Int64?, mass_assignment: false
-    attribute expires : Bool = false, mass_assignment: false
+    attribute access_token : String?, mass_assignment: false, ignore_serialize: true
+    attribute refresh_token : String?, mass_assignment: false, ignore_serialize: true
+    attribute expires_at : Int64?, mass_assignment: false, ignore_serialize: true
+    attribute expires : Bool = false, mass_assignment: false, ignore_serialize: true
 
-    attribute password : String?
+    attribute password : String?, ignore_serialize: true
 
     attribute sys_admin : Bool = false, mass_assignment: false
     attribute support : Bool = false, mass_assignment: false

@@ -316,6 +316,7 @@ module PlaceOS::Model
       end
 
       views = {
+        "raw"            => ->(u : User) { u.to_json },
         "public"         => ->(u : User) { u.to_public_json },
         "public_struct"  => ->(u : User) { u.to_public_struct.to_json },
         "public_meta"    => ->(u : User) { u.to_public_metadata_json },
@@ -349,6 +350,34 @@ module PlaceOS::Model
           json.should_not contain("ms-refresh-token-leak")
           json.should_not contain("s3cr3t-p@ssw0rd")
         end
+      end
+
+      it "never serialises a plain text password set before saving" do
+        user = Generator.user
+        user.password = "uns4ved-p@ssw0rd"
+
+        user.to_json.should_not contain("uns4ved-p@ssw0rd")
+      end
+
+      # Changefeeds rebuild models from the database's JSON, so secrets must
+      # still be read even though they are never written
+      it "still reads secrets from trusted JSON" do
+        user = User.from_trusted_json({
+          name:            "Changefeed User",
+          email:           "changefeed@example.com",
+          authority_id:    "authority-12345",
+          password_digest: "$2a$11$digest",
+          access_token:    "feed-access",
+          refresh_token:   "feed-refresh",
+          expires_at:      1234_i64,
+          expires:         true,
+        }.to_json)
+
+        user.password_digest.should eq "$2a$11$digest"
+        user.access_token.should eq "feed-access"
+        user.refresh_token.should eq "feed-refresh"
+        user.expires_at.should eq 1234_i64
+        user.expires.should be_true
       end
 
       {"public", "public_struct", "public_meta", "public_meta_st"}.each do |view|
