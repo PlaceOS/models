@@ -38,14 +38,19 @@ SELECT 'PlaceOS', 'Platform operator (management partner)', true, now(), now()
 WHERE NOT EXISTS (SELECT 1 FROM "partners" WHERE management = true)
 ON CONFLICT DO NOTHING;
 
--- 2. One organisation-owned Organisation per orphan Authority
+-- 2. One organisation-owned Organisation per unambiguous orphan Authority.
+--    Duplicate domains remain quarantined for explicit operator reconciliation.
 -- +micrate StatementBegin
 DO $$
 DECLARE
   auth RECORD;
   new_org UUID;
 BEGIN
-  FOR auth IN SELECT id, name, domain FROM "authority" WHERE organisation_id IS NULL LOOP
+  FOR auth IN
+    SELECT a.id, a.name, a.domain FROM "authority" a
+    WHERE a.organisation_id IS NULL
+      AND NOT EXISTS (SELECT 1 FROM "authority" duplicate WHERE duplicate.domain = a.domain AND duplicate.id <> a.id)
+  LOOP
     new_org := NULL;
     INSERT INTO "organisations" (name, description, partner_id, payer, created_at, updated_at)
     VALUES (

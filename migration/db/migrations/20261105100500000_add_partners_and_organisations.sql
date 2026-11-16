@@ -4,8 +4,8 @@
 -- MERGE-TIME CHECK: micrate refuses out-of-order version ids (see models#323).
 -- If any later-dated migration lands on master before this merges, renumber
 -- this file AND 20261105100600000 above it (preserving schema-before-backfill
--- order). Safe: neither has been applied anywhere and the backfill is
--- idempotent.
+-- order). Existing installations use additive migrations for corrections;
+-- applied versions are not rerun.
 
 -- ---------------------------------------------------------------------------
 -- PPT-526: the Partner → Organisation → Authority(domain) hierarchy.
@@ -85,27 +85,19 @@ ALTER TABLE ONLY "authority"
 CREATE INDEX IF NOT EXISTS authority_organisation_id_index
     ON "authority" USING BTREE (organisation_id);
 
--- The domain column has only ever had model-level uniqueness (a plain BTREE
--- index) — a concurrent-signup race can create duplicate authorities. Make it
--- a hard guarantee; self-service signup depends on it.
---
--- Quarantine first: exact-duplicate domains left behind by that race would
--- make the unique index unbuildable and (because micrate autocommits each
--- statement) leave this migration half-applied. Keep the oldest row per
--- domain and rename the rest so they stop answering for the domain —
--- find_by_domain picks an arbitrary row across duplicates today, so this
--- cannot break a reliably-working login. Idempotent: renamed rows no longer
--- collide. Renamed rows are for an operator to merge or delete.
-UPDATE "authority" a
-SET domain = a.domain || '.duplicate.' || a.id
-WHERE EXISTS (
-    SELECT 1 FROM "authority" b
-    WHERE b.domain = a.domain
-      AND (b.created_at, b.id) < (a.created_at, a.id)
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS authority_domain_unique
-    ON "authority" USING BTREE (domain);
+-- Preserve existing domains. Ambiguous legacy rows remain available in flag-off
+-- mode and are reported for explicit reconciliation before enforcement is enabled.
+-- +micrate StatementBegin
+DO $$
+BEGIN
+  LOCK TABLE authority IN SHARE MODE;
+  IF EXISTS (SELECT domain FROM authority GROUP BY domain HAVING COUNT(*) > 1) THEN
+    RAISE NOTICE 'duplicate authority domains require explicit reconciliation; unique index deferred';
+  ELSE
+    CREATE UNIQUE INDEX IF NOT EXISTS authority_domain_unique ON authority USING BTREE (domain);
+  END IF;
+END $$;
+-- +micrate StatementEnd
 
 -- ---------------------------------------------------------------------------
 -- Organisation ownership columns on the (previously cluster-global) control plane.
