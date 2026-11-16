@@ -294,6 +294,110 @@ module PlaceOS::Model
       end
     end
 
+    describe "sensitive field serialisation" do
+      # Secrets that must never leave the backend via any serialisation view
+      secret_fields = %w(password password_digest access_token refresh_token expires_at expires)
+      # Fields that only admin / support users may see
+      admin_only_fields = %w(sys_admin support misc login_name card_number ui_theme)
+
+      secret_user = -> do
+        user = Generator.user
+        user.password = "s3cr3t-p@ssw0rd"
+        user.access_token = "ms-access-token-leak"
+        user.refresh_token = "ms-refresh-token-leak"
+        user.expires_at = 1.hour.from_now.to_unix
+        user.expires = true
+        user.misc = "admin notes"
+        user.login_name = "login-#{Random.rand(99999)}"
+        user.card_number = "card-#{Random.rand(99999)}"
+        user.save!
+        user.password_digest.should_not be_nil
+        user
+      end
+
+      views = {
+        "raw"            => ->(u : User) { u.to_json },
+        "public"         => ->(u : User) { u.to_public_json },
+        "public_struct"  => ->(u : User) { u.to_public_struct.to_json },
+        "public_meta"    => ->(u : User) { u.to_public_metadata_json },
+        "public_meta_st" => ->(u : User) { u.to_public_metadata_struct.to_json },
+        "admin"          => ->(u : User) { u.to_admin_json },
+        "admin_struct"   => ->(u : User) { u.to_admin_struct.to_json },
+        "admin_meta"     => ->(u : User) { u.to_admin_metadata_json },
+        "admin_meta_st"  => ->(u : User) { u.to_admin_metadata_struct.to_json },
+        "group"          => ->(u : User) { u.to_group_json },
+        "group_struct"   => ->(u : User) { u.to_group_struct.to_json },
+      }
+
+      it "never lists a secret in PUBLIC_DATA or ADMIN_DATA" do
+        exposed = (User::PUBLIC_DATA + User::ADMIN_DATA).map(&.to_s)
+        (exposed & secret_fields).should be_empty
+      end
+
+      it "keeps admin only fields out of PUBLIC_DATA" do
+        (User::PUBLIC_DATA.map(&.to_s) & admin_only_fields).should be_empty
+      end
+
+      views.each do |view, render|
+        it "never exposes password digests or SSO tokens via the #{view} view" do
+          user = secret_user.call
+          json = render.call(user)
+          keys = JSON.parse(json).as_h.keys
+
+          (keys & secret_fields).should be_empty
+          json.should_not contain(user.password_digest.as(String))
+          json.should_not contain("ms-access-token-leak")
+          json.should_not contain("ms-refresh-token-leak")
+          json.should_not contain("s3cr3t-p@ssw0rd")
+        end
+      end
+
+      it "never serialises a plain text password set before saving" do
+        user = Generator.user
+        user.password = "uns4ved-p@ssw0rd"
+
+        user.to_json.should_not contain("uns4ved-p@ssw0rd")
+      end
+
+      # Changefeeds rebuild models from the database's JSON, so secrets must
+      # still be read even though they are never written
+      it "still reads secrets from trusted JSON" do
+        user = User.from_trusted_json({
+          name:            "Changefeed User",
+          email:           "changefeed@example.com",
+          authority_id:    "authority-12345",
+          password_digest: "$2a$11$digest",
+          access_token:    "feed-access",
+          refresh_token:   "feed-refresh",
+          expires_at:      1234_i64,
+          expires:         true,
+        }.to_json)
+
+        user.password_digest.should eq "$2a$11$digest"
+        user.access_token.should eq "feed-access"
+        user.refresh_token.should eq "feed-refresh"
+        user.expires_at.should eq 1234_i64
+        user.expires.should be_true
+      end
+
+      {"public", "public_struct", "public_meta", "public_meta_st"}.each do |view|
+        it "hides admin only fields from the #{view} view" do
+          user = secret_user.call
+          keys = JSON.parse(views[view].call(user)).as_h.keys
+          (keys & admin_only_fields).should be_empty
+        end
+      end
+
+      {"admin", "admin_struct", "admin_meta", "admin_meta_st"}.each do |view|
+        it "includes admin only fields in the #{view} view" do
+          user = secret_user.call
+          parsed = JSON.parse(views[view].call(user)).as_h
+          admin_only_fields.each { |field| parsed.has_key?(field).should be_true }
+          parsed["misc"].should eq "admin notes"
+        end
+      end
+    end
+
     it "should create a new user with a password" do
       existing = Authority.find_by_domain("localhost")
       authority = existing || Generator.authority.save!

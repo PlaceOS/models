@@ -1,3 +1,9 @@
+## v9.123.5 (2026-11-12)
+
+### Fix
+
+- **user**: never serialise password digests or SSO tokens ([#341](https://github.com/PlaceOS/models/pull/341))
+
 ## v9.123.4 (2026-11-03)
 
 ### Fix
