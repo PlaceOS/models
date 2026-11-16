@@ -43,7 +43,9 @@ module PlaceOS::Model
       key = "key-#{RANDOM.hex(5)}"
       insert_reconciliation("actor", "authority", key)
       expect_raises(PQ::PQError, /duplicate key/) do
-        insert_reconciliation("actor", "authority", key)
+        PgORM::Database.transaction do
+          insert_reconciliation("actor", "authority", key)
+        end
       end
     end
 
