@@ -6,12 +6,20 @@ module PlaceOS::Model
     first = Generator.authority("legacy-#{RANDOM.hex(5)}.test").save!
     duplicate_id = "auth-legacy-duplicate-#{RANDOM.hex(6)}"
     PgORM::Database.connection do |db|
-      db.exec(<<-SQL, args: [first.id, duplicate_id])
-        INSERT INTO authority
-        SELECT (jsonb_populate_record(NULL::authority,
-          to_jsonb(a) || jsonb_build_object('id', $2::text, 'created_at', a.created_at + interval '1 second'))).*
-        FROM authority a WHERE a.id = $1
+      columns = db.query_all(<<-SQL, as: String)
+        SELECT column_name FROM information_schema.columns
+        WHERE table_schema = current_schema() AND table_name = 'authority' AND is_generated = 'NEVER'
+        ORDER BY ordinal_position
         SQL
+      fields = columns.map { |column| %Q("#{column}") }.join(", ")
+      values = columns.map do |column|
+        case column
+        when "id"         then "$2::text"
+        when "created_at" then %(a."created_at" + interval '1 second')
+        else                   %(a."#{column}")
+        end
+      end.join(", ")
+      db.exec("INSERT INTO authority (#{fields}) SELECT #{values} FROM authority a WHERE a.id = $1", args: [first.id, duplicate_id])
     end
     {first, Authority.find!(duplicate_id)}
   end
