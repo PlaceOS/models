@@ -98,6 +98,11 @@ tree_claims AS (
   INNER JOIN zone_roots r ON r.id = a.config->>'org_zone'
   WHERE COALESCE(a.config->>'org_zone', '') <> ''
     AND a.organisation_id IS NOT NULL
+  UNION ALL
+  SELECT r.root_id, false AS names_root, z.organisation_id
+  FROM "zone" z
+  INNER JOIN zone_roots r ON r.id = z.id
+  WHERE z.organisation_id IS NOT NULL
 ),
 org_owner AS (
   SELECT root_id, MIN(organisation_id::text)::uuid AS organisation_id
@@ -135,11 +140,12 @@ WITH sys_candidates AS (
   SELECT s2.id AS sys_id, s2.name,
          MIN(z.organisation_id::text)::uuid AS organisation_id
   FROM "sys" s2
-  INNER JOIN "zone" z ON z.id = ANY(s2.zones)
-  WHERE z.organisation_id IS NOT NULL
-    AND s2.organisation_id IS NULL
+  CROSS JOIN LATERAL unnest(s2.zones) AS reference(zone_id)
+  LEFT JOIN "zone" z ON z.id = reference.zone_id
+  WHERE s2.organisation_id IS NULL
   GROUP BY s2.id, s2.name
   HAVING COUNT(DISTINCT z.organisation_id) = 1
+     AND bool_and(z.organisation_id IS NOT NULL)
 ),
 ranked AS (
   SELECT sys_id, name, organisation_id,
@@ -160,26 +166,29 @@ WHERE s.id = r.sys_id
   );
 -- +micrate StatementEnd
 
--- 5a. Logic modules via their control system
-UPDATE "mod" m
-SET organisation_id = s.organisation_id
-FROM "sys" s
-WHERE m.control_system_id = s.id
-  AND s.organisation_id IS NOT NULL
-  AND m.organisation_id IS NULL;
-
--- 5b. Device/service modules via the systems that reference them
-UPDATE "mod" m
-SET organisation_id = sc.organisation_id
-FROM (
-  SELECT m2.id AS mod_id, MIN(s.organisation_id::text)::uuid AS organisation_id
-  FROM "mod" m2
-  INNER JOIN "sys" s ON m2.id = ANY(s.modules)
-  WHERE s.organisation_id IS NOT NULL
-  GROUP BY m2.id
+-- 5. All module ownership sources must agree, including references from systems
+--    other than a logic module's parent. Unknown/missing owners veto inference.
+-- +micrate StatementBegin
+WITH module_systems AS (
+  SELECT id AS mod_id, control_system_id AS sys_id
+  FROM "mod" WHERE control_system_id IS NOT NULL
+  UNION
+  SELECT m.id AS mod_id, s.id AS sys_id
+  FROM "mod" m INNER JOIN "sys" s ON m.id = ANY(s.modules)
+),
+module_owners AS (
+  SELECT links.mod_id, MIN(s.organisation_id::text)::uuid AS organisation_id
+  FROM module_systems links
+  LEFT JOIN "sys" s ON s.id = links.sys_id
+  GROUP BY links.mod_id
   HAVING COUNT(DISTINCT s.organisation_id) = 1
-) sc
-WHERE m.id = sc.mod_id AND m.organisation_id IS NULL;
+     AND bool_and(s.organisation_id IS NOT NULL)
+)
+UPDATE "mod" m
+SET organisation_id = owners.organisation_id
+FROM module_owners owners
+WHERE m.id = owners.mod_id AND m.organisation_id IS NULL;
+-- +micrate StatementEnd
 
 -- 6. System-scoped trigger definitions
 UPDATE "trigger" t
