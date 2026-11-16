@@ -33,12 +33,16 @@ Spec.after_suite do
     PlaceOS::Model::SignageTemplate,
     PlaceOS::Model::PendingMail,
     PlaceOS::Model::History,
+    PlaceOS::Model::TenancyReconciliation,
     PlaceOS::Model::GroupInvitation,
     PlaceOS::Model::GroupZone,
     PlaceOS::Model::GroupUser,
     PlaceOS::Model::GroupPlaylistItem,
     PlaceOS::Model::GroupPlaylist,
     PlaceOS::Model::Group,
+    PlaceOS::Model::Grant,
+    PlaceOS::Model::Organisation,
+    PlaceOS::Model::Partner,
   ].each(&.clear)
 end
 

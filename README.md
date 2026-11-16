@@ -76,6 +76,33 @@ docker system prune --all
 ./test
 ```
 
+## Organisation name validation
+
+`PLACE_TENANCY_ENFORCE` defaults to false, preserving global name uniqueness for
+zones, systems, edges and brokers. Enable it consistently across model consumers
+to validate names within each organisation instead. Specs can override the shared
+setting with `PlaceOS::Model::OrganisationScopedName.enforce = true` or `false`;
+assign `nil` to restore the environment default.
+
+After allowing duplicate names across organisations, resolve those duplicates
+before disabling enforcement or rolling back to binaries with global validation.
+Changing validation mode never renames existing records.
+
+### Upgrading existing ownership
+
+The additive ownership migrations retry only unassigned rows. Assigned ownership
+is retained and suspicious references are exposed through
+`tenancy_ownership_conflicts` for explicit reconciliation. Unowned brokers and
+unscoped trigger definitions remain intentional platform resources.
+
+Legacy duplicate authority domains are preserved. Their unique index is deferred
+until duplicates are resolved; the report identifies `duplicate_domain` rows and
+domains renamed by an older migration as `quarantined_domain`. Resolve these
+before enabling tenancy enforcement. The guarded index SQL in
+[`20261117100700000_guard_authority_domains.sql`](migration/db/migrations/20261117100700000_guard_authority_domains.sql)
+can be reapplied after explicit resolution. Migrations never merge domains or
+organisations automatically.
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md).

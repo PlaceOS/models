@@ -34,6 +34,34 @@ module PlaceOS::Model
       end
     end
 
+    it "scopes name uniqueness to the organisation" do
+      previous = ENV["PLACE_TENANCY_ENFORCE"]?
+      ENV["PLACE_TENANCY_ENFORCE"] = "true"
+      org_a = Generator.organisation.save!
+      org_b = Generator.organisation.save!
+      name = "Boardroom #{RANDOM.hex(3)}"
+
+      first = Generator.zone.tap { |z| z.name = name; z.organisation_id = org_a.id }.save!
+      Generator.zone.tap { |z| z.name = name; z.organisation_id = org_b.id }.save!
+
+      duplicate = Generator.zone.tap { |z| z.name = name; z.organisation_id = org_a.id }
+      duplicate.valid?.should be_false
+      duplicate.errors.map(&.field).should contain(:name)
+
+      # rows with no organisation are unique among themselves
+      unowned = Generator.zone.tap(&.name=(name)).save!
+      Generator.zone.tap(&.name=(name)).valid?.should be_false
+
+      first.destroy
+      unowned.destroy
+    ensure
+      if previous
+        ENV["PLACE_TENANCY_ENFORCE"] = previous
+      else
+        ENV.delete("PLACE_TENANCY_ENFORCE")
+      end
+    end
+
     it "has unique tags" do
       zone = Generator.zone
       zone.tags << "hello"
