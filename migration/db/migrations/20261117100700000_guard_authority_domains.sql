@@ -91,7 +91,7 @@ WHERE EXISTS (SELECT 1 FROM authority duplicate WHERE duplicate.domain = a.domai
 UNION
 SELECT 'authority', a.id, a.organisation_id, 'quarantined_domain', NULL::text, NULL::text, NULL::uuid
 FROM authority a
-WHERE RIGHT(a.domain, LENGTH('.duplicate.' || a.id)) = '.duplicate.' || a.id;
+WHERE RIGHT(LOWER(a.domain), LENGTH('.duplicate.' || a.id)) = '.duplicate.' || LOWER(a.id);
 
 -- +micrate Down
 -- Keep the non-destructive domain guarantee and expanded diagnostic report.
