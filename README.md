@@ -76,6 +76,18 @@ docker system prune --all
 ./test
 ```
 
+## Organisation name validation
+
+`PLACE_TENANCY_ENFORCE` defaults to false, preserving global name uniqueness for
+zones, systems, edges and brokers. Enable it consistently across model consumers
+to validate names within each organisation instead. Specs can override the shared
+setting with `PlaceOS::Model::OrganisationScopedName.enforce = true` or `false`;
+assign `nil` to restore the environment default.
+
+After allowing duplicate names across organisations, resolve those duplicates
+before disabling enforcement or rolling back to binaries with global validation.
+Changing validation mode never renames existing records.
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
