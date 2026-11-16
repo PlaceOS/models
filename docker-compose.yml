@@ -9,6 +9,7 @@ services:
       - ${PWD}/shard.yml:/app/shard.yml.input
       - ${PWD}/coverage:/app/coverage
       - ${PWD}/.ameba.yml:/app/.ameba.yml
+      - ${PWD}/migration/db/migrations:/app/migration/db/migrations:ro
     depends_on:
       - migrator
       - postgres
