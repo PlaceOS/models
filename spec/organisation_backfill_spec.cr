@@ -1,29 +1,6 @@
-require "./helper"
+require "./support/tenancy_migrations"
 
 module PlaceOS::Model
-  # Execute the shipped migration, rather than a copy of its ownership queries.
-  def self.apply_organisation_backfill
-    path = File.join(__DIR__, "..", "migration", "db", "migrations", "20261105100600000_backfill_organisation_ownership.sql")
-    sql = File.read(path).split("-- +micrate Down", 2).first
-    statement = String::Builder.new
-    block = false
-    sql.each_line do |line|
-      if line.includes?("-- +micrate StatementBegin")
-        block = true
-      elsif line.includes?("-- +micrate StatementEnd")
-        PgORM::Database.connection(&.exec(statement.to_s))
-        statement = String::Builder.new
-        block = false
-      else
-        statement << line << '\n'
-        if !block && line.rstrip.ends_with?(';')
-          PgORM::Database.connection(&.exec(statement.to_s))
-          statement = String::Builder.new
-        end
-      end
-    end
-  end
-
   describe "organisation ownership migration" do
     around_each do |example|
       PgORM::Database.transaction do |transaction|
@@ -39,7 +16,7 @@ module PlaceOS::Model
       unknown = Generator.zone.save!
       system = Generator.control_system.tap(&.zones = [owned.id.as(String), unknown.id.as(String)]).save!
 
-      apply_organisation_backfill
+      apply_organisation_migration
 
       ControlSystem.find!(system.id.as(String)).organisation_id.should be_nil
     end
@@ -49,7 +26,7 @@ module PlaceOS::Model
       zones = Array.new(2) { Generator.zone.tap(&.organisation_id = organisation.id).save! }
       system = Generator.control_system.tap(&.zones = zones.map(&.id.as(String))).save!
 
-      apply_organisation_backfill
+      apply_organisation_migration
 
       ControlSystem.find!(system.id.as(String)).organisation_id.should eq organisation.id
     end
@@ -59,7 +36,7 @@ module PlaceOS::Model
       owned = Generator.zone.tap(&.organisation_id = organisation.id).save!
       system = Generator.control_system.tap(&.zones = [owned.id.as(String), "zone-missing-#{RANDOM.hex(5)}"]).save!
 
-      apply_organisation_backfill
+      apply_organisation_migration
 
       ControlSystem.find!(system.id.as(String)).organisation_id.should be_nil
     end
@@ -73,7 +50,7 @@ module PlaceOS::Model
       end.save!
       Generator.control_system.tap(&.modules = [mod.id.as(String)]).save!
 
-      apply_organisation_backfill
+      apply_organisation_migration
 
       Module.find!(mod.id.as(String)).organisation_id.should be_nil
     end
@@ -88,7 +65,7 @@ module PlaceOS::Model
         end.save!
       end
 
-      apply_organisation_backfill
+      apply_organisation_migration
 
       Module.find!(mod.id.as(String)).organisation_id.should eq organisation.id
     end
@@ -99,7 +76,7 @@ module PlaceOS::Model
       mod = Generator.module(driver: Generator.driver(role: Driver::Role::Logic), control_system: owned).save!
       Generator.control_system.tap(&.modules = [mod.id.as(String)]).save!
 
-      apply_organisation_backfill
+      apply_organisation_migration
 
       Module.find!(mod.id.as(String)).organisation_id.should be_nil
     end
@@ -118,7 +95,7 @@ module PlaceOS::Model
         authority.config["org_zone"] = JSON::Any.new(root.id.as(String))
       end.save!
 
-      apply_organisation_backfill
+      apply_organisation_migration
 
       Zone.find!(unknown.id.as(String)).organisation_id.should be_nil
       Zone.find!(root.id.as(String)).organisation_id.should be_nil
@@ -132,7 +109,7 @@ module PlaceOS::Model
         row.zones = [unknown.id.as(String)]
       end.save!
 
-      apply_organisation_backfill
+      apply_organisation_migration
 
       ControlSystem.find!(system.id.as(String)).organisation_id.should eq organisation.id
     end

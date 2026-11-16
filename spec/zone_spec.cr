@@ -35,6 +35,8 @@ module PlaceOS::Model
     end
 
     it "scopes name uniqueness to the organisation" do
+      previous = ENV["PLACE_TENANCY_ENFORCE"]?
+      ENV["PLACE_TENANCY_ENFORCE"] = "true"
       org_a = Generator.organisation.save!
       org_b = Generator.organisation.save!
       name = "Boardroom #{RANDOM.hex(3)}"
@@ -52,6 +54,12 @@ module PlaceOS::Model
 
       first.destroy
       unowned.destroy
+    ensure
+      if previous
+        ENV["PLACE_TENANCY_ENFORCE"] = previous
+      else
+        ENV.delete("PLACE_TENANCY_ENFORCE")
+      end
     end
 
     it "has unique tags" do

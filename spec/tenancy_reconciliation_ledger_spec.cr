@@ -9,7 +9,7 @@ module PlaceOS::Model
 
   def self.insert_reconciliation(actor : String, authority : String, key : String) : UUID
     PgORM::Database.connection do |db|
-      db.query_one(<<-SQL, actor, authority, key, &.read(UUID))
+      db.query_one(<<-SQL, args: [actor, authority, key], &.read(UUID))
         INSERT INTO tenancy_reconciliations (actor_id, authority_id, idempotency_key, digest, plan, result)
         VALUES ($1, $2, $3, repeat('a', 64), '{"operation":"claim"}', '{"status":"applied"}')
         RETURNING id
@@ -31,10 +31,10 @@ module PlaceOS::Model
       id = insert_reconciliation("deleted-actor", "deleted-authority", "key-#{RANDOM.hex(5)}")
       id.to_s[14].should eq '7'
       PgORM::Database.connection do |db|
-        db.query_one("SELECT plan->>'operation' FROM tenancy_reconciliations WHERE id = $1", id, &.read(String)).should eq "claim"
-        db.query_one("SELECT result->>'status' FROM tenancy_reconciliations WHERE id = $1", id, &.read(String)).should eq "applied"
-        db.query_one("SELECT length(digest) FROM tenancy_reconciliations WHERE id = $1", id, &.read(Int32)).should eq 64
-        db.query_one("SELECT created_at IS NOT NULL FROM tenancy_reconciliations WHERE id = $1", id, &.read(Bool)).should be_true
+        db.query_one("SELECT plan->>'operation' FROM tenancy_reconciliations WHERE id = $1", args: [id], &.read(String)).should eq "claim"
+        db.query_one("SELECT result->>'status' FROM tenancy_reconciliations WHERE id = $1", args: [id], &.read(String)).should eq "applied"
+        db.query_one("SELECT length(digest) FROM tenancy_reconciliations WHERE id = $1", args: [id], &.read(Int32)).should eq 64
+        db.query_one("SELECT created_at IS NOT NULL FROM tenancy_reconciliations WHERE id = $1", args: [id], &.read(Bool)).should be_true
       end
     end
 
@@ -61,10 +61,10 @@ module PlaceOS::Model
       actor = Generator.user(authority: authority).save!
       id = insert_reconciliation(actor.id.as(String), authority.id.as(String), "key-#{RANDOM.hex(5)}")
       PgORM::Database.connection do |db|
-        db.exec("DELETE FROM \"user\" WHERE id = $1", actor.id)
-        db.exec("DELETE FROM authority WHERE id = $1", authority.id)
-        db.query_one("SELECT actor_id FROM tenancy_reconciliations WHERE id = $1", id, &.read(String)).should eq actor.id
-        db.query_one("SELECT authority_id FROM tenancy_reconciliations WHERE id = $1", id, &.read(String)).should eq authority.id
+        db.exec("DELETE FROM \"user\" WHERE id = $1", args: [actor.id])
+        db.exec("DELETE FROM authority WHERE id = $1", args: [authority.id])
+        db.query_one("SELECT actor_id FROM tenancy_reconciliations WHERE id = $1", args: [id], &.read(String)).should eq actor.id
+        db.query_one("SELECT authority_id FROM tenancy_reconciliations WHERE id = $1", args: [id], &.read(String)).should eq authority.id
       end
     end
   end
