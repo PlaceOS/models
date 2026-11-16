@@ -117,7 +117,14 @@ module_owners AS (
 UPDATE "mod" m
 SET organisation_id = owners.organisation_id
 FROM module_owners owners
-WHERE m.id = owners.mod_id AND m.organisation_id IS NULL;
+WHERE m.id = owners.mod_id AND m.organisation_id IS NULL
+  AND (
+    COALESCE(m.edge_id, '') = ''
+    OR EXISTS (
+      SELECT 1 FROM "edge" e
+      WHERE e.id = m.edge_id AND e.organisation_id = owners.organisation_id
+    )
+  );
 -- +micrate StatementEnd
 
 -- 6. System-scoped trigger definitions
