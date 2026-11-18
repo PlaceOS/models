@@ -1,3 +1,9 @@
+## v9.123.6 (2026-11-18)
+
+### Fix
+
+- describe converted model timestamps as integers ([#342](https://github.com/PlaceOS/models/pull/342))
+
 ## v9.123.5 (2026-11-12)
 
 ### Fix
