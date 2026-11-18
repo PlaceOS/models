@@ -17,8 +17,8 @@ module PlaceOS::Model
     attribute redirect_count : Int64 = 0
     attribute enabled : Bool = true
 
-    attribute valid_from : Time? = nil, converter: Time::EpochConverterOptional
-    attribute valid_until : Time? = nil, converter: Time::EpochConverterOptional
+    attribute valid_from : Time? = nil, converter: Time::EpochConverterOptional, type: "integer", format: "Int64"
+    attribute valid_until : Time? = nil, converter: Time::EpochConverterOptional, type: "integer", format: "Int64"
 
     belongs_to Authority
 
