@@ -22,7 +22,8 @@ module PlaceOS::Model
 
     attribute name : String, sanitize: :text, es_subfield: "keyword"
     attribute description : String = "", sanitize: :common
-    attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "text"
+    attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter, es_type: "text",
+      description: "Schema data. JSON objects are encoded as JSON strings in responses."
 
     attribute default_uri : String?
     attribute default_port : Int32?

@@ -471,6 +471,27 @@ module PlaceOS::Model
       end
     end
 
+    it "preserves the metadata payload in typed response views" do
+      user = Generator.user.save!
+      empty_payload = JSON.parse(user.to_public_metadata_struct.to_json)
+      empty_payload["associated_metadata"].as_h.should be_empty
+
+      metadata = Generator.metadata(name: "profile", parent: user, modifier: user)
+      metadata.details = JSON.parse(%([null,{"active":true}]))
+      metadata.save!
+
+      {user.to_admin_metadata_struct, user.to_public_metadata_struct}.each do |response|
+        payload = JSON.parse(response.to_json)
+        payload["associated_metadata"].as_h.keys.should eq ["profile"]
+        payload["associated_metadata"]["profile"]["details"].should eq metadata.details
+
+        payload.as_h["extra"] = JSON.parse(%({"value":null}))
+        parsed = response.class.from_json(payload.to_json)
+        JSON.parse(parsed.to_json)["associated_metadata"].should eq payload["associated_metadata"]
+        JSON.parse(parsed.to_json)["extra"].should eq payload["extra"]
+      end
+    end
+
     describe "#subsystem_access" do
       Spec.before_each do
         History.clear

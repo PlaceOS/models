@@ -24,7 +24,7 @@ module PlaceOS::Model
     attribute visit_expected : Bool?, persistence: false, show: true, ignore_deserialize: true
     attribute booking : Booking?, persistence: false, show: true, ignore_deserialize: true
     attribute event : PlaceCalendar::Event?, persistence: false, show: true, ignore_deserialize: true
-    attribute event_metadata : String?, persistence: false, converter: String::RawConverter, show: true, ignore_deserialize: true
+    attribute event_metadata : String?, persistence: false, converter: String::RawConverter, type: "object", show: true, ignore_deserialize: true
 
     attribute booking_rep : Booking? = nil, persistence: false, show: true, json_key: "booking", ignore_deserialize: true
 
