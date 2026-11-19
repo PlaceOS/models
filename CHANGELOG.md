@@ -1,3 +1,9 @@
+## v9.123.7 (2026-11-19)
+
+### Fix
+
+- describe serialized model fields in OpenAPI ([#343](https://github.com/PlaceOS/models/pull/343))
+
 ## v9.123.6 (2026-11-18)
 
 ### Fix
