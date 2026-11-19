@@ -133,6 +133,10 @@ module PlaceOS::Model
       def to_json(builder : JSON::Builder)
         builder.string(to_s)
       end
+
+      def self.json_schema(_openapi : Bool? = nil)
+        {type: "string"}
+      end
     end
 
     struct Metadata

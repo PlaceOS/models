@@ -314,7 +314,7 @@ module PlaceOS::Model
     define_to_json :admin, only: ADMIN_DATA, methods: :id
     define_to_json :admin_metadata, only: ADMIN_DATA, methods: [:id, :associated_metadata, :subsystem_access]
 
-    def associated_metadata
+    def associated_metadata : Hash(String, Model::Metadata::Interface)
       Model::Metadata.build_metadata(self)
     end
 
